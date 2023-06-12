@@ -1,0 +1,18 @@
+{% extends "encyclopedia/layout.html" %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block body %}
+    {% if entry %}
+        <form action="{% url 'wiki:editPage' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="title" value="{{ title }}">
+            <input type="submit" value="Edit">    
+        </form>
+            {{ entry|safe }}
+    {% else %}
+        <p>The requested page was not found!</p>
+    {% endif %}    
+{% endblock %}

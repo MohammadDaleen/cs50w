@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Search: Advanced</title>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <link href="styles.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="align-items-center justify-content-between pt-20 pb-14 px-25">
+            <img alt="google logo" src="https://www.gstatic.com/images/branding/googlelogo/svg/googlelogo_clr_74x24px.svg">
+            <a href="index.html">Search</a>
+        </div>
+        <div class="ms-45 my-27">
+            <label class="fs-20 red">Advanced Search</label>
+        </div>
+        <hr class="solid">
+        <div class="mt-40 ms-45">
+            <form action="https://www.google.com/search">        
+                <p>Find pages with...</p>
+                <div class="align-items-center fs-13 grid">
+                    <p>all these words:</p>
+                    <input class="adv-search-bar" name="as_q" type="text">
+                    <p>this exact word or phrase:</p>
+                    <input class="adv-search-bar" name="as_epq" type="text">
+                    <p>any of these words:</p>
+                    <input class="adv-search-bar" name="as_oq" type="text">
+                    <p>none of these words:</p>
+                    <input class="adv-search-bar" name="as_eq" type="text">
+                </div>
+                <div class="justify-content-end mt-12 me-370">
+                    <input class="adv-search-btn bg-blue least-rounded-borders white" type="submit" value="Advanced Search">
+                </div>
+            </form>
+        </div>        
+    </body>
+</html>
