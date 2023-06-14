@@ -99,14 +99,13 @@ def newPage(request):
             # Isolate the title from the 'cleaned' version of form data
             title = form.cleaned_data["title"]
 
-            # Isolate the content from the 'cleaned' version of form data
-            content = form.cleaned_data["MDContent"]
-            
             # Ensure entry is new
             if util.get_entry(title):
                 # Display error message
                 return HttpResponse(f'The entry "{title}" already exist!')
             
+            # Isolate the content from the 'cleaned' version of form data
+            content = form.cleaned_data["MDContent"]
             
             # Save the new page to an .md file
             util.save_entry(title, content)
