@@ -7,6 +7,7 @@
 {% block body %}
     <form action="{% url 'wiki:saveEditedPage' %}" method="post">
         {% csrf_token %}
+        <h1>Edit: {{ title }}</h1>
         {{ Form }}
         <input type="submit" value="Save">
     </form>

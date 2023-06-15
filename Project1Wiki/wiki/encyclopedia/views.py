@@ -14,6 +14,25 @@ class NewPageForm(forms.Form):
     MDContent.label = "MarkDown Content"
 
 
+class EditPageForm(forms.Form):
+    title = forms.CharField(widget=forms.HiddenInput())
+    MDContent = forms.CharField(widget=forms.Textarea())
+    MDContent.label = "MarkDown Content"
+
+    # Extend __init__ function of parent class (to set title initial value)
+    def __init__(self, *args, **kwargs):
+        # Call __init__ function in parent class (i.e., Form)
+        super().__init__(*args, **kwargs)
+        
+        # Get the title value from kwargs (default value is None)
+        title = kwargs.pop('title', None)
+        
+        # Ensure title is valid
+        if title:
+            # set the initial value of title in form to value of title from kwargs
+            self.fields['title'].initial = title
+
+
 def index(request):
     # Render requested page
     return render(request, "encyclopedia/index.html", {
@@ -141,11 +160,12 @@ def editPage(request):
         entry = util.get_entry(title)
         if entry:
             # Create a form contains requested entry data
-            form = NewPageForm(initial={"title":title, "MDContent":entry})
+            form = EditPageForm(initial={"MDContent": entry, "title": title})
 
             # Render requested page
             return render(request, "encyclopedia/editPage.html", {
-                # Pass enrty's form to template
+                # Pass entry's title and form to template
+                "title": title,
                 "Form": form
             })
         
@@ -157,7 +177,7 @@ def saveEditedPage(request):
     # Check if method is POST
     if request.method == "POST":
         # Take in the data the user submitted and save it as form
-        form = NewPageForm(request.POST)
+        form = EditPageForm(request.POST)
 
         # Check if form data is valid (server-side)
         if form.is_valid():
@@ -177,8 +197,9 @@ def saveEditedPage(request):
 
         else:
             # If the form is invalid, re-render the page with existing information.
-            return render(request, "wiki/newPage.html", {
-                "NewPageForm": form
+            return render(request, "wiki/editPage.html", {
+                "title": title,
+                "Form": form
             })
     
     # Redirect user to main page 
