@@ -14,7 +14,16 @@
                 <h2>Wiki</h2>
                     <form action="{% url 'wiki:search' %}" method="post">
                         {% csrf_token %}
-                        <input class="search" type="text" name="q" placeholder="Search Encyclopedia">
+                        <input class="search" type="text" name="q" placeholder="Search Encyclopedia" {% if entriesTitles %} list="entriesTitles" {% endif %}>
+                        
+                        {% if entriesTitles %}
+                            <datalist id="entriesTitles">
+                                {% for title in entriesTitles %}
+                                    <option value="{{ title }}">
+                                {% endfor %}
+                            </datalist>
+                        {% endif %}
+                        
                     </form>
                 <div>
                     <a href="{% url 'wiki:index' %}">Home</a>
