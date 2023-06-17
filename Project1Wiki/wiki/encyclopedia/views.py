@@ -8,16 +8,34 @@ from django.urls import reverse
 from . import util
 
 
+# Create a custom NewPageForm (i.e., a class that inherits from forms.Form class)
 class NewPageForm(forms.Form):
-    title = forms.CharField(label="Title")
+    # Add a title input field (- default: textInput)
+    title = forms.CharField()
+    # Set label for title input field (textInput)
+    title.label = "Title"
+    # Change HTML attrbutes of title input field (textInput)
+    title.widget.attrs.update({"class": "form-control mb-2"})
+    
+    # Add a MarkDown content input field (Textarea)
     MDContent = forms.CharField(widget=forms.Textarea())
+    # Set label for MarkDown content input field (Textarea)
     MDContent.label = "MarkDown Content"
+    # Change HTML attrbutes of MarkDown input field (Textarea)
+    MDContent.widget.attrs.update({"class": "form-control"})
 
 
+# Create a custom EditPageForm (i.e., a class that inherits from forms.Form class)
 class EditPageForm(forms.Form):
+    # Add a title hidden field (HiddenInput)
     title = forms.CharField(widget=forms.HiddenInput())
+    
+    # Add a MarkDown content input field (Textarea)
     MDContent = forms.CharField(widget=forms.Textarea())
+    # Set label for MarkDown content input field (Textarea) 
     MDContent.label = "MarkDown Content"
+    # Change HTML attrbutes of MarkDown input field (Textarea)
+    MDContent.widget.attrs.update({"class": "form-control"})
 
     # Extend __init__ function of parent class (to set title initial value)
     def __init__(self, *args, **kwargs):

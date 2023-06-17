@@ -5,10 +5,14 @@
 {% endblock %}
 
 {% block body %}
+    <h1 class="p-0">Edit "{{ title }}":</h1>
     <form action="{% url 'wiki:saveEditedPage' %}" method="post">
-        {% csrf_token %}
-        <h1>Edit: {{ title }}</h1>
-        {{ Form }}
-        <input type="submit" value="Save">
+        <div class="form-group">
+            {% csrf_token %}
+            {{ Form }}
+            <div class="pt-3">
+                <input class="btn btn-primary" type="submit" value="Save">
+            </div>
+        </div>
     </form>
 {% endblock %}
