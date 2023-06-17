@@ -9,9 +9,12 @@
         <form action="{% url 'wiki:editPage' %}" method="post">
             {% csrf_token %}
             <input type="hidden" name="title" value="{{ title }}">
-            <input type="submit" value="Edit">    
+            <button class="btn btn-primary d-flex align-items-center justify-content-center" type="submit" value="Edit">
+                <span class="material-icons">edit</span>
+                <span class="mx-2">Edit</span>
+            </button>    
         </form>
-            {{ entry|safe }}
+        {{ entry|safe }}
     {% else %}
         <p>The requested page was not found!</p>
     {% endif %}    

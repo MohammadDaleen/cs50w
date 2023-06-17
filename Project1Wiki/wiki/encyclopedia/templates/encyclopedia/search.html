@@ -5,16 +5,18 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Search result for "{{ query }}":</h1>
-
-    <ul>
+    <h1 class="p-0">Search result for "{{ query }}":</h1>
+    <ul class="list-group list-group-flush">
         {% for entry in entries %}
-            <li>
-                <a href="{% url 'wiki:title' entry %}">{{ entry }}</a>
-            </li>
+            <div class="list-group-item">
+                <li>
+                    <a href="{% url 'wiki:title' entry %}">{{ entry }}</a>
+                </li>
+            </div>
         {% empty %}            
-            <li>No results!</li>
+            <div class="list-group-item">
+                <li>No results!</li>
+            </div>
         {% endfor %}
     </ul>
-
 {% endblock %}
