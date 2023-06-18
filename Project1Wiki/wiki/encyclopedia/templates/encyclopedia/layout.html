@@ -12,12 +12,11 @@
     </head>
     <body>
         <div class="row">
-            <div class="sidebar col-lg-2 col-md-3">
-                <h2 class="pl-4 pb-3">Wiki</h2>
+            <div class="col-lg-2 col-md-3 sidebar">
+                <h2 class="pb-3 pl-4">Wiki</h2>
                 <form action="{% url 'wiki:search' %}" class="pl-2" method="post">
                     {% csrf_token %}
-                    <input class="form-control search" type="text" name="q" placeholder="Search Encyclopedia" {% if entriesTitles %} list="entriesTitles" {% endif %}>
-                    
+                    <input class="form-control search" {% if entriesTitles %} list="entriesTitles" {% endif %} name="q" placeholder="Search Encyclopedia" type="text">        
                     {% if entriesTitles %}
                         <datalist id="entriesTitles">
                             {% for title in entriesTitles %}
@@ -25,30 +24,28 @@
                             {% endfor %}
                         </datalist>
                     {% endif %}
-                    
                 </form>
                 <div class="list-group list-group-flush pl-2">
-                    <div class="list-group-item bg-transparent d-flex align-items-center">
-                        <span class="material-icons align-middle">home</span>
-                        <a class="align-middle ml-2" href="{% url 'wiki:index' %}">Home</a>
+                    <div class="align-items-center bg-transparent d-flex list-group-item">
+                        <span class="material-icons">home</span>
+                        <a class="ml-2" href="{% url 'wiki:index' %}">Home</a>
                     </div>
-                    <div class="list-group-item bg-transparent d-flex align-items-center">
-                        <span class="material-icons align-middle">add</span>
-                        <a class="align-middle ml-2" href="{% url 'wiki:newPage' %}">Create New Page</a>
+                    <div class="align-items-center bg-transparent d-flex list-group-item">
+                        <span class="material-icons">add</span>
+                        <a class="ml-2" href="{% url 'wiki:newPage' %}">Create New Page</a>
                     </div>
-                    <div class="list-group-item bg-transparent d-flex align-items-center">
-                        <span class="material-icons align-middle">shuffle</span>
-                        <a class="align-middle ml-2" href="{% url 'wiki:randomPage' %}">Random Page</a>
+                    <div class="align-items-center bg-transparent d-flex list-group-item">
+                        <span class="material-icons">shuffle</span>
+                        <a class="ml-2" href="{% url 'wiki:randomPage' %}">Random Page</a>
                     </div>
                 </div>
                 {% block nav %}
                 {% endblock %}
             </div>
-            <div class="main col-lg-10 col-md-9 p-4">
+            <div class="col-lg-10 col-md-9 main p-4">
                 {% block body %}
                 {% endblock %}
             </div>
         </div>
-
     </body>
 </html>
