@@ -4,3 +4,52 @@ from django.db import models
 
 class User(AbstractUser):
     pass
+
+# auction listings model
+    # specify a title for the listing, a text-based description, and what the starting bid should be.
+    # optionally be able to provide a URL for an image for the listing and/or a category (e.g. Fashion, Toys, Electronics, Home, etc.).
+class Listing(models.Model):
+    # Define CATEGORIES that will be used as choices for category column
+    CATEGORIES = [("fshn", "Fashion"), 
+                 ("tys", "Toys"), 
+                 ("elc", "Electronics"), 
+                 ("hom", "Home"), 
+                 ("", "etc")]
+    
+    # Define table's columns 
+    title = models.CharField(max_length=64)
+    description = models.CharField(max_length=1024)
+    startingBid = models.PositiveIntegerField()
+    imgURL = models.URLField(blank=True, null=True)
+    category = models.CharField(blank=True, choices=CATEGORIES, max_length=4, null=True)
+    
+    def __str__(self):
+        return f"title:\t{self.title},\n\
+                Description: \t{self.description},\n\
+                Starting Bid: \t{self.startingBid},\n\
+                Image's URL: \t{self.imgURL},\n\
+                Category: \t{self.category}."
+    
+    
+# bids model
+class bid(models.Model):
+    amount = models.PositiveIntegerField()
+    bidder = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userBids")
+    auction = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="listingBids")
+    
+    def __str__(self):
+        return f"Amount:\t{self.amount},\n\
+                Bidder: \t{self.bidder},\n\
+                Auction: \t{self.auction}."
+
+
+# comments made on auction listings model
+class comment(models.Model):
+    text = models.CharField(max_length=1024)
+    commenter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userComments")
+    auction = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="listingComments")
+    
+    def __str__(self):
+        return f"Text:\t{self.text},\n\
+                Commenter: \t{self.commenter},\n\
+                Auction: \t{self.auction}."
