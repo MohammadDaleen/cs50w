@@ -14,7 +14,7 @@ class Listing(models.Model):
                  ("tys", "Toys"), 
                  ("elc", "Electronics"), 
                  ("hom", "Home"), 
-                 ("", "etc")]
+                 ("etc", "etc")]
     
     # Define table's columns 
     title = models.CharField(max_length=64)
@@ -24,7 +24,7 @@ class Listing(models.Model):
     category = models.CharField(blank=True, choices=CATEGORIES, max_length=4, null=True)
     
     def __str__(self):
-        return f"title:\t{self.title},\n\
+        return f"Title:\t{self.title},\n\
                 Description: \t{self.description},\n\
                 Starting Bid: \t{self.startingBid},\n\
                 Image's URL: \t{self.imgURL},\n\
@@ -32,24 +32,20 @@ class Listing(models.Model):
     
     
 # bids model
-class bid(models.Model):
+class Bid(models.Model):
     amount = models.PositiveIntegerField()
     bidder = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userBids")
     auction = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="listingBids")
     
     def __str__(self):
-        return f"Amount:\t{self.amount},\n\
-                Bidder: \t{self.bidder},\n\
-                Auction: \t{self.auction}."
+        return f"{self.bidder}: {self.amount} ({self.auction.id})"
 
 
 # comments made on auction listings model
-class comment(models.Model):
+class Comment(models.Model):
     text = models.CharField(max_length=1024)
     commenter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userComments")
     auction = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="listingComments")
     
     def __str__(self):
-        return f"Text:\t{self.text},\n\
-                Commenter: \t{self.commenter},\n\
-                Auction: \t{self.auction}."
+        return f"{self.commenter}: {self.text} ({self.auction})"
