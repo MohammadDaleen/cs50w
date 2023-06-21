@@ -1,0 +1,58 @@
+{% extends "auctions/layout.html" %}
+{% load util %}
+
+{% block title %}
+    {{ listing.title }}
+{% endblock %}
+
+{% block body %}
+
+    <table class="table table-striped table-bordered">
+        <tbody>
+            <tr>
+                <th>
+                    <a href={% url 'commerce:listing' listing.title %}> 
+                        Title: {{ listing.title }}
+                    </a>
+                </th>
+                <td>Description: {{ listing.description }}</td>
+                
+                <!-- Group Bid objects of listing by amount (i.e., create a list of groups, each group has the same Bid.amount) -->
+                {% regroup listing.listingBids.all by amount as bids %}
+                
+                <!-- Ensure there are bids -->
+                {% if bids %}
+                    <!-- Assign maxBid to the max bid (i.e., to the group of the max Bid.amount) -->
+                    {% with maxBid=bids|max %}
+                        <!-- maxBid.grouper: the value that the group is grouped by  -->
+                        <td>Highest bid: {{ maxBid.grouper }}</td>
+                    {% endwith %}
+
+                <!-- There are no bids -->
+                {% else %}
+                    <td>Starting bid: {{ listing.startingBid }}</td>
+                {% endif %}
+                
+                <!-- Ensure imgURL is provided -->
+                {% if listing.imgURL %}
+                    <td>Image: <img class="foo" src="{{ listing.imgURL }}" width="200"></td>
+                <!-- imgURL is not provided -->
+                {% else %}
+                    <!-- foo: do a placeholder image -->
+                {% endif %}
+                
+                
+                <!-- Replace database data with readable data -->
+                {% for category in CATEGORIES %}
+                    {% if category.0 == listing.category %}
+                        <td>Category: {{ category.1 }}</td>
+                    {% endif %}
+                {% endfor %}
+            <tr>
+        </tbody>
+    </table>
+
+    {% if user.is_authenticated %}
+        
+    {% endif %}
+{% endblock %}

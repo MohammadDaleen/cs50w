@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
@@ -7,17 +8,56 @@ from django.urls import reverse
 from .models import User, Listing, Bid, Comment
 
 
+# create a new listing page (view)
+# specify a title for the listing, a text-based description, and what the starting bid should be.
+# optionally be able to provide a URL for an image for the listing and/or a category (e.g. Fashion, Toys, Electronics, Home, etc.).
+class NewListingForm(forms.Form):
+    # Add a title input field (- default: textInput)
+    title = forms.CharField()
+    # Set label for title input field
+    title.label = "Title"
+    # Change HTML attrbutes of title input field
+    title.widget.attrs.update({"class": "form-control mb-2"})
+    
+    # Add a description input field (- default: textInput)
+    description = forms.CharField()
+    # Set label for description input field
+    description.label = "Dsescription"
+    # Change HTML attrbutes of description input field
+    description.widget.attrs.update({"class": "form-control"})
+    
+    # Add a startingBid input field (- default: NumberInput)
+    startingBid = forms.DecimalField(decimal_places=2)
+    # Set label for startingBid input field
+    startingBid.label = "Starting bid"
+    # Change HTML attrbutes of startingBid input field
+    startingBid.widget.attrs.update({"class": "form-control"})
+    
+    # Add a imgURL input field (- default: URLInput)
+    imgURL = forms.URLField(required=False, )
+    # Set label for imgURL input field
+    imgURL.label = "URL for an image for the listing"
+    # Change HTML attrbutes of imgURL input field
+    imgURL.widget.attrs.update({"class": "form-control"})
+    
+     # Add a category input field (- default: Select)
+    category = forms.ChoiceField(choices=Listing.CATEGORIES)
+    # Set label for category input field
+    category.label = "Category"
+    # Change HTML attrbutes of category input field
+    category.widget.attrs.update({"class": "form-control"})
+
+
 # Active Listings Page (view)
 # view all of the currently active auction listings. 
 # For each active listing, this page should display (at minimum) 
 # the title, description, current price, and photo (if one exists for the listing).
 def index(request):
     return render(request, "auctions/index.html", {
-        # the listings QuarySet objects
-        "listings": Listing.objects.all()
+        # The listings QuarySet objects
+        "listings": Listing.objects.all(),
+        "CATEGORIES": Listing.CATEGORIES
     })
-    
-    
 
 
 def login_view(request):
@@ -31,7 +71,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse("index"))
+            return HttpResponseRedirect(reverse("commerce:index"))
         else:
             return render(request, "auctions/login.html", {
                 "message": "Invalid username and/or password."
@@ -42,7 +82,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse("index"))
+    return HttpResponseRedirect(reverse("commerce:index"))
 
 
 def register(request):
@@ -72,10 +112,63 @@ def register(request):
         return render(request, "auctions/register.html")
 
 
-# create a new listing page (view)
-# specify a title for the listing, a text-based description, and what the starting bid should be.
-# optionally be able to provide a URL for an image for the listing and/or a category (e.g. Fashion, Toys, Electronics, Home, etc.).
+def newListing(request):
+    # Check if method is POST
+    if request.method == "POST":
+        # Take in the data the user submitted and save it as form
+        form = NewListingForm(request.POST)
 
+        # Check if form data is valid (server-side)
+        if form.is_valid():
+            # Isolate data from the 'cleaned' version of form data
+            title = form.cleaned_data["title"]
+            description = form.cleaned_data["description"]
+            startingBid = form.cleaned_data["startingBid"]
+            imgURL = form.cleaned_data["imgURL"]
+            category = form.cleaned_data["category"]
+
+            ''' Validate data ''' 
+            if imgURL and category: # All fields are filled
+                listing = Listing(title=title, 
+                                  description=description, 
+                                  startingBid=startingBid,
+                                  imgURL=imgURL,
+                                  category=category)
+            elif imgURL: # Category's field is not filled
+                listing = Listing(title=title, 
+                                  description=description, 
+                                  startingBid=startingBid,
+                                  category=category)
+            elif category: # Image's URL's field is not filled
+                listing = Listing(title=title, 
+                                  description=description, 
+                                  startingBid=startingBid,
+                                  category=category)
+            else: # Category's and Image's URL's fields are not filled
+                listing = Listing(title=title, 
+                                  description=description, 
+                                  startingBid=startingBid,)
+            
+            # Save data in database (Listing(s) table)
+            listing.save()
+            
+
+            # foo: Redirect user to the new list's page.
+            # return HttpResponseRedirect(reverse(f"commerce:listing", args=[title]))
+            return HttpResponseRedirect(reverse(f"commerce:index"))
+
+        else:
+            # If the form is invalid, re-render the page with existing information.
+            return render(request, "auctions/newListing.html", {
+                "NewListingForm": form
+            })
+    
+    
+    return render(request, "auctions/newListing.html", {
+        # The form for new listing
+        "NewListingForm": NewListingForm
+    })
+    
 
 # Listing Page (view)
 # view all details about the listing, including the current price for the listing.
@@ -86,7 +179,14 @@ def register(request):
     If a user is signed in on a closed listing page, and the user has won that auction, the page should say so.
     Users who are signed in should be able to add comments to the listing page. The listing page should display all comments that have been made on the listing.
 '''
+def listing(request, title):
 
+    listing = Listing.objects.get(title=title)
+    print(listing)
+    return render(request, "auctions/listing.html", {
+        "listing": listing,
+        "CATEGORIES": Listing.CATEGORIES   
+    })
 
 # Watchlist: Users who are signed in should be able to visit a Watchlist page, which should display all of the listings that a user has added to their watchlist. Clicking on any of those listings should take the user to that listing’s page.
 

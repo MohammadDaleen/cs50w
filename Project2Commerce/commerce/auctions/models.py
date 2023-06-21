@@ -13,8 +13,9 @@ class Listing(models.Model):
     CATEGORIES = [("fshn", "Fashion"), 
                  ("tys", "Toys"), 
                  ("elc", "Electronics"), 
-                 ("hom", "Home"), 
-                 ("etc", "etc")]
+                 ("hom", "Home"),
+                 ("etc", "Etc"),
+                 ("", "N/A")]
     
     # Define table's columns 
     title = models.CharField(max_length=64)
