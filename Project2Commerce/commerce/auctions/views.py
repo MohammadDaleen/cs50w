@@ -251,6 +251,8 @@ def watchlist(request):
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
         
 
+def removeWatchlist(requset):
+    pass
 # Categories: Users should be able to visit a page that displays a list of all listing categories. Clicking on the name of any category should take the user to a page that displays all of the active listings in that category.
 
 

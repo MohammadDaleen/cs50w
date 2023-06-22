@@ -47,7 +47,7 @@
     {% if user.is_authenticated %}
         <!-- If the user is signed in, the user should be able to add the item to their “Watchlist.” If the item is already on the watchlist, the user should be able to remove it. -->
         <!-- if the watchlist == None (i.e., the listing is not in the watchlist of the user) -->
-        {% if not watchlist %}
+        {% if not isOnWatchlist %}
             <form action="{% url 'commerce:watchlist' %}" method="post">
                 <div class="form-group">
                     {% csrf_token %}
@@ -63,7 +63,7 @@
                     {% csrf_token %}
                     <input type="hidden" value="{{ listing.id }}" name="listingId">
                     <div class="pt-3">
-                        <input class="btn btn-primary" type="submit" value="Remove from watchlist">
+                        <input class="btn btn-danger" type="submit" value="Remove from watchlist">
                     </div>
                 </div>
             </form>
