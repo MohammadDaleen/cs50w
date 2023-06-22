@@ -25,7 +25,8 @@ class Listing(models.Model):
     category = models.CharField(blank=True, choices=CATEGORIES, max_length=4, null=True)
     
     def __str__(self):
-        return f"Title:\t{self.title},\n\
+        return f"{self.id}. \n\
+                Title:\t{self.title},\n\
                 Description: \t{self.description},\n\
                 Starting Bid: \t{self.startingBid},\n\
                 Image's URL: \t{self.imgURL},\n\
@@ -39,7 +40,7 @@ class Bid(models.Model):
     auction = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="listingBids")
     
     def __str__(self):
-        return f"{self.bidder}: {self.amount} ({self.auction.id})"
+        return f"{self.id}. {self.bidder}: bidded {self.amount} on ({self.auction.id}. {self.auction.title})"
 
 
 # comments made on auction listings model
@@ -49,4 +50,13 @@ class Comment(models.Model):
     auction = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="listingComments")
     
     def __str__(self):
-        return f"{self.commenter}: {self.text} ({self.auction})"
+        return f"{self.id}. {self.commenter}: {self.text} ({self.auction.id}. {self.auction.title})"
+
+
+# Watchlist
+class Watchlist(models.Model):
+    watcher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userWatchlists")
+    auction = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="listingWatchlists")
+    
+    def __str__(self):
+        return f"{self.id}. {self.watcher} is watching ({self.auction.id}. {self.auction.title})"

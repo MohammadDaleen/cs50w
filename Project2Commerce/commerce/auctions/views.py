@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import User, Listing, Bid, Comment
+from .models import *
 
 
 # create a new listing page (view)
@@ -107,7 +107,7 @@ def register(request):
                 "message": "Username already taken."
             })
         login(request, user)
-        return HttpResponseRedirect(reverse("index"))
+        return HttpResponseRedirect(reverse("commerce:index"))
     else:
         return render(request, "auctions/register.html")
 
@@ -179,17 +179,77 @@ def newListing(request):
     If a user is signed in on a closed listing page, and the user has won that auction, the page should say so.
     Users who are signed in should be able to add comments to the listing page. The listing page should display all comments that have been made on the listing.
 '''
-def listing(request, title):
+def listing(request, id):
+    # Get the listing that has the provided id from database
+    listing = Listing.objects.get(id=id)
+    
+    
+    ''' Get the max bid amount for this listing '''
+    if listing.listingBids.all(): # To avoid exceptions 
+        # Get all bids.amounts for current listing
+        bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        maxBidAmount = max(bidsAmounts)
+    # There is no bids for this listing
+    else:
+        maxBidAmount = None
+        
+    
+    ''' Get the category of this listing '''
+    category = "N/A"
+    for CATEGORY in Listing.CATEGORIES:
+        if listing.category == CATEGORY[0]:
+            category = CATEGORY[1]
 
-    listing = Listing.objects.get(title=title)
-    print(listing)
+
+    # If the user is signed in
+    if request.user.is_authenticated:
+        # try to check if the listing is in the watchlist of the user
+        try: 
+            if Watchlist.objects.get(watcher=request.user, auction=listing):
+                isOnWatchlistOfUser = True
+        # the listing is not on the watchlist of the user
+        except Watchlist.DoesNotExist:
+            isOnWatchlistOfUser = False
+            
+        
+        # render the listing page
+        return render(request, "auctions/listing.html", {
+            # Pass listing object
+            "listing": listing,
+            # Pass listing's object
+            "category": category,
+            # Pass the max bid amount for current listing
+            "maxBidAmount": maxBidAmount,
+            # Pass the user's watchlist for current listing
+            "isOnWatchlist": isOnWatchlistOfUser
+    })
+    
+    # The request method is GET
     return render(request, "auctions/listing.html", {
+        # Pass listing object
         "listing": listing,
-        "CATEGORIES": Listing.CATEGORIES   
+        # Pass listing's object
+        "category": category, 
+        # Pass the max bid amount for current listing
+        "maxBidAmount": maxBidAmount
     })
 
 # Watchlist: Users who are signed in should be able to visit a Watchlist page, which should display all of the listings that a user has added to their watchlist. Clicking on any of those listings should take the user to that listing’s page.
-
+def watchlist(request):
+    
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return HttpResponse("Must provide a listing id.")
+        
+        listingId = request.POST["listingId"]
+        if not listingId:
+            return HttpResponse("Must be logged in.")
+        
+        listing = Listing.objects.get(id=listingId)
+        watchlist = Watchlist(watcher=request.user, auction=listing)
+        watchlist.save()
+        return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
+        
 
 # Categories: Users should be able to visit a page that displays a list of all listing categories. Clicking on the name of any category should take the user to a page that displays all of the active listings in that category.
 
