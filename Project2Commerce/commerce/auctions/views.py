@@ -48,6 +48,33 @@ class NewListingForm(forms.Form):
     category.widget.attrs.update({"class": "form-control"})
 
 
+class hiddinListingIdForm(forms.Form):
+    # Add a listingId hidden field (HiddenInput)
+    listingId = forms.CharField(widget=forms.HiddenInput())
+    
+    # Extend __init__ function of parent class (to set listingId initial value)
+    def __init__(self, *args, **kwargs):
+        # Call __init__ function in parent class (i.e., Form)
+        super().__init__(*args, **kwargs)
+        
+        # Get the listingId value from kwargs (default value is None)
+        listingId = kwargs.pop('listingId', None)
+        
+        # Ensure listingId is valid
+        if listingId:
+            # set the initial value of listingId in form to value of listingId from kwargs
+            self.fields['listingId'].initial = listingId
+
+
+class AddBidForm(hiddinListingIdForm):
+    # Add a bid input field (- default: NumberInput)
+    bid = forms.DecimalField(decimal_places=2)
+    # Set label for bid input field
+    bid.label = "Bid"
+    # Change HTML attrbutes of bid input field
+    bid.widget.attrs.update({"class": "form-control"})
+
+
 # Active Listings Page (view)
 # view all of the currently active auction listings. 
 # For each active listing, this page should display (at minimum) 
@@ -239,8 +266,7 @@ def listing(request, id):
                 isOnWatchlistOfUser = True
         # the listing is not on the watchlist of the user
         except Watchlist.DoesNotExist:
-            isOnWatchlistOfUser = False
-            
+            isOnWatchlistOfUser = False        
         
         # render the listing page
         return render(request, "auctions/listing.html", {
@@ -251,7 +277,11 @@ def listing(request, id):
             # Pass the max bid amount for current listing
             "maxBidAmount": maxBidAmount,
             # Pass the user's watchlist for current listing
-            "isOnWatchlist": isOnWatchlistOfUser
+            "isOnWatchlist": isOnWatchlistOfUser,
+            # Pass a form to add bid
+            "AddBidForm": AddBidForm(initial={"listingId": id}),
+            # Pass a form to 
+            "hiddinListingIdForm": hiddinListingIdForm(initial={"listingId": id})
     })
     
     # The request method is GET
@@ -264,16 +294,22 @@ def listing(request, id):
         "maxBidAmount": maxBidAmount
     })
 
+
 # Watchlist: Users who are signed in should be able to visit a Watchlist page, which should display all of the listings that a user has added to their watchlist. Clicking on any of those listings should take the user to that listing’s page.
 def watchlist(request):
-    
     if request.method == "POST":
         if not request.user.is_authenticated:
-            return HttpResponse("Must provide a listing id.")
-        
-        listingId = request.POST["listingId"]
-        if not listingId:
             return HttpResponse("Must be logged in.")
+        
+        # Take in the data the user submitted and save it as form
+        form = hiddinListingIdForm(request.POST)
+
+        # Ensure form data is valid (server-side)
+        if not form.is_valid():
+            return HttpResponse("The AddToWatchlistForm is not valid")
+                
+        # Isolate data from the 'cleaned' version of form data
+        listingId = form.cleaned_data["listingId"]
         
         listing = Listing.objects.get(id=listingId)
         watchlist = Watchlist(watcher=request.user, auction=listing)
@@ -281,8 +317,62 @@ def watchlist(request):
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
         
 
-def removeWatchlist(requset):
-    pass
+def removeWatchlist(request):
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return HttpResponse("Must be logged in.")
+        
+        # Take in the data the user submitted and save it as form
+        form = hiddinListingIdForm(request.POST)
+
+        # Ensure form data is valid (server-side)
+        if not form.is_valid():
+            return HttpResponse("The AddToWatchlistForm is not valid")
+                
+        # Isolate data from the 'cleaned' version of form data
+        listingId = form.cleaned_data["listingId"]
+        
+        listing = Listing.objects.get(id=listingId)
+        watchlist = Watchlist.objects.get(watcher=request.user, auction=listing)
+        watchlist.delete()
+        
+        return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
+
+
+def addBid(request):
+    
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return HttpResponse("Must be logged in.")
+        
+        # Take in the data the user submitted and save it as form
+        form = AddBidForm(request.POST)
+
+        # Ensure form data is valid (server-side)
+        if not form.is_valid():
+            return HttpResponse("The AddBidForm is not valid")
+                
+        # Isolate data from the 'cleaned' version of form data
+        listingId = form.cleaned_data["listingId"]
+        addedBid = form.cleaned_data["bid"]
+
+        # Get the listing that the user wants to bid on
+        listing = Listing.objects.get(id=listingId)
+
+        
+        bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        maxBidAmount = max(bidsAmounts)
+        
+        # Ensure that the bid is at least as large as the starting bid, and greater than any other bids that have been placed (if any).
+        if addedBid < listing.startingBid or addedBid <= maxBidAmount:
+            return HttpResponse("The bid must be at least as large as the starting bid, and must be greater than any other bids.")
+        
+        bid = Bid(amount=addedBid, bidder=request.user, auction=listing)
+        bid.save()
+        return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
+    
+        
+
 # Categories: Users should be able to visit a page that displays a list of all listing categories. Clicking on the name of any category should take the user to a page that displays all of the active listings in that category.
 
 
