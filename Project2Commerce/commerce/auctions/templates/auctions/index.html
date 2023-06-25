@@ -3,7 +3,7 @@
 
 {% block body %}
     <h2>Active Listings</h2>
-    {% for listing, category, maxBidAmount in range %}
+    {% for listing, maxBidAmount, category in data %}
         <table class="table table-striped table-bordered">
             <tbody>
                 <tr>

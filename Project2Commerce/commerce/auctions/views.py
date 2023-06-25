@@ -53,41 +53,37 @@ class NewListingForm(forms.Form):
 # For each active listing, this page should display (at minimum) 
 # the title, description, current price, and photo (if one exists for the listing).
 def index(request):
-    data = []
-    
     # Get all listings from database
     listings = Listing.objects.all()
-    
-    # Create an empty list to store max bid amounts of listings
-    maxBidAmountsOfListings = []
-    
-    # Create an empty list to store categories of listings
-    categoriesOfListings = []
     
     # Get default CATEGORIES
     CATEGORIES = Listing.CATEGORIES
     
+    # Create an empty list to store data of listings
+    data = []
+    
     # Loop len(listings) time
-    for i in range(len(listings)):    
+    for listing in listings:
         ''' Get the max bid amount for current listing '''
-        if listings[i].listingBids.all(): # To avoid exceptions 
+        if listing.listingBids.all(): # To avoid exceptions 
             # Get all bids.amounts for current listing
-            bidsAmounts = listings[i].listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
-            maxBidAmountsOfListings.append(max(bidsAmounts))
+            bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+            maxBidAmount = max(bidsAmounts)
         # There is no bids for current listing
         else:
-            maxBidAmountsOfListings.append(None)
+            maxBidAmount = None
         
     
         ''' Get the category of current listing '''
-        categoriesOfListings.append("N/A")
-        for CATEGORY in CATEGORIES:
-            if listings[i].category == CATEGORY[0]:
-                categoriesOfListings[i] = CATEGORY[1]
+        category = "N/A"
+        for KEY, VALUE in CATEGORIES:
+            if listing.category == KEY:
+                category = VALUE
                 
         ''' Restructure data of listings'''
-        data.append((listings[i], categoriesOfListings[i], maxBidAmountsOfListings[i]))
+        data.append((listing, maxBidAmount, category))
     
+    print(data)
     return render(request, "auctions/index.html", {
         # Pass data of listings
         "data": data
