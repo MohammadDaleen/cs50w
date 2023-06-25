@@ -75,6 +75,14 @@ class AddBidForm(hiddinListingIdForm):
     bid.widget.attrs.update({"class": "form-control"})
 
 
+class AddCommentForm(hiddinListingIdForm):
+    # Add a text input field (- default: textInput)
+    text = forms.CharField()
+    # Set label for text input field
+    text.label = "Comment"
+    # Change HTML attrbutes of text input field
+    text.widget.attrs.update({"class": "form-control"})
+
 # Active Listings Page (view)
 # view all of the currently active auction listings. 
 # For each active listing, this page should display (at minimum) 
@@ -110,7 +118,6 @@ def index(request):
         ''' Restructure data of listings'''
         data.append((listing, maxBidAmount, category))
     
-    print(data)
     return render(request, "auctions/index.html", {
         # Pass data of listings
         "data": data
@@ -253,10 +260,30 @@ def listing(request, id):
     
     ''' Get the category of this listing '''
     category = "N/A"
-    for CATEGORY in Listing.CATEGORIES:
-        if listing.category == CATEGORY[0]:
-            category = CATEGORY[1]
-
+    for KEY, VALUE in Listing.CATEGORIES:
+        if listing.category == KEY:
+            category = VALUE
+            
+    
+    ''' Get listing status (isClosed?) '''
+    isClosed = listing.isClosed
+    
+    
+    ''' Get auction winner (if any) '''
+    winner = ""
+    # Ensure auction is closed
+    if isClosed:
+        # Ensure there is highest bid
+        if maxBidAmount:
+            # Get the user who has the highest bid on current listing
+            winner = listing.listingBids.get(amount=maxBidAmount).bidder
+            
+    ''' Get comments on current listing '''
+    try:
+        comments = Comment.objects.filter(auction=listing)
+    except Comment.DoesNotExist:
+        comments = []    
+    
 
     # If the user is signed in
     if request.user.is_authenticated:
@@ -266,7 +293,16 @@ def listing(request, id):
                 isOnWatchlistOfUser = True
         # the listing is not on the watchlist of the user
         except Watchlist.DoesNotExist:
-            isOnWatchlistOfUser = False        
+            isOnWatchlistOfUser = False
+        
+        # Ensure that current user is the creator of current listing
+        userIsLister = False
+        if listing.lister == request.user:
+            userIsLister = True
+        
+        # Ensure user is the winner
+        if request.user == winner:
+            winner = str(winner) + "(You)"
         
         # render the listing page
         return render(request, "auctions/listing.html", {
@@ -276,12 +312,23 @@ def listing(request, id):
             "category": category,
             # Pass the max bid amount for current listing
             "maxBidAmount": maxBidAmount,
-            # Pass the user's watchlist for current listing
+            # Pass if listing is closed
+            "isClosed": isClosed,
+            # Pass winner (if any)
+            "winner": winner,
+            # Pass comments of current listing
+            "comments": comments,
+            # Pass AddCommentForm
+            "AddCommentForm": AddCommentForm(initial={"listingId": id}),
+            
+            # Pass if listing is on watchlist for current user
             "isOnWatchlist": isOnWatchlistOfUser,
             # Pass a form to add bid
             "AddBidForm": AddBidForm(initial={"listingId": id}),
-            # Pass a form to 
-            "hiddinListingIdForm": hiddinListingIdForm(initial={"listingId": id})
+            # Pass a form to addTo/RemoveFrom watchlist buttons
+            "hiddinListingIdForm": hiddinListingIdForm(initial={"listingId": id}),
+            # Pass if user is lister
+            "userIsLister": userIsLister
     })
     
     # The request method is GET
@@ -291,7 +338,13 @@ def listing(request, id):
         # Pass listing's object
         "category": category, 
         # Pass the max bid amount for current listing
-        "maxBidAmount": maxBidAmount
+        "maxBidAmount": maxBidAmount,
+        # Pass if listing is closed
+        "isClosed": isClosed,
+        # Pass winner (if any)
+        "winner": winner,
+        # Pass comments of current listing
+        "comments": comments
     })
 
 
@@ -371,7 +424,59 @@ def addBid(request):
         bid.save()
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
     
+
+def closeAuction(request):
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return HttpResponse("Must be logged in.")
         
+        # Take in the data the user submitted and save it as form
+        form = hiddinListingIdForm(request.POST)
+
+        # Ensure form data is valid (server-side)
+        if not form.is_valid():
+            return HttpResponse("The hiddinListingIdForm is not valid")
+                
+        # Isolate data from the 'cleaned' version of form data
+        listingId = form.cleaned_data["listingId"]
+        
+        # Get the listing that would be closed
+        listing = Listing.objects.get(id=listingId)
+        # Close auction
+        listing.isClosed = True
+        # Save listing in database
+        listing.save()
+        return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
+        
+  
+def addComment(request):
+    
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return HttpResponse("Must be logged in.")
+        
+        # Take in the data the user submitted and save it as form
+        form = AddCommentForm(request.POST)
+
+        # Ensure form data is valid (server-side)
+        if not form.is_valid():
+            return HttpResponse("The AddCommentForm is not valid")
+                
+        # Isolate data from the 'cleaned' version of form data
+        listingId = form.cleaned_data["listingId"]
+        text = form.cleaned_data["text"]
+
+        # Get commenter
+        commenter = request.user
+        
+        # Get the listing that the user wants to bid on
+        listing = Listing.objects.get(id=listingId)
+
+        comment = Comment(text=text, commenter=commenter, auction=listing)
+        comment.save()
+        
+        return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
+       
 
 # Categories: Users should be able to visit a page that displays a list of all listing categories. Clicking on the name of any category should take the user to a page that displays all of the active listings in that category.
 

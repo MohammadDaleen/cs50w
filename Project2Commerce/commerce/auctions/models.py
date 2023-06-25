@@ -17,12 +17,15 @@ class Listing(models.Model):
                  ("etc", "Etc"),
                  ("", "N/A")]
     
-    # Define table's columns 
+    # Define table's columns
     title = models.CharField(max_length=64)
     description = models.CharField(max_length=1024)
     startingBid = models.PositiveIntegerField()
     imgURL = models.URLField(blank=True, null=True)
     category = models.CharField(blank=True, choices=CATEGORIES, max_length=4, null=True)
+    
+    lister = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userListings")
+    isClosed = models.BooleanField(default=False)
     
     def __str__(self):
         return f"{self.id}. \n\
@@ -50,7 +53,7 @@ class Comment(models.Model):
     auction = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="listingComments")
     
     def __str__(self):
-        return f"{self.id}. {self.commenter}: {self.text} ({self.auction.id}. {self.auction.title})"
+        return f"{self.commenter}: {self.text}"
 
 
 # Watchlist

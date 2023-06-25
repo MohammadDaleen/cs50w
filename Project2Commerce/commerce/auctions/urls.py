@@ -12,5 +12,7 @@ urlpatterns = [
     path("listing/<str:id>", views.listing, name="listing"),
     path("watchlist", views.watchlist, name="watchlist"),
     path("removeWatchlist", views.removeWatchlist, name="removeWatchlist"),
-    path("addBid", views.addBid, name="addBid")
+    path("addBid", views.addBid, name="addBid"),
+    path("closeAuction", views.closeAuction, name="closeAuction"),
+    path("addComment", views.addComment, name="addComment")
 ]

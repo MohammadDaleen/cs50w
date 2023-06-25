@@ -10,6 +10,7 @@
     <table class="table table-striped table-bordered">
         <tbody>
             <tr>
+                <th>Lister: {{ listing.lister }}</th>
                 <th>
                     <a href={% url 'commerce:listing' listing.id %}> 
                         Title: {{ listing.title }}
@@ -17,18 +18,18 @@
                 </th>
                 <td>Description: {{ listing.description }}</td>
                 
-                <!-- Ensure there are bids -->
+                {% comment %} Ensure there are bids {% endcomment %}
                 {% if maxBidAmount %}
                         <td>Highest bid: {{ maxBidAmount }}</td>
-                <!-- There are no bids -->
+                {% comment %} There are no bids {% endcomment %}
                 {% else %}
                     <td>Starting bid: {{ listing.startingBid }}</td>
                 {% endif %}
                 
-                <!-- Ensure imgURL is provided -->
+                {% comment %} Ensure imgURL is provided {% endcomment %}
                 {% if listing.imgURL %}
                     <td>Image: <img class="foo" src="{{ listing.imgURL }}" width="200"></td>
-                <!-- imgURL is not provided -->
+                {% comment %} imgURL is not provided {% endcomment %}
                 {% else %}
                     <!-- foo: do a placeholder image -->
                 {% endif %}
@@ -44,8 +45,10 @@
     If a user is signed in on a closed listing page, and the user has won that auction, the page should say so.
     Users who are signed in should be able to add comments to the listing page. The listing page should display all comments that have been made on the listing.
      -->
+
+    {% comment %} Ensure user is authenticated {% endcomment %}
     {% if user.is_authenticated %}
-        <!-- if the watchlist == None (i.e., the listing is not in the watchlist of the user) -->
+        {% comment %} if the watchlist == None (i.e., the listing is not in the watchlist of the user) {% endcomment %}
         {% if not isOnWatchlist %}
             <form action="{% url 'commerce:watchlist' %}" method="post">
                 <div class="form-group">
@@ -56,6 +59,8 @@
                     </div>
                 </div>
             </form>
+        
+        {% comment %} The listing on the watchlist of current user {% endcomment %}
         {% else %}
             <form action="{% url 'commerce:removeWatchlist' %}" method="post">
                 <div class="form-group">
@@ -68,16 +73,80 @@
             </form>
         {% endif %}
         
-        <form action="{% url 'commerce:addBid' %}" method="post">
+        <!-- Ensure auction is not closed -->
+        {% if not isClosed %}
+
+            {% comment %} Ensuer current user is not the lister of current listing {% endcomment %}
+            {% if not userIsLister %}
+                <form action="{% url 'commerce:addBid' %}" method="post">
+                    <div class="form-group">
+                        {% csrf_token %}
+                        {{ AddBidForm }}
+                        <div class="pt-3">
+                            <input class="btn btn-primary" type="submit" value="Add bid">
+                        </div>
+                    </div>
+                </form>
+            
+            {% comment %} The current user is the lister of current listing {% endcomment %}
+            {% else %}
+                <form action="{% url 'commerce:closeAuction' %}" method="post">
+                    <div class="form-group">
+                        {% csrf_token %}
+                        {{ hiddinListingIdForm }}
+                        <div class="pt-3">
+                            <input class="btn btn-warning" type="submit" value="Close the auction">
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+    
+    {% comment %} Ensure auction is closed {% endcomment %}
+    {% if isClosed %}
+        {% comment %} Ensure the current user is the winner of current auction {% endcomment %}
+        {% if winner %}
+            <h2>{{ winner }} won! This auction is no longer active.</h2>
+        
+        {% comment %} The current user is not the winner of current auction {% endcomment %}
+        {% else %}
+            <h2>There is no winner! This auction is no longer active</h2>
+        {% endif %}
+    {% endif %}
+
+
+    {% for comment in comments %}
+        <table>
+            <tbody>
+                <tr>
+                    <td>{{ comment }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% empty %}
+        <table>
+            <tbody>
+                <tr>
+                    <td>No comments yet.</td>
+                </tr>
+            </tbody>
+        </table>
+    {% endfor %}
+
+
+    {% if user.is_authenticated %}
+        <form action="{% url 'commerce:addComment' %}" method="post">
             <div class="form-group">
                 {% csrf_token %}
-                {{ AddBidForm }}
+                {{ AddCommentForm }}
                 <div class="pt-3">
-                    <input class="btn btn-primary" type="submit" value="Add bid">
+                    <input class="btn btn-primary" type="submit" value="Add comment">
                 </div>
             </div>
         </form>
-        
-
     {% endif %}
+
+
+
 {% endblock %}

@@ -14,18 +14,18 @@
                     </th>
                     <td>Description: {{ listing.description }}</td>
                     
-                    <!-- Ensure there are bids -->
+                    {% comment %} Ensure there are bids {% endcomment %}
                     {% if maxBidAmount %}
                         <td>Highest bid: {{ maxBidAmount }}</td>
-                    <!-- There are no bids -->
+                    {% comment %} There are no bids {% endcomment %}
                     {% else %}
                         <td>Starting bid: {{ listing.startingBid }}</td>
                     {% endif %}
 
-                    <!-- Ensure imgURL is provided -->
+                    {% comment %} Ensure imgURL is provided {% endcomment %}
                     {% if listing.imgURL %}
                         <td>Image: <img class="foo" src="{{ listing.imgURL }}" width="200"></td>
-                    <!-- imgURL is not provided -->
+                    {% comment %} imgURL is not provided {% endcomment %}
                     {% else %}
                         <!-- foo: do a placeholder image -->
                     {% endif %}
