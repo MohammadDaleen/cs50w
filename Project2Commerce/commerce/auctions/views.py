@@ -368,6 +368,47 @@ def watchlist(request):
         watchlist = Watchlist(watcher=request.user, auction=listing)
         watchlist.save()
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
+    
+    user = User.objects.get(username=request.user)
+    userWatchlists = user.userWatchlists.all()
+    print(userWatchlists)
+    
+    listings = []
+    for watchlist in userWatchlists:        
+        listings.append(watchlist.auction)
+    
+    # Get default CATEGORIES
+    CATEGORIES = Listing.CATEGORIES
+    
+    # Create an empty list to store data of listings
+    data = []
+    
+    # Loop len(listings) time
+    for listing in listings:
+        ''' Get the max bid amount for current listing '''
+        if listing.listingBids.all(): # To avoid exceptions 
+            # Get all bids.amounts for current listing
+            bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+            maxBidAmount = max(bidsAmounts)
+        # There is no bids for current listing
+        else:
+            maxBidAmount = None
+        
+    
+        ''' Get the category of current listing '''
+        category = "N/A"
+        for KEY, VALUE in CATEGORIES:
+            if listing.category == KEY:
+                category = VALUE
+                
+        ''' Restructure data of listings'''
+        data.append((listing, maxBidAmount, category))
+    
+    
+    return render(request, "auctions/watchlist.html", {
+        "data": data
+    })
+    
         
 
 def removeWatchlist(request):

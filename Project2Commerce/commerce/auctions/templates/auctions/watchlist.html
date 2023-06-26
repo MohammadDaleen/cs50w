@@ -1,0 +1,42 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}
+    Watchlists
+{% endblock %}
+
+{% block body %}
+    {% for listing, maxBidAmount, category in data %}
+        <table class="table table-striped table-bordered">
+            <tbody>
+                <tr>
+                    <th>
+                        <a href={% url 'commerce:listing' listing.id %}> 
+                            Title: {{ listing.title }}
+                        </a>
+                    </th>
+                    <td>Description: {{ listing.description }}</td>
+                    
+                    {% comment %} Ensure there are bids {% endcomment %}
+                    {% if maxBidAmount %}
+                        <td>Highest bid: {{ maxBidAmount }}</td>
+                    {% comment %} There are no bids {% endcomment %}
+                    {% else %}
+                        <td>Starting bid: {{ listing.startingBid }}</td>
+                    {% endif %}
+
+                    {% comment %} Ensure imgURL is provided {% endcomment %}
+                    {% if listing.imgURL %}
+                        <td>Image: <img class="foo" src="{{ listing.imgURL }}" width="200"></td>
+                    {% comment %} imgURL is not provided {% endcomment %}
+                    {% else %}
+                        <!-- foo: do a placeholder image -->
+                    {% endif %}
+                    
+                    <td>Category: {{ category }}</td>
+                <tr>
+            </tbody>
+        </table>
+    {% empty %}
+        <p>No listings on your watchlist.</p>
+    {% endfor %}
+{% endblock %}
