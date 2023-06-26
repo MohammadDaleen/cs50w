@@ -3,38 +3,53 @@
 
 {% block body %}
     <h2>Active Listings</h2>
+    <div class="d-flex justify-content-around align-items-center">
     {% for listing, maxBidAmount, category in data %}
-        <table class="table table-striped table-bordered">
-            <tbody>
-                <tr>
-                    <th>
-                        <a href={% url 'commerce:listing' listing.id %}> 
-                            Title: {{ listing.title }}
-                        </a>
-                    </th>
-                    <td>Description: {{ listing.description }}</td>
-                    
-                    {% comment %} Ensure there are bids {% endcomment %}
-                    {% if maxBidAmount %}
-                        <td>Highest bid: {{ maxBidAmount }}</td>
-                    {% comment %} There are no bids {% endcomment %}
-                    {% else %}
-                        <td>Starting bid: {{ listing.startingBid }}</td>
-                    {% endif %}
+        <div class="card shadow-lg" style="width: 16rem;">
+            <div class="d-flex justify-content-center">
+                {% comment %} Ensure imgURL is provided {% endcomment %}
+                {% if listing.imgURL %}
+                    <img class="card-img-top" src="{{ listing.imgURL }}" alt="{{ listing.title }} image" style="width: 16rem; height: 16rem; object-fit: contain;">
+                {% comment %} imgURL is not provided {% endcomment %}
+                {% else %}
+                    <!-- foo: do a placeholder image -->
+                {% endif %}
+            </div>
+            
+            <div class="card-body">
+                
+                <h5 class="card-title">
+                    <a href={% url 'commerce:listing' listing.id %}> 
+                        {{ listing.title }}
+                    </a>
+                </h5>
 
-                    {% comment %} Ensure imgURL is provided {% endcomment %}
-                    {% if listing.imgURL %}
-                        <td>Image: <img class="foo" src="{{ listing.imgURL }}" width="200"></td>
-                    {% comment %} imgURL is not provided {% endcomment %}
-                    {% else %}
-                        <!-- foo: do a placeholder image -->
-                    {% endif %}
-                    
-                    <td>Category: {{ category }}</td>
-                <tr>
-            </tbody>
-        </table>
+                <p class="card-text">{{ listing.description }}</p>
+
+                {% comment %} Ensure there are bids {% endcomment %}
+                {% if maxBidAmount %}
+                    <p>Highest bid: {{ maxBidAmount }}</p>
+                {% comment %} There are no bids {% endcomment %}
+                {% else %}
+                    <p>Starting bid: {{ listing.startingBid }}</p>
+                {% endif %}
+
+                <p>Category: {{ category }}</p>
+                
+                <a href="#" class="btn btn-primary">Go somewhere</a>
+            
+            </div>
+        </div>    
+
     {% empty %}
-        <p>No listings.</p>
+        <div class="card" style="width: 18rem;">
+            <img class="card-img-top" src=".../100px180/" alt="Card image cap">
+            <div class="card-body">
+                <h5 class="card-title">No listings.</h5>
+                <p class="card-text">No listings.</p>
+                <a href="#" class="btn btn-primary">No listings.</a>
+            </div>
+        </div>
     {% endfor %}
+    </div>
 {% endblock %}
