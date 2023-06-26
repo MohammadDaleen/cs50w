@@ -15,7 +15,7 @@ class Listing(models.Model):
                  ("elc", "Electronics"), 
                  ("hom", "Home"),
                  ("etc", "Etc"),
-                 ("", "N/A")]
+                 ("none", "N/A")]
     
     # Define table's columns
     title = models.CharField(max_length=64)

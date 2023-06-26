@@ -520,7 +520,47 @@ def addComment(request):
        
 
 # Categories: Users should be able to visit a page that displays a list of all listing categories. Clicking on the name of any category should take the user to a page that displays all of the active listings in that category.
+def categories(request):
+    return render(request, "auctions/categories.html", {
+        "CATEGORIES": Listing.CATEGORIES
+    })
 
+
+def category(request, key):
+    listings = Listing.objects.filter(category=key)
+    
+    
+    # Get default CATEGORIES
+    CATEGORIES = Listing.CATEGORIES
+    
+    # Create an empty list to store data of listings
+    data = []
+    
+    # Loop len(listings) time
+    for listing in listings:
+        ''' Get the max bid amount for current listing '''
+        if listing.listingBids.all(): # To avoid exceptions 
+            # Get all bids.amounts for current listing
+            bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+            maxBidAmount = max(bidsAmounts)
+        # There is no bids for current listing
+        else:
+            maxBidAmount = None
+        
+    
+        ''' Get the category of current listing '''
+        category = "N/A"
+        for KEY, VALUE in CATEGORIES:
+            if listing.category == KEY:
+                category = VALUE
+                
+        ''' Restructure data of listings'''
+        data.append((listing, maxBidAmount, category))
+    
+    
+    return render(request, "auctions/category.html", {
+       "data": data 
+    })
 
 # Django Admin Interface: Via the Django admin interface, a site administrator should be able to view, add, edit, and delete any listings, comments, and bids made on the site.
 
