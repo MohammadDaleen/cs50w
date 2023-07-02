@@ -22,7 +22,7 @@ class NewListingForm(forms.Form):
     # Add a description input field (- default: textInput)
     description = forms.CharField()
     # Set label for description input field
-    description.label = "Dsescription"
+    description.label = "Description"
     # Change HTML attrbutes of description input field
     description.widget.attrs.update({"class": "form-control"})
     
@@ -72,7 +72,7 @@ class AddBidForm(hiddinListingIdForm):
     # Set label for bid input field
     bid.label = "Bid"
     # Change HTML attrbutes of bid input field
-    bid.widget.attrs.update({"class": "form-control"})
+    bid.widget.attrs.update({"class": "form-control mx-3"})
 
 
 class AddCommentForm(hiddinListingIdForm):

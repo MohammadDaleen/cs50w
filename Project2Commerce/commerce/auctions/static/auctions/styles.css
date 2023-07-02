@@ -4,13 +4,27 @@ body {
 }
 */
 
-/* Set a specific size for card's image
+/* Set a specific size for card's image */
 .card-img-top {
-    width: 200px;
-    height: 200px;
+    width: 16rem;
+    height: 16rem;
     object-fit: contain;
 }
 
+
+.listing-img-left {
+    width: 28rem;
+    height: 28rem;
+    object-fit: contain;
+}
+
+.comment-img {
+    width: 4rem;
+    height: 4rem;
+    object-fit: contain;
+}
+
+/*
 body {
     background-color: blueviolet !important;
 } */
