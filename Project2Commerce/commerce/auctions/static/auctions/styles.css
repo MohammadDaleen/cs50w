@@ -4,7 +4,7 @@ body {
 }
 */
 
-/* Set a specific size for card's image */
+/* Set a specific size for card's image
 .card-img-top {
     width: 200px;
     height: 200px;
@@ -13,4 +13,4 @@ body {
 
 body {
     background-color: blueviolet !important;
-}
+} */

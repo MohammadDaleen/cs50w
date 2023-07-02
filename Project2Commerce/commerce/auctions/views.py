@@ -190,6 +190,7 @@ def newListing(request):
             startingBid = form.cleaned_data["startingBid"]
             imgURL = form.cleaned_data["imgURL"]
             category = form.cleaned_data["category"]
+            lister = request.user
 
             ''' Validate data ''' 
             if imgURL and category: # All fields are filled
@@ -197,21 +198,25 @@ def newListing(request):
                                   description=description, 
                                   startingBid=startingBid,
                                   imgURL=imgURL,
-                                  category=category)
+                                  category=category,
+                                  lister=lister)
             elif imgURL: # Category's field is not filled
                 listing = Listing(title=title, 
                                   description=description, 
                                   startingBid=startingBid,
-                                  category=category)
+                                  category=category,
+                                  lister=lister)
             elif category: # Image's URL's field is not filled
                 listing = Listing(title=title, 
                                   description=description, 
                                   startingBid=startingBid,
-                                  category=category)
+                                  category=category,
+                                  lister=lister)
             else: # Category's and Image's URL's fields are not filled
                 listing = Listing(title=title, 
                                   description=description, 
-                                  startingBid=startingBid,)
+                                  startingBid=startingBid,
+                                  lister=lister)
             
             # Save data in database (Listing(s) table)
             listing.save()
@@ -455,7 +460,14 @@ def addBid(request):
 
         
         bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
-        maxBidAmount = max(bidsAmounts)
+        
+        # Ensure there are bids for current listing
+        if bidsAmounts:
+            # Get the max bid amount
+            maxBidAmount = max(bidsAmounts)
+        # There are no bids for current listing
+        else:
+            maxBidAmount = 0
         
         # Ensure that the bid is at least as large as the starting bid, and greater than any other bids that have been placed (if any).
         if addedBid < listing.startingBid or addedBid <= maxBidAmount:
