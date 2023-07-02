@@ -2,56 +2,51 @@
 {% load util %}
 
 {% block body %}
-    <h2>Active Listings</h2>
+    <h2 class="mt-3 mb-4">Active Listings</h2>
     <div class="d-flex align-items-center row justify-content-start">
-    {% for listing, maxBidAmount, category in data %}
-        <div class="col-sm-6 col-lg-4 col-xl-3">
-            <div class="card shadow-lg mb-4">
-                <div class="d-flex justify-content-center">
-                    {% comment %} Ensure imgURL is provided {% endcomment %}
-                    {% if listing.imgURL %}
-                        <img class="card-img-top" src="{{ listing.imgURL }}" alt="{{ listing.title }} image">
-                    {% comment %} imgURL is not provided {% endcomment %}
-                    {% else %}
-                        <!-- foo: do a placeholder image -->
-                        <div class="align-items-center bg-secondary card-img-top d-flex justify-content-center">
-                            <h1 class="text-light">No Image.</h1>
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="card-body">
+        {% for listing, maxBidAmount, category in data %}
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <div class="card shadow-lg mb-4">
+                    <div class="d-flex justify-content-center">
+                        {% comment %} Ensure imgURL is provided {% endcomment %}
+                        {% if listing.imgURL %}
+                            <img class="card-img-top" src="{{ listing.imgURL }}" alt="{{ listing.title }} image">
+                        {% comment %} imgURL is not provided {% endcomment %}
+                        {% else %}
+                            <!-- foo: do a placeholder image -->
+                            <div class="align-items-center bg-secondary card-img-top d-flex justify-content-center">
+                                <h1 class="text-light">No Image.</h1>
+                            </div>
+                        {% endif %}
+                    </div>
                     
-                    <h5 class="card-title">
-                        {{ listing.title }}
-                    </h5>
+                    <div class="card-body">
+                        
+                        <h5 class="card-title">
+                            {{ listing.title }}
+                        </h5>
 
-                    <p class="card-text">{{ listing.description }}</p>
+                        <p class="card-text">{{ listing.description }}</p>
 
-                    {% comment %} Ensure there are bids {% endcomment %}
-                    {% if maxBidAmount %}
-                        <p>Highest bid: ${{ maxBidAmount }}</p>
-                    {% comment %} There are no bids {% endcomment %}
-                    {% else %}
-                        <p>Starting bid: ${{ listing.startingBid }}</p>
-                    {% endif %}
+                        {% comment %} Ensure there are bids {% endcomment %}
+                        {% if maxBidAmount %}
+                            <p>Highest bid: ${{ maxBidAmount }}</p>
+                        {% comment %} There are no bids {% endcomment %}
+                        {% else %}
+                            <p>Starting bid: ${{ listing.startingBid }}</p>
+                        {% endif %}
 
-                    <p>Category: {{ category }}</p>
+                        <p>Category: {{ category }}</p>
+                        
+                        <a href="{% url 'commerce:listing' listing.id %}" class="btn btn-primary">Go to listing</a>
                     
-                    <a href="{% url 'commerce:listing' listing.id %}" class="btn btn-primary">Go to listing</a>
-                
-                </div>
-            </div> 
-        </div>
-    {% empty %}
-        <div class="card" style="width: 18rem;">
-            <img class="card-img-top" src=".../100px180/" alt="Card image cap">
-            <div class="card-body">
-                <h5 class="card-title">No listings.</h5>
-                <p class="card-text">No listings.</p>
-                <a href="#" class="btn btn-primary">No listings.</a>
+                    </div>
+                </div> 
             </div>
-        </div>
-    {% endfor %}
+        {% empty %}
+            <div class="d-flex align-items-center justify-content-center">
+                <h2 class="text-secondary text-center p-5 m-5">No active listings yet.</h2>
+            </div>
+        {% endfor %}
     </div>
 {% endblock %}

@@ -414,7 +414,6 @@ def watchlist(request):
         "data": data
     })
     
-        
 
 def removeWatchlist(request):
     if request.method == "POST":
