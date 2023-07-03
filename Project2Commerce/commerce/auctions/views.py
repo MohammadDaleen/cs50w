@@ -538,8 +538,8 @@ def categories(request):
 
 
 def category(request, key):
+    # Get the listings of current category (i.e., current key)
     listings = Listing.objects.filter(category=key)
-    
     
     # Get default CATEGORIES
     CATEGORIES = Listing.CATEGORIES
@@ -547,8 +547,16 @@ def category(request, key):
     # Create an empty list to store data of listings
     data = []
     
+    ''' Get the user readable category (for givin key) '''
+    category = "N/A"
+    for KEY, VALUE in CATEGORIES:
+        if key == KEY:
+            category = VALUE
+    
+    
     # Loop len(listings) time
     for listing in listings:
+        
         ''' Get the max bid amount for current listing '''
         if listing.listingBids.all(): # To avoid exceptions 
             # Get all bids.amounts for current listing
@@ -558,19 +566,13 @@ def category(request, key):
         else:
             maxBidAmount = None
         
-    
-        ''' Get the category of current listing '''
-        category = "N/A"
-        for KEY, VALUE in CATEGORIES:
-            if listing.category == KEY:
-                category = VALUE
-                
         ''' Restructure data of listings'''
         data.append((listing, maxBidAmount, category))
     
     
     return render(request, "auctions/category.html", {
-       "data": data 
+       "category": category,
+       "data": data
     })
 
 # Django Admin Interface: Via the Django admin interface, a site administrator should be able to view, add, edit, and delete any listings, comments, and bids made on the site.

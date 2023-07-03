@@ -1,22 +1,28 @@
 {% extends "auctions/layout.html" %}
 
 {% block title %}
-    Categoris
+    Categories
 {% endblock %}
 
 {% block body %}
-    <ul>
+
+<h2 class="my-3">Categories</h2>
+    <div class="d-flex align-items-center row justify-content-start">
         {% for key, value in CATEGORIES %}
-            
-            <li>
-                <a href={% url "commerce:category" key %}> 
-                    <h3>{{ value }}</h3>
+            <div class="col-sm-6 col-lg-4 col-xl-3 p-3">
+                
+                
+
+
+                <a class="btn btn-block btn-light btn-lg shadow border" href="{% url "commerce:category" key %}" role="button">
+                    <h5 class="card-title m-0 p-3 text-secondary">{{ value }}</h5>
                 </a>
-            </li>
+
+
+            </div>
         {% empty %}
             <li>
                 <h3>No categoris.</h3>
             </li>
         {% endfor %}
-    </ul>
 {% endblock %}
