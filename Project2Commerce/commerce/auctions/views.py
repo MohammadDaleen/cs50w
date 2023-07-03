@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
@@ -176,6 +177,7 @@ def register(request):
         return render(request, "auctions/register.html")
 
 
+@login_required
 def newListing(request):
     # Check if method is POST
     if request.method == "POST":
@@ -354,6 +356,7 @@ def listing(request, id):
 
 
 # Watchlist: Users who are signed in should be able to visit a Watchlist page, which should display all of the listings that a user has added to their watchlist. Clicking on any of those listings should take the user to that listing’s page.
+@login_required
 def watchlist(request):
     if request.method == "POST":
         if not request.user.is_authenticated:
@@ -415,6 +418,7 @@ def watchlist(request):
     })
     
 
+@login_required
 def removeWatchlist(request):
     if request.method == "POST":
         if not request.user.is_authenticated:
@@ -437,6 +441,7 @@ def removeWatchlist(request):
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
 
 
+@login_required
 def addBid(request):
     
     if request.method == "POST":
@@ -477,6 +482,7 @@ def addBid(request):
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
     
 
+@login_required
 def closeAuction(request):
     if request.method == "POST":
         if not request.user.is_authenticated:
@@ -500,7 +506,8 @@ def closeAuction(request):
         listing.save()
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
         
-  
+
+@login_required
 def addComment(request):
     
     if request.method == "POST":
