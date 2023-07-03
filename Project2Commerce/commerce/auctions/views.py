@@ -81,7 +81,7 @@ class AddCommentForm(hiddinListingIdForm):
     # Set label for text input field
     text.label = "Comment"
     # Change HTML attrbutes of text input field
-    text.widget.attrs.update({"class": "form-control"})
+    text.widget.attrs.update({"class": "form-control mx-3"})
 
 # Active Listings Page (view)
 # view all of the currently active auction listings. 

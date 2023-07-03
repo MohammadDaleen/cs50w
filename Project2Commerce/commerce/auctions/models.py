@@ -38,7 +38,7 @@ class Listing(models.Model):
     
 # bids model
 class Bid(models.Model):
-    amount = models.PositiveIntegerField()
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
     bidder = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userBids")
     auction = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="listingBids")
     
