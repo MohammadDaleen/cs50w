@@ -1,5 +1,4 @@
 {% extends "auctions/layout.html" %}
-{% load util %}
 
 {% block title %}
     {{ listing.title }}
@@ -8,7 +7,7 @@
 {% block body %}
 
     {% comment %} Ensure auction is closed {% endcomment %}
-    {% if isClosed %}
+    {% if listing.isClosed %}
         {% comment %} Ensure the current user is the winner of current auction {% endcomment %}
         {% if winner %}
             <div class="alert alert-success mt-2 shadow border border-success" role="alert">
@@ -72,7 +71,7 @@
                 {% comment %} Ensure user is authenticated {% endcomment %}
                 {% if user.is_authenticated %}
                     {% comment %} Ensure auction is not closed {% endcomment %}
-                    {% if not isClosed %}
+                    {% if not listing.isClosed %}
 
                         {% comment %} Ensuer current user is not the lister of current listing {% endcomment %}
                         {% if not userIsLister %}   
