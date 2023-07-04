@@ -266,10 +266,10 @@ def listing(request, id):
         
     
     ''' Get the category of this listing '''
-    category = "N/A"
+    category = {"key": "none", "value":"N/A"}
     for KEY, VALUE in Listing.CATEGORIES:
         if listing.category == KEY:
-            category = VALUE
+            category = {"key": KEY, "value":VALUE}
             
     
     ''' Get listing status (isClosed?) '''

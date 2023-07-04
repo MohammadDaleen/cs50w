@@ -44,7 +44,11 @@
                         {% endif %}
                     </li>
                     <li class="list-group-item">
-                        <p class="m-0">Category: {{ category }}</p>
+                        <p class="m-0">Category:
+                            <a href="{% url "commerce:category" category.key %}">
+                                {{ category.value }}
+                            </a>
+                        </p>
                     </li>
                 </ul>
                 
