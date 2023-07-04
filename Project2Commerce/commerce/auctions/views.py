@@ -18,14 +18,14 @@ class NewListingForm(forms.Form):
     # Set label for title input field
     title.label = "Title"
     # Change HTML attrbutes of title input field
-    title.widget.attrs.update({"class": "form-control mb-2"})
+    title.widget.attrs.update({"class": "form-control"})
     
     # Add a description input field (- default: textInput)
-    description = forms.CharField()
+    description = forms.CharField(widget=forms.Textarea())
     # Set label for description input field
     description.label = "Description"
     # Change HTML attrbutes of description input field
-    description.widget.attrs.update({"class": "form-control"})
+    description.widget.attrs.update({"class": "form-control", "rows": "4"})
     
     # Add a startingBid input field (- default: NumberInput)
     startingBid = forms.DecimalField(decimal_places=2)
@@ -37,7 +37,7 @@ class NewListingForm(forms.Form):
     # Add a imgURL input field (- default: URLInput)
     imgURL = forms.URLField(required=False, )
     # Set label for imgURL input field
-    imgURL.label = "URL for an image for the listing"
+    imgURL.label = "URL for an image"
     # Change HTML attrbutes of imgURL input field
     imgURL.widget.attrs.update({"class": "form-control"})
     
@@ -46,7 +46,7 @@ class NewListingForm(forms.Form):
     # Set label for category input field
     category.label = "Category"
     # Change HTML attrbutes of category input field
-    category.widget.attrs.update({"class": "form-control"})
+    category.widget.attrs.update({"class": "form-control d-flex justify-content-between align-items-center"})
 
 
 class hiddinListingIdForm(forms.Form):
