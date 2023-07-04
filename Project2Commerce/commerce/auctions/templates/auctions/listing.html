@@ -7,6 +7,21 @@
 
 {% block body %}
 
+    {% comment %} Ensure auction is closed {% endcomment %}
+    {% if isClosed %}
+        {% comment %} Ensure the current user is the winner of current auction {% endcomment %}
+        {% if winner %}
+            <div class="alert alert-success mt-2 shadow border border-success" role="alert">
+                <h5 class="mt-2">{{ winner }} won! This auction is no longer active.</h5>
+            </div>
+        {% comment %} The current user is not the winner of current auction {% endcomment %}
+        {% else %}
+            <div class="alert alert-warning mt-2 shadow border border-warning" role="alert">
+                <h5 class="mt-2">There is no winner! This auction is no longer active</h5>
+            </div>
+        {% endif %}
+    {% endif %}
+
     <div class="row mt-3">
         
         <div class="col-md-5">
@@ -127,23 +142,6 @@
     If a user is signed in on a closed listing page, and the user has won that auction, the page should say so.
     Users who are signed in should be able to add comments to the listing page. The listing page should display all comments that have been made on the listing.
      -->
-     
-    <ul class="list-group list-group-flush">
-    {% comment %} Ensure auction is closed {% endcomment %}
-    {% if isClosed %}
-        {% comment %} Ensure the current user is the winner of current auction {% endcomment %}
-        {% if winner %}
-            <li class="list-group-item">
-                <h2 class="mt-3">{{ winner }} won! This auction is no longer active.</h2>
-            </li>
-        {% comment %} The current user is not the winner of current auction {% endcomment %}
-        {% else %}
-            <li class="list-group-item">
-                <h2 class="mt-3">There is no winner! This auction is no longer active</h2>
-            </li>
-        {% endif %}
-    {% endif %}
-    </ul>
 
     <h3 class="mt-4 mb-3">Comments:</h3>
     <ul class="list-group list-group-flush">
