@@ -8,19 +8,21 @@ from django.urls import reverse
 
 from .models import *
 
+CATEGORIES = {}
+for KEY, VALUE in Listing.CATEGORIES:
+    CATEGORIES[KEY] = VALUE
 
-# create a new listing page (view)
-# specify a title for the listing, a text-based description, and what the starting bid should be.
-# optionally be able to provide a URL for an image for the listing and/or a category (e.g. Fashion, Toys, Electronics, Home, etc.).
+
+# Create a form for new listing
 class NewListingForm(forms.Form):
-    # Add a title input field (- default: textInput)
+    # Add a title input field (- default: TextInput)
     title = forms.CharField()
     # Set label for title input field
     title.label = "Title"
     # Change HTML attrbutes of title input field
     title.widget.attrs.update({"class": "form-control"})
     
-    # Add a description input field (- default: textInput)
+    # Add a description input field (- Textarea)
     description = forms.CharField(widget=forms.Textarea())
     # Set label for description input field
     description.label = "Description"
@@ -48,7 +50,7 @@ class NewListingForm(forms.Form):
     # Change HTML attrbutes of category input field
     category.widget.attrs.update({"class": "form-control d-flex justify-content-between align-items-center"})
 
-
+# Create a form for hiddin listing id
 class hiddinListingIdForm(forms.Form):
     # Add a listingId hidden field (HiddenInput)
     listingId = forms.CharField(widget=forms.HiddenInput())
@@ -66,7 +68,7 @@ class hiddinListingIdForm(forms.Form):
             # set the initial value of listingId in form to value of listingId from kwargs
             self.fields['listingId'].initial = listingId
 
-
+# Create a form for adding a bid to a listing
 class AddBidForm(hiddinListingIdForm):
     # Add a bid input field (- default: NumberInput)
     bid = forms.DecimalField(decimal_places=2)
@@ -75,7 +77,7 @@ class AddBidForm(hiddinListingIdForm):
     # Change HTML attrbutes of bid input field
     bid.widget.attrs.update({"class": "form-control mx-3"})
 
-
+# Create a form for adding a comment on a listing
 class AddCommentForm(hiddinListingIdForm):
     # Add a text input field (- default: textInput)
     text = forms.CharField()
@@ -85,36 +87,28 @@ class AddCommentForm(hiddinListingIdForm):
     text.widget.attrs.update({"class": "form-control mx-3"})
 
 # Active Listings Page (view)
-# view all of the currently active auction listings. 
-# For each active listing, this page should display (at minimum) 
-# the title, description, current price, and photo (if one exists for the listing).
 def index(request):
-    # Get all listings from database
-    listings = Listing.objects.all()
-    
-    # Get default CATEGORIES
-    CATEGORIES = Listing.CATEGORIES
+    # Get all active listings from database
+    listings = Listing.objects.filter(isClosed=False)
     
     # Create an empty list to store data of listings
     data = []
     
-    # Loop len(listings) time
+    # Loop over listings
     for listing in listings:
         ''' Get the max bid amount for current listing '''
-        if listing.listingBids.all(): # To avoid exceptions 
-            # Get all bids.amounts for current listing
-            bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        # Get all bids.amounts for current listing
+        bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        # Ensure there are any bids for current listing
+        if bidsAmounts:
+            # Get the max bid amount for current listing
             maxBidAmount = max(bidsAmounts)
         # There is no bids for current listing
         else:
             maxBidAmount = None
         
-    
         ''' Get the category of current listing '''
-        category = "N/A"
-        for KEY, VALUE in CATEGORIES:
-            if listing.category == KEY:
-                category = VALUE
+        category = CATEGORIES[listing.category]
                 
         ''' Restructure data of listings'''
         data.append((listing, maxBidAmount, category))
@@ -124,7 +118,7 @@ def index(request):
         "data": data
         })
 
-
+# Login Page (view)
 def login_view(request):
     if request.method == "POST":
 
@@ -144,12 +138,12 @@ def login_view(request):
     else:
         return render(request, "auctions/login.html")
 
-
+# Logout Page (view)
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("commerce:index"))
 
-
+# Register Page (view)
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -176,7 +170,7 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
-
+# Add new listing page (view)
 @login_required
 def newListing(request):
     # Check if method is POST
@@ -192,6 +186,8 @@ def newListing(request):
             startingBid = form.cleaned_data["startingBid"]
             imgURL = form.cleaned_data["imgURL"]
             category = form.cleaned_data["category"]
+            
+            # Get the lister of submitted listing
             lister = request.user
 
             ''' Validate data ''' 
@@ -222,64 +218,47 @@ def newListing(request):
             
             # Save data in database (Listing(s) table)
             listing.save()
-            
 
-            # foo: Redirect user to the new list's page.
-            # return HttpResponseRedirect(reverse(f"commerce:listing", args=[title]))
-            return HttpResponseRedirect(reverse(f"commerce:index"))
+            # Redirect user to the new list's page.
+            return HttpResponseRedirect(reverse(f"commerce:listing", args=[listing.id]))
 
+        # The form is invalid
         else:
-            # If the form is invalid, re-render the page with existing information.
+            # re-render the page with existing information.
             return render(request, "auctions/newListing.html", {
                 "NewListingForm": form
             })
     
-    
+    # The method is GET
     return render(request, "auctions/newListing.html", {
-        # The form for new listing
+        # Pass the form for new listing
         "NewListingForm": NewListingForm
     })
     
 
 # Listing Page (view)
-# view all details about the listing, including the current price for the listing.
-'''
-    If the user is signed in, the user should be able to add the item to their “Watchlist.” If the item is already on the watchlist, the user should be able to remove it.
-    If the user is signed in, the user should be able to bid on the item. The bid must be at least as large as the starting bid, and must be greater than any other bids that have been placed (if any). If the bid doesn’t meet those criteria, the user should be presented with an error.
-    If the user is signed in and is the one who created the listing, the user should have the ability to “close” the auction from this page, which makes the highest bidder the winner of the auction and makes the listing no longer active.
-    If a user is signed in on a closed listing page, and the user has won that auction, the page should say so.
-    Users who are signed in should be able to add comments to the listing page. The listing page should display all comments that have been made on the listing.
-'''
 def listing(request, id):
-    # Get the listing that has the provided id from database
+    # Get the listing that has the submitted id from database
     listing = Listing.objects.get(id=id)
     
-    
     ''' Get the max bid amount for this listing '''
-    if listing.listingBids.all(): # To avoid exceptions 
-        # Get all bids.amounts for current listing
-        bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+    # Get all bids.amounts for current listing
+    bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+    # Ensure current listing have bids
+    if bidsAmounts:
+        # Get the max bid amount for this listing
         maxBidAmount = max(bidsAmounts)
-    # There is no bids for this listing
+    # There is no bids for current listing
     else:
         maxBidAmount = None
-        
     
     ''' Get the category of this listing '''
-    category = {"key": "none", "value":"N/A"}
-    for KEY, VALUE in Listing.CATEGORIES:
-        if listing.category == KEY:
-            category = {"key": KEY, "value":VALUE}
-            
-    
-    ''' Get listing status (isClosed?) '''
-    isClosed = listing.isClosed
-    
+    category = {"key":listing.category, "value":CATEGORIES[listing.category]}
     
     ''' Get auction winner (if any) '''
     winner = ""
     # Ensure auction is closed
-    if isClosed:
+    if listing.isClosed:
         # Ensure there is highest bid
         if maxBidAmount:
             # Get the user who has the highest bid on current listing
@@ -315,42 +294,37 @@ def listing(request, id):
         return render(request, "auctions/listing.html", {
             # Pass listing object
             "listing": listing,
-            # Pass listing's object
+            # Pass listing's category dictionary
             "category": category,
-            # Pass the max bid amount for current listing
+            # Pass the max bid amount for current listing (if any)
             "maxBidAmount": maxBidAmount,
-            # Pass if listing is closed
-            "isClosed": isClosed,
             # Pass winner (if any)
             "winner": winner,
-            # Pass comments of current listing
+            # Pass comments of current listing (if any)
             "comments": comments,
-            # Pass AddCommentForm
+            # Pass a form to add a comment
             "AddCommentForm": AddCommentForm(initial={"listingId": id}),
-            
-            # Pass if listing is on watchlist for current user
+            # Pass if listing is on watchlist for current user or not
             "isOnWatchlist": isOnWatchlistOfUser,
-            # Pass a form to add bid
+            # Pass a form to add a bid
             "AddBidForm": AddBidForm(initial={"listingId": id}),
-            # Pass a form to addTo/RemoveFrom watchlist buttons
+            # Pass a form to add/remove listing to/from watchlist buttons
             "hiddinListingIdForm": hiddinListingIdForm(initial={"listingId": id}),
-            # Pass if user is lister
+            # Pass if user is lister or not
             "userIsLister": userIsLister
     })
     
-    # The request method is GET
+    # The user is not signed in
     return render(request, "auctions/listing.html", {
         # Pass listing object
         "listing": listing,
-        # Pass listing's object
+        # Pass listing's category object
         "category": category, 
-        # Pass the max bid amount for current listing
+        # Pass the max bid amount for current listing (if any)
         "maxBidAmount": maxBidAmount,
-        # Pass if listing is closed
-        "isClosed": isClosed,
         # Pass winner (if any)
         "winner": winner,
-        # Pass comments of current listing
+        # Pass comments of current listing (if any)
         "comments": comments
     })
 
