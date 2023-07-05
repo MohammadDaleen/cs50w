@@ -12,8 +12,8 @@ CATEGORIES = {}
 for KEY, VALUE in Listing.CATEGORIES:
     CATEGORIES[KEY] = VALUE
 
-# Create a form for new listing
-class NewListingForm(forms.Form):
+
+class NewListingForm(forms.Form):  # Create a form for new listing
     # Add a title input field (- default: TextInput)
     title = forms.CharField()
     # Set label for title input field
@@ -42,15 +42,15 @@ class NewListingForm(forms.Form):
     # Change HTML attrbutes of imgURL input field
     imgURL.widget.attrs.update({"class": "form-control"})
     
-     # Add a category input field (- default: Select)
+    # Add a category input field (- default: Select)
     category = forms.ChoiceField(choices=Listing.CATEGORIES)
     # Set label for category input field
     category.label = "Category"
     # Change HTML attrbutes of category input field
     category.widget.attrs.update({"class": "form-control"})
 
-# Create a form for hiddin listing id
-class hiddinListingIdForm(forms.Form):
+
+class hiddinListingIdForm(forms.Form):  # Create a form for hiddin listing id
     # Add a listingId hidden field (HiddenInput)
     listingId = forms.CharField(widget=forms.HiddenInput())
     
@@ -67,8 +67,8 @@ class hiddinListingIdForm(forms.Form):
             # set the initial value of listingId in form to value of listingId from kwargs
             self.fields['listingId'].initial = listingId
 
-# Create a form for adding a bid to a listing
-class AddBidForm(hiddinListingIdForm):
+
+class AddBidForm(hiddinListingIdForm):  # Create a form for adding a bid to a listing
     # Add a bid input field (- default: NumberInput)
     bid = forms.DecimalField(decimal_places=2)
     # Set label for bid input field
@@ -76,14 +76,15 @@ class AddBidForm(hiddinListingIdForm):
     # Change HTML attrbutes of bid input field
     bid.widget.attrs.update({"class": "form-control mx-3"})
 
-# Create a form for adding a comment on a listing
-class AddCommentForm(hiddinListingIdForm):
+
+class AddCommentForm(hiddinListingIdForm):  # Create a form for adding a comment on a listing
     # Add a text input field (- default: textInput)
     text = forms.CharField()
     # Set label for text input field
     text.label = "Comment"
     # Change HTML attrbutes of text input field
     text.widget.attrs.update({"class": "form-control mx-3"})
+
 
 # Active listings page (view)
 def index(request):
@@ -97,7 +98,8 @@ def index(request):
     for listing in listings:
         ''' Get the max bid amount for current listing '''
         # Get all bids.amounts for current listing
-        bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        bidsAmounts = listing.listingBids.values_list("amount", flat=True)
         # Ensure there are any bids for current listing
         if bidsAmounts:
             # Get the max bid amount for current listing
@@ -115,7 +117,8 @@ def index(request):
     return render(request, "auctions/index.html", {
         # Pass data of listings
         "data": data
-        })
+    })
+
 
 # Login page (view)
 def login_view(request):
@@ -137,10 +140,12 @@ def login_view(request):
     else:
         return render(request, "auctions/login.html")
 
+
 # Logout page (view)
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("commerce:index"))
+
 
 # Register page (view)
 def register(request):
@@ -169,6 +174,7 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+
 # Add new listing page/form (view)
 @login_required
 def newListing(request):
@@ -190,26 +196,26 @@ def newListing(request):
             lister = request.user
 
             ''' Validate data ''' 
-            if imgURL and category: # All fields are filled
+            if imgURL and category:  # All fields are filled
                 listing = Listing(title=title, 
                                   description=description, 
                                   startingBid=startingBid,
                                   imgURL=imgURL,
                                   category=category,
                                   lister=lister)
-            elif imgURL: # Category's field is not filled
+            elif imgURL:  # Category's field is not filled
                 listing = Listing(title=title, 
                                   description=description, 
                                   startingBid=startingBid,
                                   category=category,
                                   lister=lister)
-            elif category: # Image's URL's field is not filled
+            elif category:  # Image's URL's field is not filled
                 listing = Listing(title=title, 
                                   description=description, 
                                   startingBid=startingBid,
                                   category=category,
                                   lister=lister)
-            else: # Category's and Image's URL's fields are not filled
+            else:  # Category's and Image's URL's fields are not filled
                 listing = Listing(title=title, 
                                   description=description, 
                                   startingBid=startingBid,
@@ -234,6 +240,7 @@ def newListing(request):
         "NewListingForm": NewListingForm
     })
 
+
 # Listing page (view)
 def listing(request, id):
     # Get the listing that has the submitted id from database
@@ -241,7 +248,8 @@ def listing(request, id):
     
     ''' Get the max bid amount for this listing '''
     # Get all bids.amounts for current listing
-    bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+    # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+    bidsAmounts = listing.listingBids.values_list("amount", flat=True)
     # Ensure current listing have bids
     if bidsAmounts:
         # Get the max bid amount for this listing
@@ -251,7 +259,7 @@ def listing(request, id):
         maxBidAmount = None
     
     ''' Get the category of this listing '''
-    category = {"key":listing.category, "value":CATEGORIES[listing.category]}
+    category = {"key": listing.category, "value": CATEGORIES[listing.category]}
     
     ''' Get auction winner (if any) '''
     winner = ""
@@ -267,7 +275,6 @@ def listing(request, id):
         comments = Comment.objects.filter(auction=listing)
     except Comment.DoesNotExist:
         comments = []    
-    
 
     # If the user is signed in
     if request.user.is_authenticated:
@@ -310,7 +317,7 @@ def listing(request, id):
             "hiddinListingIdForm": hiddinListingIdForm(initial={"listingId": id}),
             # Pass if user is lister or not
             "userIsLister": userIsLister
-    })
+        })
     
     # The user is not signed in
     return render(request, "auctions/listing.html", {
@@ -325,6 +332,7 @@ def listing(request, id):
         # Pass comments of current listing (if any)
         "comments": comments
     })
+
 
 # Watchlist page/form (view)
 @login_required
@@ -366,7 +374,6 @@ def watchlist(request):
     for listing in userWatchlist:        
         listings.append(listing.auction)
     
-    
     # Create an empty list to store data of listings
     data = []
     
@@ -374,7 +381,8 @@ def watchlist(request):
     for listing in listings:
         ''' Get the max bid amount for current listing '''
         # Get all bids.amounts for current listing
-        bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        bidsAmounts = listing.listingBids.values_list("amount", flat=True)
         if bidsAmounts:
             # Get the max bid amount for current listing
             maxBidAmount = max(bidsAmounts)
@@ -383,7 +391,7 @@ def watchlist(request):
             maxBidAmount = None
     
         ''' Get the category of current listing '''
-        category = {"key": listing.category, "value":CATEGORIES[listing.category]}
+        category = {"key": listing.category, "value": CATEGORIES[listing.category]}
                 
         ''' Restructure data of listings'''
         data.append((listing, maxBidAmount, category))
@@ -393,6 +401,7 @@ def watchlist(request):
         # Pass watchlist's data
         "data": data
     })
+
 
 # removeWatchlist form (view)
 @login_required
@@ -422,6 +431,7 @@ def removeWatchlist(request):
         # Redirect user to the listing's page that has been deleted from user's watchlist
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
 
+
 # addBid form (view)
 @login_required
 def addBid(request):
@@ -442,7 +452,8 @@ def addBid(request):
         listing = Listing.objects.get(id=listingId)
         
         # From database, get bids amounts on the listing that the user wants to bid on
-        bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        bidsAmounts = listing.listingBids.values_list("amount", flat=True)
         
         # Ensure there are bids for current listing
         if bidsAmounts:
@@ -464,6 +475,7 @@ def addBid(request):
         
         # Redirect user to the listing that they has bidded on
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
+
 
 # closeAuction form (view)
 @login_required
@@ -491,6 +503,7 @@ def closeAuction(request):
         
         # Reture user to the listing that the user has closed
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
+
 
 # addComment form (view)
 @login_required
@@ -523,6 +536,7 @@ def addComment(request):
         # Redirect user to the listing that the user has commented on
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
 
+
 # categories page (view)
 def categories(request):
     # Render requested template
@@ -531,22 +545,24 @@ def categories(request):
         "CATEGORIES": CATEGORIES
     })
 
+
 # category page (view)
 def category(request, key):
     # Get the listings of current category (i.e., current key)
     listings = Listing.objects.filter(category=key)
     
-    # Create an empty list to store data of listings of current categroy
+    # Create an empty list to store data of listings
     data = []
     
     ''' Get the category from default CATEGORIES'''
-    category = {"key": key, "value":CATEGORIES[key]}
+    category = {"key": key, "value": CATEGORIES[key]}
     
     # Loop over listings
     for listing in listings:
         ''' Get the max bid amount for current listing '''
         # Get all bids.amounts for current listing
-        bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        bidsAmounts = listing.listingBids.values_list("amount", flat=True)
         # Ensure current listing has bids
         if bidsAmounts:
             # Get the max bid amount for current listing
@@ -555,13 +571,14 @@ def category(request, key):
         else:
             maxBidAmount = None
         
-        ''' Restructure data of listings of current category'''
+        ''' Restructure data of listings'''
         data.append((listing, maxBidAmount, category))
     
     # Render requested template    
     return render(request, "auctions/category.html", {
-       # Pass current categroy
-       "category": category,
-       # Pass listings of currnet categroy
-       "data": data
+        # Pass current categroy
+        "category": category,
+        # Pass
+        "data": data
     })
+
