@@ -12,7 +12,6 @@ CATEGORIES = {}
 for KEY, VALUE in Listing.CATEGORIES:
     CATEGORIES[KEY] = VALUE
 
-
 # Create a form for new listing
 class NewListingForm(forms.Form):
     # Add a title input field (- default: TextInput)
@@ -170,7 +169,7 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
-# Add new listing page (view)
+# Add new listing page/form (view)
 @login_required
 def newListing(request):
     # Check if method is POST
@@ -327,7 +326,7 @@ def listing(request, id):
         "comments": comments
     })
 
-# Watchlist page (view)
+# Watchlist page/form (view)
 @login_required
 def watchlist(request):
     # Check if method is POST
@@ -352,7 +351,7 @@ def watchlist(request):
         # Save the new created Watchlist in database
         watchlist.save()
         
-        # Redirect user to the added listing's page
+        # Redirect user to the listing's page that has been added from user's watchlist
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
     
     # The method is GET
@@ -389,17 +388,17 @@ def watchlist(request):
         ''' Restructure data of listings'''
         data.append((listing, maxBidAmount, category))
     
-    
+    # Render the requested template
     return render(request, "auctions/watchlist.html", {
+        # Pass watchlist's data
         "data": data
     })
 
-
+# removeWatchlist form (view)
 @login_required
 def removeWatchlist(request):
+    # Check if the method is POST
     if request.method == "POST":
-        if not request.user.is_authenticated:
-            return HttpResponse("Must be logged in.")
         
         # Take in the data the user submitted and save it as form
         form = hiddinListingIdForm(request.POST)
@@ -407,24 +406,27 @@ def removeWatchlist(request):
         # Ensure form data is valid (server-side)
         if not form.is_valid():
             return HttpResponse("The AddToWatchlistForm is not valid")
-                
+
         # Isolate data from the 'cleaned' version of form data
         listingId = form.cleaned_data["listingId"]
         
+        # From database get the listing that have the provided id
         listing = Listing.objects.get(id=listingId)
+        
+        # Create the Watchlist object for current user and listing
         watchlist = Watchlist.objects.get(watcher=request.user, auction=listing)
+        
+        # Remove watchlist from database
         watchlist.delete()
         
+        # Redirect user to the listing's page that has been deleted from user's watchlist
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
 
-
+# addBid form (view)
 @login_required
 def addBid(request):
-    
+    # Check if method is POST
     if request.method == "POST":
-        if not request.user.is_authenticated:
-            return HttpResponse("Must be logged in.")
-        
         # Take in the data the user submitted and save it as form
         form = AddBidForm(request.POST)
 
@@ -436,10 +438,10 @@ def addBid(request):
         listingId = form.cleaned_data["listingId"]
         addedBid = form.cleaned_data["bid"]
 
-        # Get the listing that the user wants to bid on
+        # Get the listing (i.e., Listing object) that the user wants to bid on
         listing = Listing.objects.get(id=listingId)
-
         
+        # From database, get bids amounts on the listing that the user wants to bid on
         bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
         
         # Ensure there are bids for current listing
@@ -454,17 +456,20 @@ def addBid(request):
         if addedBid < listing.startingBid or addedBid <= maxBidAmount:
             return HttpResponse("The bid must be at least as large as the starting bid, and must be greater than any other bids.")
         
+        # Create a new Bid object for user's bid on current listing
         bid = Bid(amount=addedBid, bidder=request.user, auction=listing)
+        
+        # Save Bid object in database
         bid.save()
+        
+        # Redirect user to the listing that they has bidded on
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
-    
 
+# closeAuction form (view)
 @login_required
 def closeAuction(request):
+    # Check if method is POST
     if request.method == "POST":
-        if not request.user.is_authenticated:
-            return HttpResponse("Must be logged in.")
-        
         # Take in the data the user submitted and save it as form
         form = hiddinListingIdForm(request.POST)
 
@@ -475,22 +480,23 @@ def closeAuction(request):
         # Isolate data from the 'cleaned' version of form data
         listingId = form.cleaned_data["listingId"]
         
-        # Get the listing that would be closed
+        # Get the listing (i.e., Listing object) that the user wants to close
         listing = Listing.objects.get(id=listingId)
+        
         # Close auction
         listing.isClosed = True
+        
         # Save listing in database
         listing.save()
-        return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
         
+        # Reture user to the listing that the user has closed
+        return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
 
+# addComment form (view)
 @login_required
 def addComment(request):
-    
+    # Check if method is POST
     if request.method == "POST":
-        if not request.user.is_authenticated:
-            return HttpResponse("Must be logged in.")
-        
         # Take in the data the user submitted and save it as form
         form = AddCommentForm(request.POST)
 
@@ -502,62 +508,60 @@ def addComment(request):
         listingId = form.cleaned_data["listingId"]
         text = form.cleaned_data["text"]
 
-        # Get commenter
+        # Get commenter (i.e., user's User object)
         commenter = request.user
         
         # Get the listing that the user wants to bid on
         listing = Listing.objects.get(id=listingId)
 
+        # Create a Comment object for user's comment on current auction/listing
         comment = Comment(text=text, commenter=commenter, auction=listing)
+        
+        # Save Comment object in database
         comment.save()
         
+        # Redirect user to the listing that the user has commented on
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
-       
 
-# Categories: Users should be able to visit a page that displays a list of all listing categories. Clicking on the name of any category should take the user to a page that displays all of the active listings in that category.
+# categories page (view)
 def categories(request):
+    # Render requested template
     return render(request, "auctions/categories.html", {
-        "CATEGORIES": Listing.CATEGORIES
+        # Pass default CATEGORIES
+        "CATEGORIES": CATEGORIES
     })
 
-
+# category page (view)
 def category(request, key):
     # Get the listings of current category (i.e., current key)
     listings = Listing.objects.filter(category=key)
     
-    # Get default CATEGORIES
-    CATEGORIES = Listing.CATEGORIES
-    
-    # Create an empty list to store data of listings
+    # Create an empty list to store data of listings of current categroy
     data = []
     
-    ''' Get the user readable category (for givin key) '''
-    category = "N/A"
-    for KEY, VALUE in CATEGORIES:
-        if key == KEY:
-            category = VALUE
+    ''' Get the category from default CATEGORIES'''
+    category = {"key": key, "value":CATEGORIES[key]}
     
-    
-    # Loop len(listings) time
+    # Loop over listings
     for listing in listings:
-        
         ''' Get the max bid amount for current listing '''
-        if listing.listingBids.all(): # To avoid exceptions 
-            # Get all bids.amounts for current listing
-            bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        # Get all bids.amounts for current listing
+        bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        # Ensure current listing has bids
+        if bidsAmounts:
+            # Get the max bid amount for current listing
             maxBidAmount = max(bidsAmounts)
         # There is no bids for current listing
         else:
             maxBidAmount = None
         
-        ''' Restructure data of listings'''
+        ''' Restructure data of listings of current category'''
         data.append((listing, maxBidAmount, category))
     
-    
+    # Render requested template    
     return render(request, "auctions/category.html", {
+       # Pass current categroy
        "category": category,
+       # Pass listings of currnet categroy
        "data": data
     })
-
-# Django Admin Interface: Via the Django admin interface, a site administrator should be able to view, add, edit, and delete any listings, comments, and bids made on the site.
-

@@ -1,11 +1,11 @@
 {% extends "auctions/layout.html" %}
 
 {% block title %}
-    {{ category }}
+    {{ category.value }}
 {% endblock %}
 
 {% block body %}
-    <h2 class="mt-3 mb-4">{{ category }}</h2>
+    <h2 class="mt-3 mb-4">{{ category.value }}</h2>
     <div class="d-flex align-items-center row justify-content-start">
         {% for listing, maxBidAmount, category in data %}
             <div class="col-sm-6 col-lg-4 col-xl-3">
@@ -39,7 +39,7 @@
                             <p>Starting bid: ${{ listing.startingBid }}</p>
                         {% endif %}
 
-                        <p>Category: {{ category }}</p>
+                        <p>Category: {{ category.value }}</p>
                         
                         <a href="{% url 'commerce:listing' listing.id %}" class="btn btn-primary">Go to listing</a>
                     
@@ -48,7 +48,7 @@
             </div>
         {% empty %}
             <div class="d-flex align-items-center justify-content-center col-12">
-                <h2 class="text-secondary text-center p-5 m-5">No listings on "{{ category }}" yet.</h2>
+                <h2 class="text-secondary text-center p-5 m-5">No listings on "{{ category.value }}" yet.</h2>
             </div>
         {% endfor %}
     </div>
