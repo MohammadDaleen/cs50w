@@ -86,7 +86,7 @@ class AddCommentForm(hiddinListingIdForm):
     # Change HTML attrbutes of text input field
     text.widget.attrs.update({"class": "form-control mx-3"})
 
-# Active Listings Page (view)
+# Active listings page (view)
 def index(request):
     # Get all active listings from database
     listings = Listing.objects.filter(isClosed=False)
@@ -118,7 +118,7 @@ def index(request):
         "data": data
         })
 
-# Login Page (view)
+# Login page (view)
 def login_view(request):
     if request.method == "POST":
 
@@ -138,12 +138,12 @@ def login_view(request):
     else:
         return render(request, "auctions/login.html")
 
-# Logout Page (view)
+# Logout page (view)
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("commerce:index"))
 
-# Register Page (view)
+# Register page (view)
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -234,9 +234,8 @@ def newListing(request):
         # Pass the form for new listing
         "NewListingForm": NewListingForm
     })
-    
 
-# Listing Page (view)
+# Listing page (view)
 def listing(request, id):
     # Get the listing that has the submitted id from database
     listing = Listing.objects.get(id=id)
@@ -328,13 +327,11 @@ def listing(request, id):
         "comments": comments
     })
 
-
-# Watchlist: Users who are signed in should be able to visit a Watchlist page, which should display all of the listings that a user has added to their watchlist. Clicking on any of those listings should take the user to that listing’s page.
+# Watchlist page (view)
 @login_required
 def watchlist(request):
+    # Check if method is POST
     if request.method == "POST":
-        if not request.user.is_authenticated:
-            return HttpResponse("Must be logged in.")
         
         # Take in the data the user submitted and save it as form
         form = hiddinListingIdForm(request.POST)
@@ -342,46 +339,52 @@ def watchlist(request):
         # Ensure form data is valid (server-side)
         if not form.is_valid():
             return HttpResponse("The AddToWatchlistForm is not valid")
-                
+        
         # Isolate data from the 'cleaned' version of form data
         listingId = form.cleaned_data["listingId"]
         
+        # From database get the listing that have the provided id
         listing = Listing.objects.get(id=listingId)
+        
+        # Create a new Watchlist for current user and listing
         watchlist = Watchlist(watcher=request.user, auction=listing)
+        
+        # Save the new created Watchlist in database
         watchlist.save()
+        
+        # Redirect user to the added listing's page
         return HttpResponseRedirect(reverse(f"commerce:listing", args=(listingId,)))
     
+    # The method is GET
+    # From database get the User that has the same username as current signed in user
     user = User.objects.get(username=request.user)
-    userWatchlists = user.userWatchlists.all()
-    print(userWatchlists)
     
+    # From database, get the watchlist of user
+    userWatchlist = user.userWatchlist.all()
+    
+    # Get Listing objects from user's Watchlist object
     listings = []
-    for watchlist in userWatchlists:        
-        listings.append(watchlist.auction)
+    for listing in userWatchlist:        
+        listings.append(listing.auction)
     
-    # Get default CATEGORIES
-    CATEGORIES = Listing.CATEGORIES
     
     # Create an empty list to store data of listings
     data = []
     
-    # Loop len(listings) time
+    # Loop over listings
     for listing in listings:
         ''' Get the max bid amount for current listing '''
-        if listing.listingBids.all(): # To avoid exceptions 
-            # Get all bids.amounts for current listing
-            bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        # Get all bids.amounts for current listing
+        bidsAmounts = listing.listingBids.values_list("amount", flat=True) # flat=True returns List/QuerySet instead of List/QuerySet of 1-tuples
+        if bidsAmounts:
+            # Get the max bid amount for current listing
             maxBidAmount = max(bidsAmounts)
         # There is no bids for current listing
         else:
             maxBidAmount = None
-        
     
         ''' Get the category of current listing '''
-        category = "N/A"
-        for KEY, VALUE in CATEGORIES:
-            if listing.category == KEY:
-                category = VALUE
+        category = {"key": listing.category, "value":CATEGORIES[listing.category]}
                 
         ''' Restructure data of listings'''
         data.append((listing, maxBidAmount, category))
@@ -390,7 +393,7 @@ def watchlist(request):
     return render(request, "auctions/watchlist.html", {
         "data": data
     })
-    
+
 
 @login_required
 def removeWatchlist(request):

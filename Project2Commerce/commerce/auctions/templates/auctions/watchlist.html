@@ -39,7 +39,7 @@
                             <p>Starting bid: ${{ listing.startingBid }}</p>
                         {% endif %}
 
-                        <p>Category: {{ category }}</p>
+                        <p>Category: {{ category.value }}</p>
                         
                         <a href="{% url 'commerce:listing' listing.id %}" class="btn btn-primary">Go to listing</a>
                     
