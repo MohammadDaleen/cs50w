@@ -5,88 +5,77 @@
 {% endblock %}
 
 {% block body %}
-
-    {% comment %} Ensure auction is closed {% endcomment %}
+    {# Ensure auction is closed #}
     {% if listing.isClosed %}
-        {% comment %} Ensure the current user is the winner of current auction {% endcomment %}
-        {% if winner %}
-            <div class="alert alert-success mt-2 shadow border border-success" role="alert">
-                <h5 class="mt-2">{{ winner }} won! This auction is no longer active.</h5>
-            </div>
-        {% comment %} The current user is not the winner of current auction {% endcomment %}
-        {% else %}
-            <div class="alert alert-warning mt-2 shadow border border-warning" role="alert">
-                <h5 class="mt-2">There is no winner! This auction is no longer active</h5>
-            </div>
-        {% endif %}
+        <div class="alert alert-success border border-success mt-2 shadow" role="alert">
+            <h5 class="mt-2">
+                {# Ensure there is a winner of current auction #}
+                {% if winner %}
+                    {{ winner }} won! This auction is no longer active.
+                {# There is no winner for current auction #}
+                {% else %}
+                    There is no winner! This auction is no longer active.
+                {% endif %}
+            </h5>
+        </div>
     {% endif %}
-
-    <div class="row mt-3">
-        
-        <div class="col-md-5">
-            {% comment %} Ensure imgURL is provided {% endcomment %}
+    <div class="mt-3 row">
+        <div class="col-5">
+            {# Ensure imgURL is provided #}
             {% if listing.imgURL %}
-                <img class="listing-img-left border border-secondary rounded shadow" src="{{ listing.imgURL }}" alt="{{ listing.title }} image">
-            {% comment %} imgURL is not provided {% endcomment %}
+                <img alt="{{ listing.title }} image" class="border border-secondary listing-img rounded shadow" src="{{ listing.imgURL }}">
+            {# imgURL is not provided #}
             {% else %}
-                {% comment %} A placeholder image {% endcomment %}
-                <div class="align-items-center bg-secondary border border-secondary rounded shadow listing-img-left d-flex justify-content-center">
+                {# A placeholder image #}
+                <div class="align-items-center bg-secondary border border-secondary d-flex justify-content-center listing-img rounded shadow">
                     <h1 class="text-light">No Image.</h1>
                 </div>
             {% endif %}
         </div>
-
-        <div class="col-md-4">
+        <div class="col-4">
             <div class="row">
-
                 <h3 class="col-12">
                     {{ listing.title }}
                 </h3>
-                
-                <ul class="list-group list-group-flush col-12 mb-3">
-                    
+                <ul class="col-12 list-group list-group-flush mb-3">
                     <li class="list-group-item">
                         <p class="m-0">{{ listing.description }}</p>
                     </li>
                     <li class="list-group-item">
-                        {% comment %} Ensure there are bids {% endcomment %}
+                        {# Ensure there are bids #}
                         {% if maxBidAmount %}
                             <p class="m-0">Highest bid: ${{ maxBidAmount }}</p>
-                        {% comment %} There are no bids {% endcomment %}
+                        {# There are no bids #}
                         {% else %}
                             <p class="m-0">Starting bid: ${{ listing.startingBid }}</p>
                         {% endif %}
                     </li>
                     <li class="list-group-item">
-                        <p class="m-0">Category:
+                        <p class="m-0">
+                            Category:
                             <a href="{% url "commerce:category" category.key %}">
                                 {{ category.value }}
                             </a>
                         </p>
                     </li>
                 </ul>
-                
-
-                
-                {% comment %} Ensure user is authenticated {% endcomment %}
+                {# Ensure user is authenticated #}
                 {% if user.is_authenticated %}
-                    {% comment %} Ensure auction is not closed {% endcomment %}
+                    {# Ensure auction is not closed #}
                     {% if not listing.isClosed %}
-
-                        {% comment %} Ensuer current user is not the lister of current listing {% endcomment %}
+                        {# Ensuer current user is not the lister of current listing #}
                         {% if not userIsLister %}   
                             <form action="{% url 'commerce:addBid' %}" class="col-12" method="post">
-                                <div class="form-group d-flex justify-content-between align-items-center">
+                                <div class="align-items-center d-flex form-group justify-content-between">
                                     {% csrf_token %}
                                     {{ AddBidForm }}
                                     <input class="btn btn-success" type="submit" value="Add bid">
                                 </div>
                             </form>
-                        
-                        {% comment %} The current user is the lister of current listing {% endcomment %}
+                        {# The current user is the lister of current listing #}
                         {% else %}
                             <form action="{% url 'commerce:closeAuction' %}" class="col-5" method="post">
-                                <div class="form-group d-flex justify-content-start align-items-center">
+                                <div class="align-items-center d-flex form-group justify-content-start">
                                     {% csrf_token %}
                                     {{ hiddinListingIdForm }}
                                     <input class="btn btn-warning" type="submit" value="Close the auction">
@@ -94,90 +83,66 @@
                             </form>
                         {% endif %}
                     {% endif %}
-
-                    {% comment %} if the watchlist == None (i.e., the listing is not in the watchlist of the user) {% endcomment %}
+                    {# if the watchlist == None (i.e., the listing is not in the watchlist of the user) #}
                     {% if not isOnWatchlist %}
                         <form action="{% url 'commerce:watchlist' %}" class="col-5" method="post">
-                            <div class="form-group d-flex justify-content-start align-items-center">
+                            <div class="align-items-center d-flex form-group justify-content-start">
                                 {% csrf_token %}
                                 {{ hiddinListingIdForm }}
                                 <input class="btn btn-primary" type="submit" value="Add to watchlist">
                             </div>
                         </form>
-                    
-                    {% comment %} The listing on the watchlist of current user {% endcomment %}
+                    {# The listing on the watchlist of current user #}
                     {% else %}
                         <form action="{% url 'commerce:removeWatchlist' %}" class="col-6" method="post">
-                            <div class="form-group d-flex justify-content-start align-items-center">
+                            <div class="align-items-center d-flex form-group justify-content-start">
                                 {% csrf_token %}
                                 {{ hiddinListingIdForm }}
                                 <input class="btn btn-danger" type="submit" value="Remove from watchlist">
                             </div>
                         </form>
                     {% endif %}
-
                 {% endif %}
-
             </div>
         </div>
-
-        <div class="col-md-3">
+        <div class="col-3">
             <div class="card shadow">
                 <div class="card-body">
-
                     <h5 class="card-title">Seller: </h5>
-
                     <p class="card-text">{{ listing.lister }}</p>
-                    
                 </div>
             </div>
         </div>
-
     </div>
-
-    <!--
-    If the user is signed in, the user should be able to bid on the item. The bid must be at least as large as the starting bid, and must be greater than any other bids that have been placed (if any). If the bid doesn’t meet those criteria, the user should be presented with an error.
-    If the user is signed in and is the one who created the listing, the user should have the ability to “close” the auction from this page, which makes the highest bidder the winner of the auction and makes the listing no longer active.
-    If a user is signed in on a closed listing page, and the user has won that auction, the page should say so.
-    Users who are signed in should be able to add comments to the listing page. The listing page should display all comments that have been made on the listing.
-     -->
-
-    <h3 class="mt-4 mb-3">Comments:</h3>
+    <h3 class="mb-3 mt-4">Comments:</h3>
     <ul class="list-group list-group-flush">
         {% for comment in comments %}
             <li class="list-group-item">
-                
                 <div class="row">
                     <div class="col-1">
-                        <div class="align-items-center bg-secondary border border-secondary rounded-circle shadow-lg comment-img d-flex justify-content-center">
-                            <h2 class="text-light m-0">{{ comment.commenter.username.0 }}</h2>
+                        <div class="align-items-center bg-secondary border border-secondary comment-icon d-flex justify-content-center rounded-circle shadow-lg">
+                            {# Get the first letter of comment's name #}
+                            <h2 class="m-0 text-light">{{ comment.commenter.username.0 }}</h2>
                         </div>
                     </div>
                     <div class="col-11">
-                        <h5>
-                            {{ comment.commenter }}
-                        </h5>
-                        <p class="m-0"> 
-                            {{ comment.text }}
-                        </p>
+                        <h5>{{ comment.commenter }}</h5>
+                        <p class="m-0">{{ comment.text }}</p>
                     </div>
                 </div>
-                
             </li>
         {% empty %}
             <li class="list-group-item">No comments yet.</li>    
         {% endfor %}
     </ul>
-
-
+    {# Ensure user is logged in #}
     {% if user.is_authenticated %}
         <form action="{% url 'commerce:addComment' %}" class="mt-3" method="post">
-            <div class="form-group d-flex justify-content-between align-items-center">
+            <div class="align-items-center d-flex form-group justify-content-between">
                 {% csrf_token %}
                 {{ AddCommentForm }}
                 <input class="btn btn-primary" type="submit" value="Add comment">
             </div>
         </form>
     {% endif %}
-
 {% endblock %}

@@ -1,50 +1,43 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2 class="mt-3 mb-4">Active Listings</h2>
-    <div class="d-flex align-items-center row justify-content-start">
+    <h2 class="mb-4 mt-3">Active Listings</h2>
+    <div class="align-items-center d-flex justify-content-start row">
+        {# Loop over data using three variables #}
         {% for listing, maxBidAmount, category in data %}
             <div class="col-sm-6 col-lg-4 col-xl-3">
-                <div class="card shadow-lg mb-4">
+                <div class="card mb-4 shadow-lg">
                     <div class="d-flex justify-content-center">
-                        {% comment %} Ensure imgURL is provided {% endcomment %}
+                        {# Ensure imgURL is provided #}
                         {% if listing.imgURL %}
-                            <img class="card-img-top" src="{{ listing.imgURL }}" alt="{{ listing.title }} image">
-                        {% comment %} imgURL is not provided {% endcomment %}
+                            <img alt="{{ listing.title }} image" class="card-img-top" src="{{ listing.imgURL }}">
+                        {# imgURL is not provided #}
                         {% else %}
-                            <!-- foo: do a placeholder image -->
                             <div class="align-items-center bg-secondary card-img-top d-flex justify-content-center">
                                 <h1 class="text-light">No Image.</h1>
                             </div>
                         {% endif %}
-                    </div>
-                    
+                    </div>                    
                     <div class="card-body">
-                        
                         <h5 class="card-title">
                             {{ listing.title }}
                         </h5>
-
                         <p class="card-text">{{ listing.description }}</p>
-
-                        {% comment %} Ensure there are bids {% endcomment %}
+                        {# Ensure there are bids #}
                         {% if maxBidAmount %}
                             <p>Highest bid: ${{ maxBidAmount }}</p>
-                        {% comment %} There are no bids {% endcomment %}
+                        {# There are no bids #}
                         {% else %}
                             <p>Starting bid: ${{ listing.startingBid }}</p>
                         {% endif %}
-
                         <p>Category: {{ category }}</p>
-                        
-                        <a href="{% url 'commerce:listing' listing.id %}" class="btn btn-primary">Go to listing</a>
-                    
+                        <a class="btn btn-primary" href="{% url 'commerce:listing' listing.id %}">Go to listing</a>
                     </div>
-                </div> 
+                </div>
             </div>
         {% empty %}
-            <div class="d-flex align-items-center justify-content-center col-12">
-                <h2 class="text-secondary text-center p-5 m-5">No active listings yet.</h2>
+            <div class="align-items-center col-12 d-flex justify-content-center">
+                <h2 class="m-5 p-5 text-center text-secondary">No active listings yet.</h2>
             </div>
         {% endfor %}
     </div>

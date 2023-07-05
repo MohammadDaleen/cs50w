@@ -6,10 +6,11 @@
 
 {% block body %}
     <h2 class="my-3">Categories</h2>
-    <div class="d-flex align-items-center row justify-content-start">
+    <div class="align-items-center d-flex justify-content-start row">
+        {# Loop over CATEGORIES.items using KEY and VALUE #}
         {% for KEY, VALUE in CATEGORIES.items %}
             <div class="col-sm-6 col-lg-4 col-xl-3 p-3">
-                <a class="btn btn-block btn-light btn-lg shadow border" href="{% url "commerce:category" KEY %}" role="button">
+                <a class="border btn btn-block btn-lg btn-light shadow" href="{% url "commerce:category" KEY %}" role="button">
                     <h5 class="card-title m-0 p-3 text-secondary">{{ VALUE }}</h5>
                 </a>
             </div>
