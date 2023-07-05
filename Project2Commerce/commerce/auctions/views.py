@@ -48,7 +48,7 @@ class NewListingForm(forms.Form):
     # Set label for category input field
     category.label = "Category"
     # Change HTML attrbutes of category input field
-    category.widget.attrs.update({"class": "form-control d-flex justify-content-between align-items-center"})
+    category.widget.attrs.update({"class": "form-control"})
 
 # Create a form for hiddin listing id
 class hiddinListingIdForm(forms.Form):
