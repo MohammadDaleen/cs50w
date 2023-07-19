@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function compose_email() {
 
   // Show compose view and hide other views
+  document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
@@ -29,7 +30,7 @@ function compose_email() {
     // Stop form from submitting
     event.preventDefault();
 
-    // send mail details in post request to server
+    // Send mail details in post request to server
     fetch('/emails', {
       method: 'POST',
       body: JSON.stringify({
@@ -56,20 +57,55 @@ function compose_email() {
 function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views
+  document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
 
-  // Show the mailbox name
-  document.querySelector('#emails-view-title').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+  // Get emails view from document
+  emailsView = document.querySelector('#emails-view');
+
+  /* Show the mailbox name */
+  // Ensure mailboxName exists
+  if (mailboxName = document.querySelector('#emails-view-title')){
+    mailboxName.innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+  }
+  // mailboxName doesn't exist
+  else {
+    // Create mailboxName
+    mailboxName = document.createElement('h3');
+    // Set id attribute of mailbox name
+    mailboxName.id = 'emails-view-title';
+    // Set innerHTML of mailbox name
+    mailboxName.innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+  }
   
+  // Add mailboxName to emailsView
+  emailsView.append(mailboxName);
+
   // Request mailbox details in get request to server
   fetch(`/emails/${mailbox}`)
   .then(response => response.json())
   .then(emails => {
       // Print emails
       console.log(emails);
-
-      document.querySelector('#emails').innerHTML = '';
+      
+      /* Show the emails */
+      // Ensure emailsDiv exists
+      if (emailsDiv = document.querySelector('#emails')){
+        // Set innerHTML of emailsDiv
+        emailsDiv.innerHTML = '';
+      } 
+      // emailsDiv doesn't exist
+      else {
+        /* Create emailsDiv element */
+        emailsDiv = document.createElement('div');
+        // Set class attribute of emailsDiv
+        emailsDiv.className = 'list-group';
+        // Set id attribute of emailsDiv
+        emailsDiv.id = 'emails';
+        // Set innerHTML of emailsDiv
+        emailsDiv.innerHTML = '';
+      }
 
       // Loop over emails
       emails.forEach(email_JSON => {
@@ -85,6 +121,10 @@ function load_mailbox(mailbox) {
         email.className = `btn btn-light list-group-item list-group-item-action ${isMuted ? 'bg-light' : ''}`;
         // Set id attribute of email
         email.id = `${email_JSON.id}`;
+        // Set type attribute of email
+        email.type = 'button';
+        // Add event listener to email (on click)
+        email.addEventListener('click', () => email_view(`${email_JSON.id}`));
 
         /* Create row element */
         const row = document.createElement('div');
@@ -129,11 +169,48 @@ function load_mailbox(mailbox) {
 
         // Add row to email
         email.append(row);
-        // Add email to DOM
-        document.querySelector('#emails').append(email);
+        // Add email to emailsdiv
+        emailsDiv.append(email);
+        // Add emailsDiv to emailsView
+        emailsView.append(emailsDiv);
       });
   });
 
+}
+
+/* View Email: When a user clicks on an email, the user should be taken to a view where they see the content of that email. */
+function email_view(id) {
+  
+  // Show the email view and hide other views
+  document.querySelector('#email-view').style.display = 'block';
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
+
+  // Request email details in get request to server
+  fetch(`/emails/${id}`)
+  .then(response => response.json())
+  .then(email => {
+    console.log(email);
+
+    // Your application should show the email’s sender, recipients, subject, timestamp, and body.
+    emailView = document.querySelector('#email-view');
+    emailView.innerHTML = '';
+    sender = document.createElement('div');
+    sender.innerHTML = `${email.sender}\n${email.recipients}\n${email.subject}\n${email.timestamp}\n${email.body}`;
+    
+    emailView.append(sender);
+    
+    // Ensure email is not read
+    if (email.read == false){
+      // Send mail details in put request to server
+      fetch(`/emails/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            read: true
+        })
+      })
+    }
+  });
 }
 
 let foo = {
