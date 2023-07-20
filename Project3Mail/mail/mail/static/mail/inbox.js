@@ -192,14 +192,38 @@ function email_view(id) {
   .then(email => {
     console.log(email);
 
-    // Your application should show the email’s sender, recipients, subject, timestamp, and body.
+    // Your application should show the email's sender, recipients, subject, timestamp, and body.
     emailView = document.querySelector('#email-view');
     emailView.innerHTML = '';
+    
+    subject = document.createElement('h4');
+    subject.className = 'font-weight-normal';
+    subject.innerHTML = `${email.subject}`;
+    emailView.append(subject);
+
+    header = document.createElement('div')
+    header.className = 'd-flex justify-content-between';
+
     sender = document.createElement('div');
-    sender.innerHTML = `${email.sender}\n${email.recipients}\n${email.subject}\n${email.timestamp}\n${email.body}`;
-    
-    emailView.append(sender);
-    
+    sender.className = 'font-weight-bold';
+    sender.innerHTML = `${email.sender}`;
+    header.append(sender);
+
+    timestamp = document.createElement('div');
+    timestamp.innerHTML = `${email.timestamp}`;
+    header.append(timestamp);
+
+    emailView.append(header);
+
+    recipients = document.createElement('small');
+    recipients.innerHTML = `${email.recipients}`;
+    emailView.append(recipients);
+
+    body = document.createElement('div');
+    body.className = 'pt-2';
+    body.innerHTML = `${email.body}`;
+    emailView.append(body);
+
     // Ensure email is not read
     if (email.read == false){
       // Send mail details in put request to server
