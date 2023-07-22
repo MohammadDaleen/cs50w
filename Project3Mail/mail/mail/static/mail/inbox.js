@@ -196,31 +196,88 @@ function email_view(id) {
     emailView = document.querySelector('#email-view');
     emailView.innerHTML = '';
     
+    header = document.createElement('div');
+    header.className = 'px-3';
+    emailView.append(header);
+
+    upperRow = document.createElement('div');
+    upperRow.className = 'row d-flex justify-content-between align-items-center pb-3';
+    header.append(upperRow);
+
+    lowerRow = document.createElement('div');
+    lowerRow.className = 'row d-flex justify-content-between align-items-center';
+    header.append(lowerRow);
+
     subject = document.createElement('h4');
     subject.className = 'font-weight-normal';
     subject.innerHTML = `${email.subject}`;
-    emailView.append(subject);
+    upperRow.append(subject);
 
-    header = document.createElement('div')
-    header.className = 'd-flex justify-content-between';
+    buttons = document.createElement('div');
+    upperRow.append(buttons);
+
+    /* Add button to archive / unarchive email */
+    if (email.sender != document.querySelector('#user').innerHTML){
+      
+      archive = document.createElement('button');
+      archive.className = 'btn btn-sm btn-outline-secondary';
+      
+      if (!email.archived) {
+        archive.id = 'archive';
+        archive.innerHTML = 'Archive';
+      } else {
+        archive.id = 'unarchive';
+        archive.innerHTML = 'Unarchive';
+      }
+
+      buttons.append(archive);
+
+      archive.addEventListener('click', () => {
+        
+        // Send mail details in put request to server
+        fetch(`/emails/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            archived: !email.archived
+          })
+        })
+        
+        load_mailbox('inbox');
+      });
+      
+    }
+
+    /* Reply: Allow users to reply to an email. */
+    reply = document.createElement('button');
+    reply.className = 'btn btn-sm btn-outline-primary ml-1';
+    reply.id = 'reply';
+    reply.innerHTML = 'Reply';
+    buttons.append(reply);
+    reply.addEventListener('click', () => {
+      compose_email();
+
+      document.querySelector('#compose-recipients').value = email.sender;
+      document.querySelector('#compose-subject').value = email.subject.includes('Re: ') ? email.subject : `Re: ${email.subject}`;
+      document.querySelector('#compose-body').value = `\n\nOn ${email.timestamp} ${email.sender} wrote:\n${email.body}`;
+    });
 
     sender = document.createElement('div');
     sender.className = 'font-weight-bold';
     sender.innerHTML = `${email.sender}`;
-    header.append(sender);
+    lowerRow.append(sender);
 
-    timestamp = document.createElement('div');
+    timestamp = document.createElement('small');
     timestamp.innerHTML = `${email.timestamp}`;
-    header.append(timestamp);
-
-    emailView.append(header);
-
+    lowerRow.append(timestamp);
+    
     recipients = document.createElement('small');
+    recipients.className = 'pb-2';
     recipients.innerHTML = `${email.recipients}`;
     emailView.append(recipients);
 
-    body = document.createElement('div');
-    body.className = 'pt-2';
+    body = document.createElement('p');
+    body.className = 'py-2 bg-light';
+    body.style = 'white-space: pre-wrap;';
     body.innerHTML = `${email.body}`;
     emailView.append(body);
 
