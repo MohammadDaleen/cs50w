@@ -24,7 +24,7 @@ function compose_email() {
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
 
-  // Send the email when the form is submitted
+  /* Send the email when the form is submitted */
   document.querySelector('#send-mail').addEventListener('click', (event) => {
     
     // Stop form from submitting
@@ -39,7 +39,7 @@ function compose_email() {
         body: document.querySelector('#compose-body').value
       })
     })
-    // Turn response to JSON
+    // Turn response to JSON (and name it result)
     .then(response => response.json())
     .then(result => {
       // Check for any error
@@ -131,14 +131,29 @@ function load_mailbox(mailbox) {
         // Set class attribute of row
         row.className = 'row';
 
-        /* Create sender element */
-        const sender = document.createElement('div');
-        // Set class attribute of sender
-        sender.className = `col-4 text-dark ${isBold ? 'font-weight-bold' : ''}`;
-        // Set innerHTML of sender
-        sender.innerHTML = `${email_JSON.sender}`;
-        // Add sender to row
-        row.append(sender);
+        if (mailbox === 'sent'){
+          /* Create receiver element */
+          const receiver = document.createElement('div');
+          // Set class attribute of receiver
+          receiver.className = `col-4 text-dark ${isBold ? 'font-weight-bold' : ''}`;
+          // Set innerHTML of receiver
+          if (email_JSON.recipients.length === 1) {
+            receiver.innerHTML = `${email_JSON.recipients}`;
+          } else {
+            receiver.innerHTML = `${email_JSON.recipients[1]}, ...`;
+          }
+          // Add receiver to row
+          row.append(receiver);  
+        } else {
+          /* Create sender element */
+          const sender = document.createElement('div');
+          // Set class attribute of sender
+          sender.className = `col-4 text-dark ${isBold ? 'font-weight-bold' : ''}`;
+          // Set innerHTML of sender
+          sender.innerHTML = `${email_JSON.sender}`;
+          // Add sender to row
+          row.append(sender);
+        }
         
         /* Create subject element */
         const subject = document.createElement('div');
@@ -217,7 +232,7 @@ function email_view(id) {
     upperRow.append(buttons);
 
     /* Add button to archive / unarchive email */
-    if (email.sender != document.querySelector('#user').innerHTML){
+    if (email.recipients.includes(document.querySelector('#user').innerHTML)){
       
       archive = document.createElement('button');
       archive.className = 'btn btn-sm btn-outline-secondary';
@@ -292,15 +307,4 @@ function email_view(id) {
       })
     }
   });
-}
-
-let foo = {
-  "id": 100,
-  "sender": "foo@example.com",
-  "recipients": ["bar@example.com"],
-  "subject": "Hello!",
-  "body": "Hello, world!",
-  "timestamp": "Jan 2 2020, 12:00 AM",
-  "read": false,
-  "archived": false
 }
