@@ -4,11 +4,24 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import User
+from django import forms
 
+from .models import User, Post, Like
+
+# Create a custom NewPostForm (i.e., a class that inherits from forms.Form class)
+class NewPostForm(forms.Form):
+    # Add a postContent input field (Textarea)
+    postContent = forms.CharField(widget=forms.Textarea())
+    
+    postContent.label = ""
+    # Change HTML attrbutes of postContent input field (Textarea)
+    postContent.widget.attrs.update({"class": "form-control", "placeholder": "What's happening?!"})
 
 def index(request):
-    return render(request, "network/index.html")
+    return render(request, "network/index.html", {
+        # Pass empty NewPostForm to template
+        "NewPostForm": NewPostForm()
+    })
 
 
 def login_view(request):
@@ -61,3 +74,32 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+
+
+def newPost(request):
+    # Check if method is POST
+    if request.method == "POST":
+        # Take in the data the user submitted and save it as newPostForm
+        newPostForm = NewPostForm(request.POST)
+        
+        # Check if form data is valid (server-side)
+        if newPostForm.is_valid():
+            
+            # Isolate the postContent from the 'cleaned' version of newPostForm data
+            postContent = newPostForm.cleaned_data["postContent"]
+            
+            # create Post object
+            post = Post(content=postContent,
+                        poster=request.user)
+            
+            # Save Post object in database (Post(s) table)
+            post.save()
+
+            # Redirect user to index page.
+            return HttpResponseRedirect(reverse("network:index"))
+
+        else:
+            # If the form is invalid, re-render the page with existing information.
+            return render(request, "network/index.html", {
+                "NewPostForm": newPostForm
+            })
