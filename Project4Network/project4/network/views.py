@@ -107,3 +107,14 @@ def newPost(request):
             return render(request, "network/index.html", {
                 "NewPostForm": newPostForm
             })
+
+def profilePage(request):
+    user = User.objects.get(username=request.user)
+    userPosts = Post.objects.filter(poster=request.user).order_by("-timestamp")
+    return render(request, "network/profilePage.html", {
+        "user_": user,
+        "userPosts": userPosts
+    })
+    
+def follow(request):
+    pass
