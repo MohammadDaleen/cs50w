@@ -92,8 +92,8 @@ def search(request):
             # Redirect user to main page 
             return HttpResponseRedirect(reverse("wiki:index"))
         
-        # Get entry from .md files
-        entry = util.get_entry(query)
+        # Get entry from .md files (capitalized entry)
+        entry = util.get_entry(query.capitalize())
         
         # Ensure entry exist
         if entry:
@@ -106,25 +106,42 @@ def search(request):
                 "title": query,
                 "entry": entry
             })
-        else:
-            # Get entries list from .md files
-            entries = util.list_entries()
+        else: # maybe it's uppercased
+            # Uppercase the query
+            upperQuery = query.upper()
+            # Get entry from .md files (Upperletters entry)
+            entry = util.get_entry(upperQuery)
             
-            # Make an empty list for valid entries
-            validEntries = []
-            
-            # Loop over entries list
-            for entry in entries:
-                # Ensure query is substring of entry
-                if query.lower() in entry.lower():
-                    validEntries.append(entry)
-            
-            # Render requested page
-            return render(request, "encyclopedia/search.html", {
-                # Pass variables to template
-                "query": query,
-                "entries": validEntries
-            })
+            # Ensuer entry exist
+            if entry:
+                # Convert Markdown content to HTML
+                entry = markdown2.markdown(entry)
+                
+                # Render requested page
+                return render(request, "encyclopedia/entry.html", {
+                    # Pass variables to template
+                    "title": query,
+                    "entry": entry
+                })
+            else:
+                # Get entries list from .md files
+                entries = util.list_entries()
+                
+                # Make an empty list for valid entries
+                validEntries = []
+                
+                # Loop over entries list
+                for entry in entries:
+                    # Ensure query is substring of entry
+                    if query.lower() in entry.lower():
+                        validEntries.append(entry)
+                
+                # Render requested page
+                return render(request, "encyclopedia/search.html", {
+                    # Pass variables to template
+                    "query": query,
+                    "entries": validEntries
+                })
     
     # Redirect user to main page 
     return HttpResponseRedirect(reverse("wiki:index"))
