@@ -60,6 +60,11 @@ def index(request):
 
 
 def entry(request, title):
+    
+    # Capitalize the title (because the entries files names are capitalized)
+    if not title[0].isupper():
+        title = title.capitalize()
+    
     # Get entry from .md files
     entry = util.get_entry(title)
     

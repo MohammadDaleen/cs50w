@@ -18,9 +18,13 @@ class NewPostForm(forms.Form):
     postContent.widget.attrs.update({"class": "form-control", "placeholder": "What's happening?!"})
 
 def index(request):
+    posts = Post.objects.all().order_by("-timestamp")
+    for post in posts:
+        print(post.postLikes)
     return render(request, "network/index.html", {
         # Pass empty NewPostForm to template
-        "NewPostForm": NewPostForm()
+        "NewPostForm": NewPostForm(),
+        "posts": posts
     })
 
 
@@ -103,3 +107,14 @@ def newPost(request):
             return render(request, "network/index.html", {
                 "NewPostForm": newPostForm
             })
+
+def profilePage(request):
+    user = User.objects.get(username=request.user)
+    userPosts = Post.objects.filter(poster=request.user).order_by("-timestamp")
+    return render(request, "network/profilePage.html", {
+        "user_": user,
+        "userPosts": userPosts
+    })
+    
+def follow(request):
+    pass
