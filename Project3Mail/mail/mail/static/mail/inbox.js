@@ -256,8 +256,9 @@ function email_view(id) {
             archived: !email.archived
           })
         })
-        
-        load_mailbox('inbox');
+        .then(
+          load_mailbox('inbox')  
+        );
       });
       
     }
