@@ -7,7 +7,9 @@
 
     {% for post in userPosts %}
         <div>
-            <h3>{{ post.poster }}</h3>
+            <a href="{% url 'network:profilePage' post.poster %}">
+                <h3>{{ post.poster }}</h3>
+            </a>
             <p>{{ post.timestamp }}</p>
             <p>{{ post.content }}</p>
             <p>Likes: {{ post.postLikes.count }}</p>
@@ -17,7 +19,7 @@
     {% endfor %}
     
     {% if user.is_authenticated and user != user_ %}
-        <form action="{% url 'network:follow' %}">
+        <form action="{% url 'network:follow' user_%}">
            <button>Follow</button> 
         </form>
     {% endif %}

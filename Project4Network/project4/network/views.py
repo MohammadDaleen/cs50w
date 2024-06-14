@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from django import forms
 
-from .models import User, Post, Like
+from .models import Follower, User, Post, Like
 
 # Create a custom NewPostForm (i.e., a class that inherits from forms.Form class)
 class NewPostForm(forms.Form):
@@ -39,7 +39,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse("index"))
+            return HttpResponseRedirect(reverse("network:index"))
         else:
             return render(request, "network/login.html", {
                 "message": "Invalid username and/or password."
@@ -50,7 +50,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse("index"))
+    return HttpResponseRedirect(reverse("network:index"))
 
 
 def register(request):
@@ -75,7 +75,7 @@ def register(request):
                 "message": "Username already taken."
             })
         login(request, user)
-        return HttpResponseRedirect(reverse("index"))
+        return HttpResponseRedirect(reverse("network:index"))
     else:
         return render(request, "network/register.html")
 
@@ -108,13 +108,17 @@ def newPost(request):
                 "NewPostForm": newPostForm
             })
 
-def profilePage(request):
-    user = User.objects.get(username=request.user)
-    userPosts = Post.objects.filter(poster=request.user).order_by("-timestamp")
+def profilePage(request, user):
+    user_ = User.objects.get(username=user)
+    userPosts = Post.objects.filter(poster=user_).order_by("-timestamp")
     return render(request, "network/profilePage.html", {
-        "user_": user,
+        "user_": user_,
         "userPosts": userPosts
     })
     
-def follow(request):
-    pass
+def follow(request, user):
+    followee = User.objects.get(username=user)
+    follower = Follower(followee=followee, follower=request.user)
+    return HttpResponseRedirect(reverse("network:profilePage"))
+    
+    

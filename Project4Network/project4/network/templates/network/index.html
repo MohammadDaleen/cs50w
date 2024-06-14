@@ -13,7 +13,9 @@
 
     {% for post in posts %}
         <div>
-            <h3>{{ post.poster }}</h3>
+            <a href="{% url 'network:profilePage' post.poster %}">
+                <h4>{{ post.poster }}</h4>
+            </a>
             <p>{{ post.timestamp }}</p>
             <p>{{ post.content }}</p>
             <p>Likes: {{ post.postLikes.count }}</p>
