@@ -5,8 +5,7 @@
 {% block body %}
 
     <div id="app"></div>
-
-    <script type="text/babel" src="{% static 'network/App.jsx' %}"></script>
+    <script type="text/babel" src="{% static "/network/App.jsx" %}"></script>
 
     <form action="{% url 'network:newPost' %}" method="post">
         <div class="form-group">
