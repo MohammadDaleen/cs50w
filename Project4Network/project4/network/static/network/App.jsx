@@ -5,36 +5,68 @@ function App() {
         post: ""
     });
 
-    function updatePost(event) {
+    function handleSubmit() {
+        if (state.post.length !== 0) {
+            fetch('/newPost', {
+                method: 'POST',
+                body: JSON.stringify({
+                    post: state.post.trim()
+                })
+            })
+            // Turn response to JSON (and name it result)
+            .then(response => response.json())
+            .then(result => {
+                // Check for any error
+                const noError = 'error' in result ? false : true;
+                // Ensure result is true
+                if (noError){
+                // Load the user's sent mailbox
+                }
+                console.log("post sent to backend!")
+                console.log(result)
+                setState({
+                    ...state,
+                    post: ""
+                });
+            })
+        }
+    }
+
+    function handleChange(event) {
         setState({
             ...state,
             post: event.target.value
         });
     }
 
-    function inputKeyDown(event) {
+    // Publish the post if "Enter" button is pressed
+    function handleKeyDown(event) {
         if (event.key === "Enter") {
-            const post = parseInt(state.post);
-            if (post !== "") {
-                fetch('/newPost', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        post: state.post
-                    })
-                })
-                // Turn response to JSON (and name it result)
-                .then(response => response.json())
-                .then(result => {
-                    // Check for any error
-                    const noError = 'error' in result ? false : true;
-                    // Ensure result is true
-                    if (noError){
-                    // Load the user's sent mailbox
-                    }
-                    console.log("post sent to backend!")
-                    console.log(result)
-                })
+            if (event.shiftKey) {
+                event.preventDefault();
+                console.log('Shift + Enter key pressed');
+                setState({
+                    ...state,
+                    post: state.post + '\n'
+                });
             }
+            else {
+                event.preventDefault();
+                handleSubmit();
+            }
+        }
+    }
+
+    function handleKeyUp(event) {
+        // Select the publish button to be used later
+        const publish = document.querySelector('#publish');
+        
+        // Update publish button state when input is typed into the input field
+        if (state.post.trim().length > 0) {
+            publish.disabled = false;
+        }
+        else {
+            publish.disabled = true;
         }
     }
 
@@ -42,9 +74,19 @@ function App() {
         <>
             Hello, React!
             <div className="form-group">
-                <textarea className="form-control" cols="40" rows="10" onChange={updatePost} onKeyDown={inputKeyDown} placeholder="What's happening?!" required value={state.post} />
+                <textarea 
+                    className="form-control" 
+                    cols="40" 
+                    rows="10" 
+                    onChange={handleChange} 
+                    onKeyDown={handleKeyDown} 
+                    onKeyUp={handleKeyUp} 
+                    placeholder="What's happening?!" 
+                    required 
+                    value={state.post}
+                />
                 <div className="pt-3">
-                    <input className="btn btn-primary" type="submit" value="Publish" />
+                    <input id="publish" className="btn btn-primary" disabled type="submit" value="Publish" />
                 </div>
             </div>
         </>
