@@ -1,8 +1,11 @@
+import json
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 from django import forms
 
@@ -79,8 +82,17 @@ def register(request):
     else:
         return render(request, "network/register.html")
 
-
+@csrf_exempt
+@login_required
 def newPost(request):
+    # Publishing a new post must be via POST
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+
+    data = json.loads(request.body)
+    print(f'Post: {data.get("post")}')
+    return JsonResponse({"message": "post sent successfully."}, status=201)
+    '''
     # Check if method is POST
     if request.method == "POST":
         # Take in the data the user submitted and save it as newPostForm
@@ -107,6 +119,7 @@ def newPost(request):
             return render(request, "network/index.html", {
                 "NewPostForm": newPostForm
             })
+    '''
 
 def profilePage(request, user):
     user_ = User.objects.get(username=user)
