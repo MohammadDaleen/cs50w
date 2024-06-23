@@ -11,22 +11,11 @@ from django import forms
 
 from .models import Follower, User, Post, Like
 
-# Create a custom NewPostForm (i.e., a class that inherits from forms.Form class)
-class NewPostForm(forms.Form):
-    # Add a postContent input field (Textarea)
-    postContent = forms.CharField(widget=forms.Textarea())
-    
-    postContent.label = ""
-    # Change HTML attrbutes of postContent input field (Textarea)
-    postContent.widget.attrs.update({"class": "form-control", "placeholder": "What's happening?!"})
 
 def index(request):
     posts = Post.objects.all().order_by("-timestamp")
-    for post in posts:
-        print(post.postLikes)
     return render(request, "network/index.html", {
         # Pass empty NewPostForm to template
-        "NewPostForm": NewPostForm(),
         "posts": posts
     })
 
@@ -82,6 +71,7 @@ def register(request):
     else:
         return render(request, "network/register.html")
 
+
 @csrf_exempt
 @login_required
 def newPost(request):
@@ -89,37 +79,27 @@ def newPost(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
 
+    # Extract data from the request body
     data = json.loads(request.body)
-    print(f'Post: {data.get("post")}')
-    return JsonResponse({"message": "post sent successfully."}, status=201)
-    '''
-    # Check if method is POST
-    if request.method == "POST":
-        # Take in the data the user submitted and save it as newPostForm
-        newPostForm = NewPostForm(request.POST)
-        
-        # Check if form data is valid (server-side)
-        if newPostForm.is_valid():
-            
-            # Isolate the postContent from the 'cleaned' version of newPostForm data
-            postContent = newPostForm.cleaned_data["postContent"]
-            
-            # create Post object
-            post = Post(content=postContent,
-                        poster=request.user)
-            
-            # Save Post object in database (Post(s) table)
-            post.save()
+    # Get the 'post' content from the JSON data
+    postContent = data.get("post")
+    # Ensure 'postContent' is a string
+    if type(postContent) != str:
+        return JsonResponse({"error": "post of type string required."}, status=400)
+    
+    # Remove leading and trailing whitespace from 'postContent'
+    postContent = data.get("post").strip()
+    # Ensure 'postContent' is not empty after stripping whitespace
+    if not postContent:
+        return JsonResponse({"error": "stripped post is empty."}, status=400)
+    
+    # Create a Post object with 'postContent' and the current user as the poster
+    post = Post(content=postContent, poster=request.user)
+    # Save Post object in database (Post(s) table)
+    post.save()
+    # Return a success message indicating the post was published successfully
+    return JsonResponse({"message": "post published successfully."}, status=201)
 
-            # Redirect user to index page.
-            return HttpResponseRedirect(reverse("network:index"))
-
-        else:
-            # If the form is invalid, re-render the page with existing information.
-            return render(request, "network/index.html", {
-                "NewPostForm": newPostForm
-            })
-    '''
 
 def profilePage(request, user):
     user_ = User.objects.get(username=user)
@@ -128,6 +108,7 @@ def profilePage(request, user):
         "user_": user_,
         "userPosts": userPosts
     })
+
     
 def follow(request, user):
     followee = User.objects.get(username=user)

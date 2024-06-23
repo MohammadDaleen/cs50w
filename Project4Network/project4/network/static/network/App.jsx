@@ -5,7 +5,7 @@ function App() {
         post: ""
     });
 
-    function handleSubmit() {
+    function handleSubmit(event) {
         if (state.post.length !== 0) {
             fetch('/newPost', {
                 method: 'POST',
@@ -30,6 +30,11 @@ function App() {
                 });
             })
         }
+        
+        // Stop form from submitting
+        if (event.type === "submit") {
+            event.preventDefault();
+        }
     }
 
     function handleChange(event) {
@@ -44,13 +49,13 @@ function App() {
         if (event.key === "Enter") {
             if (event.shiftKey) {
                 event.preventDefault();
-                console.log('Shift + Enter key pressed');
                 setState({
                     ...state,
                     post: state.post + '\n'
                 });
             }
             else {
+                console.log(event);
                 event.preventDefault();
                 handleSubmit();
             }
@@ -73,22 +78,24 @@ function App() {
     return (
         <>
             Hello, React!
-            <div className="form-group">
-                <textarea 
-                    className="form-control" 
-                    cols="40" 
-                    rows="10" 
-                    onChange={handleChange} 
-                    onKeyDown={handleKeyDown} 
-                    onKeyUp={handleKeyUp} 
-                    placeholder="What's happening?!" 
-                    required 
-                    value={state.post}
-                />
-                <div className="pt-3">
-                    <input id="publish" className="btn btn-primary" disabled type="submit" value="Publish" />
+            <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <textarea 
+                        className="form-control" 
+                        cols="40" 
+                        rows="10" 
+                        onChange={handleChange} 
+                        onKeyDown={handleKeyDown} 
+                        onKeyUp={handleKeyUp} 
+                        placeholder="What's happening?!" 
+                        required 
+                        value={state.post}
+                    />
+                    <div className="pt-3">
+                        <input id="publish" className="btn btn-primary" disabled type="submit" value="Publish" />
+                    </div>
                 </div>
-            </div>
+            </form>
         </>
     );
 }

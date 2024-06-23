@@ -7,16 +7,6 @@
     <div id="app"></div>
     <script type="text/babel" src="{% static "/network/App.jsx" %}"></script>
 
-    <form action="{% url 'network:newPost' %}" method="post">
-        <div class="form-group">
-            {% csrf_token %}
-            {{ NewPostForm }}
-            <div class="pt-3">
-                <input class="btn btn-primary" type="submit" value="Save">
-            </div>
-        </div>
-    </form>
-
     {% for post in posts %}
         <div>
             <a href="{% url 'network:profilePage' post.poster %}">
