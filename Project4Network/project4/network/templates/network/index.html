@@ -5,6 +5,8 @@
 {% block body %}
 
     <div id="app"></div>
+    <script type="text/babel" src="{% static "/network/NewPostForm.jsx" %}"></script>
+    <script type="text/babel" src="{% static "/network/AllPosts.jsx" %}"></script>
     <script type="text/babel" src="{% static "/network/App.jsx" %}"></script>
 
     {% for post in posts %}
