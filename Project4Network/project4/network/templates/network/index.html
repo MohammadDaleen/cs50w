@@ -3,20 +3,8 @@
 {% load static %}
 
 {% block body %}
-
     <div id="app"></div>
     <script type="text/babel" src="{% static "/network/NewPostForm.jsx" %}"></script>
     <script type="text/babel" src="{% static "/network/AllPosts.jsx" %}"></script>
     <script type="text/babel" src="{% static "/network/App.jsx" %}"></script>
-
-    {% for post in posts %}
-        <div>
-            <a href="{% url 'network:profilePage' post.poster %}">
-                <h4>{{ post.poster }}</h4>
-            </a>
-            <p>{{ post.timestamp }}</p>
-            <p>{{ post.content }}</p>
-            <p>Likes: {{ post.postLikes.count }}</p>
-        </div>
-    {% endfor %}
 {% endblock %}

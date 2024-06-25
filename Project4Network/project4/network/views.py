@@ -101,6 +101,11 @@ def newPost(request):
     return JsonResponse({"message": "post published successfully."}, status=201)
 
 
+def allPosts(request):
+    posts = Post.objects.all().order_by("-timestamp").all()
+    return JsonResponse([post.serialize() for post in posts], safe=False)
+    
+
 def profilePage(request, user):
     user_ = User.objects.get(username=user)
     userPosts = Post.objects.filter(poster=user_).order_by("-timestamp")
