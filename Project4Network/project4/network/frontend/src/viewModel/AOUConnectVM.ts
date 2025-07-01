@@ -321,13 +321,8 @@ export default class AOUConnectVM {
     this.VisitedUser = res.data;
   }
 
-  // *TODO: Allow unauthentecated users
   private async fetchPosts(postSetNumber: number, username?: string) {
-    if (!this.Token) {
-      console.log("No token found, user is not authenticated");
-      return;
-    }
-    const res: CdsResponse<PostsSet> = await this.cdsService.FetchPosts(this.Token, postSetNumber, username);
+    const res: CdsResponse<PostsSet> = await this.cdsService.FetchPosts(postSetNumber, username);
     if (res.error) {
       this.SetError(res.error.message);
       return;

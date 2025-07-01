@@ -37,7 +37,6 @@ export interface props {
 
 // TODO: Find better way/structure (and location) for managing routes*
 // TODO: move to Layout.tsx (or reduce main, app, layout)*
-// *TODO: Allow anonymous users to browse posts
 const router = createBrowserRouter([
   {
     path: "/",
@@ -46,11 +45,11 @@ const router = createBrowserRouter([
     children: [
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
+      { path: "/", element: <Index /> },
       {
         path: "/",
         element: <ProtectedRoute />,
         children: [
-          { path: "/", element: <Index /> },
           { path: "/admin", element: <AdminDashboard /> },
           { path: "/announcements", element: <AnnouncementsPage /> },
           { path: "/following", element: <FollowingPage /> },

@@ -77,21 +77,28 @@ export const Layout = observer(() => {
                 </Nav>
               </>
             ) : (
-              <Nav className="ms-auto">
-                <Nav.Link as={Link} to="/login">
-                  Log In
-                </Nav.Link>
-                <Nav.Link as={Link} to="/register">
-                  Register
-                </Nav.Link>
-                <Nav.Link onClick={handleToggleMode}>
-                  {vm.IsLightMode ? (
-                    <WeatherMoonFilled fontSize={"1.5rem"} />
-                  ) : (
-                    <WeatherSunnyFilled fontSize={"1.5rem"} />
-                  )}
-                </Nav.Link>
-              </Nav>
+              <>
+                <Nav className="me-auto">
+                  <Nav.Link as={Link} to="/">
+                    All Posts
+                  </Nav.Link>
+                </Nav>
+                <Nav className="ms-auto">
+                  <Nav.Link as={Link} to="/login">
+                    Log In
+                  </Nav.Link>
+                  <Nav.Link as={Link} to="/register">
+                    Register
+                  </Nav.Link>
+                  <Nav.Link onClick={handleToggleMode}>
+                    {vm.IsLightMode ? (
+                      <WeatherMoonFilled fontSize={"1.5rem"} />
+                    ) : (
+                      <WeatherSunnyFilled fontSize={"1.5rem"} />
+                    )}
+                  </Nav.Link>
+                </Nav>
+              </>
             )}
           </Navbar.Collapse>
         </Container>

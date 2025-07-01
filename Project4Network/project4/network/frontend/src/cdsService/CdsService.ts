@@ -137,8 +137,7 @@ export default class CdsService {
     }
   }
 
-  // *TODO: allow unauthentecated users
-  public async FetchPosts(token: string, page: number, username?: string): Promise<CdsResponse<PostsSet>> {
+  public async FetchPosts(page: number, username?: string): Promise<CdsResponse<PostsSet>> {
     // Build the URL.
     let url = `${this.apiUrl}/api/posts`;
     const params: string[] = [];
@@ -154,7 +153,6 @@ export default class CdsService {
           // Do not set Content-Type when sending FormData;
           // the browser will set it with the correct boundary.
           // "Content-Type": "application/json",
-          Authorization: `Token ${token}`, // Attach the token in the Authorization header
         },
       });
       const data = await response.json();

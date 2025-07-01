@@ -187,13 +187,11 @@ def get_post(request, post_id: int):
     return Response(data, status=status.HTTP_200_OK)
 
 
-# *TODO: Allow unauthentecated users to see posts
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])  # Ensure the user is authenticated
 def posts(request: Request) -> Response:
     """
-    Return a paginated list of posts.
-    If a 'username' query parameter is provided, filter posts by that user.
+    - Return a paginated list of posts.
+    - If a 'username' query parameter is provided, filter posts by that user.
     """
     data: Dict[str, str | List | Dict] = {}
     username = request.query_params.get("username", None)

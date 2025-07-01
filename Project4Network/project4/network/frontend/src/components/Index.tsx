@@ -42,11 +42,12 @@ export const Index = observer(() => {
 
   return (
     <>
-      {/* // *TODO: Allow anonymous users to browse posts */}
-      {/* {vm.User?.IsAuthenticated && <NewPostForm />} */}
-      <Container className={styles.mobileContainer}>
-        <NewPostForm />
-      </Container>
+      {/* Only authenticated users are allowed to post new posts */}
+      {vm.Token && vm.User?.isAuthenticated && (
+        <Container className={styles.mobileContainer}>
+          <NewPostForm />
+        </Container>
+      )}
       <InfiniteScroll
         dataLength={vm.Posts?.size || 0}
         next={fetchMorePosts}
