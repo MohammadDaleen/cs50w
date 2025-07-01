@@ -53,13 +53,13 @@ const router = createBrowserRouter([
           { path: "/admin", element: <AdminDashboard /> },
           { path: "/announcements", element: <AnnouncementsPage /> },
           { path: "/following", element: <FollowingPage /> },
-          { path: "/:username", element: <ProfilePage /> },
-          {
-            path: "/:username/:listType", // listType: followers or followees
-            element: <FollowList />,
-          },
           { path: "/post/:postId", element: <PostDetail /> },
         ],
+      },
+      { path: "/:username", element: <ProfilePage /> },
+      {
+        path: "/:username/:listType", // listType: followers or followees
+        element: <FollowList />,
       },
     ],
   },

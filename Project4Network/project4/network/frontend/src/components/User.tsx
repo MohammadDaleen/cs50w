@@ -105,30 +105,37 @@ export const UserItem = observer(({ user }: { user: User }) => {
               )}
             </Link>
           }
-          {...(vm.User?.username !== user.username && {
-            action: (
-              <div className={styles.menuButton}>
-                <Menu>
-                  <MenuTrigger disableButtonEnhancement>
-                    <Button appearance="transparent" icon={<MoreVerticalFilled />} aria-label="Options" size="large" />
-                  </MenuTrigger>
-                  <MenuPopover>
-                    <MenuList>
-                      {isFollowing ? (
-                        <MenuItem onClick={handleUnfollowClick} icon={<PersonDeleteFilled />}>
-                          Unfollow
-                        </MenuItem>
-                      ) : (
-                        <MenuItem onClick={handleToggleFollow} icon={<PersonAddFilled />}>
-                          Follow
-                        </MenuItem>
-                      )}
-                    </MenuList>
-                  </MenuPopover>
-                </Menu>
-              </div>
-            ),
-          })}
+          {...(vm.User &&
+            vm.User.isAuthenticated &&
+            vm.User.username !== user.username && {
+              action: (
+                <div className={styles.menuButton}>
+                  <Menu>
+                    <MenuTrigger disableButtonEnhancement>
+                      <Button
+                        appearance="transparent"
+                        icon={<MoreVerticalFilled />}
+                        aria-label="Options"
+                        size="large"
+                      />
+                    </MenuTrigger>
+                    <MenuPopover>
+                      <MenuList>
+                        {isFollowing ? (
+                          <MenuItem onClick={handleUnfollowClick} icon={<PersonDeleteFilled />}>
+                            Unfollow
+                          </MenuItem>
+                        ) : (
+                          <MenuItem onClick={handleToggleFollow} icon={<PersonAddFilled />}>
+                            Follow
+                          </MenuItem>
+                        )}
+                      </MenuList>
+                    </MenuPopover>
+                  </Menu>
+                </div>
+              ),
+            })}
         />
       </Card>
 

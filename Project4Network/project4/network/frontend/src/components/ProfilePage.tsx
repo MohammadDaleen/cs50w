@@ -295,7 +295,7 @@ export const ProfilePage = observer(() => {
           }
         >
           <Container className={styles.mobileContainer}>
-            <Posts posts={vm.VisitedUserPosts} />
+            <Posts posts={vm.VisitedUserPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
           </Container>
         </InfiniteScroll>
       )}

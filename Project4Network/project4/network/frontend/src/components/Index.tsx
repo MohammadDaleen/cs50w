@@ -61,7 +61,11 @@ export const Index = observer(() => {
         }
       >
         <Container className={styles.mobileContainer}>
-          {!vm.Posts || !(vm.Posts.size > 0) ? <NoData message={"No Posts Yet!"} /> : <Posts posts={vm.Posts} />}
+          {!vm.Posts || !(vm.Posts.size > 0) ? (
+            <NoData message={"No Posts Yet!"} />
+          ) : (
+            <Posts posts={vm.Posts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+          )}
         </Container>
       </InfiniteScroll>
     </>

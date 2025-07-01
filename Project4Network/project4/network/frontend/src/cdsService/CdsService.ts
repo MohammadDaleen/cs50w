@@ -115,15 +115,11 @@ export default class CdsService {
     }
   }
 
-  // *TODO: allow unauthentecated users to fetch user
-  public async FetchUser(token: string, username: string): Promise<CdsResponse<User>> {
+  public async FetchUser(username: string): Promise<CdsResponse<User>> {
     try {
       const response = await fetch(`${this.apiUrl}/api/${username}`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`, // Attach the token in the Authorization header
-        },
+        headers: { "Content-Type": "application/json" },
       });
       const data = await response.json();
       if (response.ok) {
@@ -479,22 +475,14 @@ export default class CdsService {
     }
   }
 
-  public async FetchFollowers(
-    token: string,
-    username: string,
-    page: number,
-    search?: string
-  ): Promise<CdsResponse<UsersSet>> {
+  public async FetchFollowers(username: string, page: number, search?: string): Promise<CdsResponse<UsersSet>> {
     try {
       const url =
         `${this.apiUrl}/api/${username}/followers?page=${page}` +
         (search ? `&search=${encodeURIComponent(search)}` : "");
       const response = await fetch(url, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
       });
       const data = await response.json();
       if (response.ok) {
@@ -514,22 +502,14 @@ export default class CdsService {
     }
   }
 
-  public async FetchFollowees(
-    token: string,
-    username: string,
-    page: number,
-    search?: string
-  ): Promise<CdsResponse<UsersSet>> {
+  public async FetchFollowees(username: string, page: number, search?: string): Promise<CdsResponse<UsersSet>> {
     try {
       const url =
         `${this.apiUrl}/api/${username}/followees?page=${page}` +
         (search ? `&search=${encodeURIComponent(search)}` : "");
       const response = await fetch(url, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
       });
       const data = await response.json();
       if (response.ok) {

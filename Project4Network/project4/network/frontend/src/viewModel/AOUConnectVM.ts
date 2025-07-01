@@ -307,13 +307,8 @@ export default class AOUConnectVM {
     await this.fetchPosts(postSetNumber, this.VisitedUser.username);
   }
 
-  // *TODO: Allow unauthentecated users
   private async fetchUser(username: string) {
-    if (!this.Token) {
-      this.SetError("No token found, user is not authenticated");
-      return;
-    }
-    const res: CdsResponse<User> = await this.cdsService.FetchUser(this.Token, username);
+    const res: CdsResponse<User> = await this.cdsService.FetchUser(username);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -669,13 +664,9 @@ export default class AOUConnectVM {
   }
 
   public async FetchFollowers(username: string, page: number, search?: string): Promise<UsersSet | undefined> {
-    if (!this.Token) {
-      this.SetError("No token found, user is not authenticated");
-      return;
-    }
     if (this.VisitedUser?.username !== username) await this.fetchUser(username);
     if (this.VisitedUser?.username !== username) return;
-    const res = await this.cdsService.FetchFollowers(this.Token, this.VisitedUser.username, page, search);
+    const res = await this.cdsService.FetchFollowers(this.VisitedUser.username, page, search);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -684,13 +675,9 @@ export default class AOUConnectVM {
   }
 
   public async FetchFollowees(username: string, page: number, search?: string): Promise<UsersSet | undefined> {
-    if (!this.Token) {
-      this.SetError("No token found, user is not authenticated");
-      return;
-    }
     if (this.VisitedUser?.username !== username) await this.fetchUser(username);
     if (this.VisitedUser?.username !== username) return;
-    const res = await this.cdsService.FetchFollowees(this.Token, this.VisitedUser.username, page, search);
+    const res = await this.cdsService.FetchFollowees(this.VisitedUser.username, page, search);
     if (res.error) {
       this.SetError(res.error.message);
       return;

@@ -221,7 +221,6 @@ def posts(request: Request) -> Response:
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])  # Ensure the user is authenticated
 def user(request: Request, username: str) -> Response:
     data: Dict[str, str | Dict] = {}
     try:
@@ -540,11 +539,10 @@ def remove_profile_picture(request: Request) -> Response:
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def followers_list(request: Request, username: str) -> Response:
     """
-    Fetch a paginated list of followers for the specified user.
-    Supports an optional search query (search) to filter followers by username.
+    - Fetch a paginated list of followers for the specified user.
+    - Supports an optional search query (search) to filter followers by username.
     """
     data: Dict[str, Any] = {}
     try:
@@ -570,11 +568,10 @@ def followers_list(request: Request, username: str) -> Response:
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def followees_list(request: Request, username: str) -> Response:
     """
-    Fetch a paginated list of followees (users that the given user is following).
-    Supports an optional search query (search) to filter followees by username.
+    - Fetch a paginated list of followees (users that the given user is following).
+    - Supports an optional search query (search) to filter followees by username.
     """
     data: Dict[str, Any] = {}
     try:

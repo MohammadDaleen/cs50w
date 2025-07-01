@@ -72,10 +72,6 @@ export const FollowList = observer(() => {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryParam = searchParams.get("q") ?? "";
 
-  // Validate the list type.
-  if (!(listType === "followers" || listType === "followees")) return <NotFound />;
-  if (!username) return <NotFound />;
-
   // Combined state object.
   const [state, setState] = useState<{
     page: number;
@@ -90,6 +86,25 @@ export const FollowList = observer(() => {
     searchQuery: queryParam,
     isLoading: true,
   });
+
+  // When username, type, or queryParam changes, reset and fetch data.
+  useEffect(() => {
+    setState((prev) => ({
+      ...prev,
+      page: 1,
+      users: [],
+      hasMore: false,
+      searchQuery: queryParam,
+      isLoading: true,
+    }));
+    fetchData(true);
+    // TODO: remove the following line if not needed
+    // ***** eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username, listType, queryParam]);
+
+  // Validate the list type.
+  if (!(listType === "followers" || listType === "followees")) return <NotFound />;
+  if (!username) return <NotFound />;
 
   // Function to fetch data; if reset is true, it resets the page number and users list.
   const fetchData = async (reset: boolean = false) => {
@@ -108,20 +123,6 @@ export const FollowList = observer(() => {
       isLoading: false,
     }));
   };
-
-  // When username, type, or queryParam changes, reset and fetch data.
-  useEffect(() => {
-    setState((prev) => ({
-      ...prev,
-      page: 1,
-      users: [],
-      hasMore: false,
-      searchQuery: queryParam,
-      isLoading: true,
-    }));
-    fetchData(true);
-    // ***** eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username, listType, queryParam]);
 
   const handleSearch = () => {
     const newQ = state.searchQuery;
