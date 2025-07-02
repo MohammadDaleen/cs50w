@@ -759,7 +759,6 @@ def get_dashboard_data(request: Request) -> Response:
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def announcements_posts(request: Request) -> Response:
     """
     Return a paginated list of posts by announcer users only.
