@@ -121,7 +121,7 @@ export default class CdsService {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${token}`, // Attach the token in the Authorization header
+          ...(token ? { Authorization: `Token ${token}` } : {}), // Attach the token in the Authorization header
         },
       });
       const data = await response.json();
@@ -152,7 +152,7 @@ export default class CdsService {
           // Do not set Content-Type when sending FormData;
           // the browser will set it with the correct boundary.
           // "Content-Type": "application/json",
-          Authorization: `Token ${token}`, // Attach the token in the Authorization header
+          ...(token ? { Authorization: `Token ${token}` } : {}), // Attach the token in the Authorization header
         },
       });
       const data = await response.json();
@@ -493,7 +493,7 @@ export default class CdsService {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${token}`, // Attach the token in the Authorization header
+          ...(token ? { Authorization: `Token ${token}` } : {}), // Attach the token in the Authorization header
         },
       });
       const data = await response.json();
@@ -528,7 +528,7 @@ export default class CdsService {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${token}`, // Attach the token in the Authorization header
+          ...(token ? { Authorization: `Token ${token}` } : {}), // Attach the token in the Authorization header
         },
       });
       const data = await response.json();
