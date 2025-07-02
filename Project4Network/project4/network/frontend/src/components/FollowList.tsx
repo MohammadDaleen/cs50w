@@ -125,7 +125,7 @@ export const FollowList = observer(() => {
   };
 
   const handleSearch = () => {
-    const newQ = state.searchQuery;
+    const newQ = state.searchQuery.trim();
     // If nothing changed, bail out
     if (newQ === queryParam) return;
 
