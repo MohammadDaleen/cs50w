@@ -115,11 +115,14 @@ export default class CdsService {
     }
   }
 
-  public async FetchUser(username: string): Promise<CdsResponse<User>> {
+  public async FetchUser(username: string, token?: string): Promise<CdsResponse<User>> {
     try {
       const response = await fetch(`${this.apiUrl}/api/${username}`, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`, // Attach the token in the Authorization header
+        },
       });
       const data = await response.json();
       if (response.ok) {
@@ -133,7 +136,7 @@ export default class CdsService {
     }
   }
 
-  public async FetchPosts(page: number, username?: string): Promise<CdsResponse<PostsSet>> {
+  public async FetchPosts(page: number, username?: string, token?: string): Promise<CdsResponse<PostsSet>> {
     // Build the URL.
     let url = `${this.apiUrl}/api/posts`;
     const params: string[] = [];
@@ -149,6 +152,7 @@ export default class CdsService {
           // Do not set Content-Type when sending FormData;
           // the browser will set it with the correct boundary.
           // "Content-Type": "application/json",
+          Authorization: `Token ${token}`, // Attach the token in the Authorization header
         },
       });
       const data = await response.json();
@@ -475,14 +479,22 @@ export default class CdsService {
     }
   }
 
-  public async FetchFollowers(username: string, page: number, search?: string): Promise<CdsResponse<UsersSet>> {
+  public async FetchFollowers(
+    username: string,
+    page: number,
+    search?: string,
+    token?: string
+  ): Promise<CdsResponse<UsersSet>> {
     try {
       const url =
         `${this.apiUrl}/api/${username}/followers?page=${page}` +
         (search ? `&search=${encodeURIComponent(search)}` : "");
       const response = await fetch(url, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`, // Attach the token in the Authorization header
+        },
       });
       const data = await response.json();
       if (response.ok) {
@@ -502,14 +514,22 @@ export default class CdsService {
     }
   }
 
-  public async FetchFollowees(username: string, page: number, search?: string): Promise<CdsResponse<UsersSet>> {
+  public async FetchFollowees(
+    username: string,
+    page: number,
+    search?: string,
+    token?: string
+  ): Promise<CdsResponse<UsersSet>> {
     try {
       const url =
         `${this.apiUrl}/api/${username}/followees?page=${page}` +
         (search ? `&search=${encodeURIComponent(search)}` : "");
       const response = await fetch(url, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`, // Attach the token in the Authorization header
+        },
       });
       const data = await response.json();
       if (response.ok) {

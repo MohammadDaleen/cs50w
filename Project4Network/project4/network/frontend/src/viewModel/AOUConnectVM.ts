@@ -308,7 +308,7 @@ export default class AOUConnectVM {
   }
 
   private async fetchUser(username: string) {
-    const res: CdsResponse<User> = await this.cdsService.FetchUser(username);
+    const res: CdsResponse<User> = await this.cdsService.FetchUser(username, this.Token);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -317,7 +317,7 @@ export default class AOUConnectVM {
   }
 
   private async fetchPosts(postSetNumber: number, username?: string) {
-    const res: CdsResponse<PostsSet> = await this.cdsService.FetchPosts(postSetNumber, username);
+    const res: CdsResponse<PostsSet> = await this.cdsService.FetchPosts(postSetNumber, username, this.Token);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -666,7 +666,7 @@ export default class AOUConnectVM {
   public async FetchFollowers(username: string, page: number, search?: string): Promise<UsersSet | undefined> {
     if (this.VisitedUser?.username !== username) await this.fetchUser(username);
     if (this.VisitedUser?.username !== username) return;
-    const res = await this.cdsService.FetchFollowers(this.VisitedUser.username, page, search);
+    const res = await this.cdsService.FetchFollowers(this.VisitedUser.username, page, search, this.Token);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -677,7 +677,7 @@ export default class AOUConnectVM {
   public async FetchFollowees(username: string, page: number, search?: string): Promise<UsersSet | undefined> {
     if (this.VisitedUser?.username !== username) await this.fetchUser(username);
     if (this.VisitedUser?.username !== username) return;
-    const res = await this.cdsService.FetchFollowees(this.VisitedUser.username, page, search);
+    const res = await this.cdsService.FetchFollowees(this.VisitedUser.username, page, search, this.Token);
     if (res.error) {
       this.SetError(res.error.message);
       return;
