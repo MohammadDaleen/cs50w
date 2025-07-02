@@ -20,6 +20,7 @@ export const Layout = observer(() => {
 
   const handleLogout = async () => {
     await vm.Logout();
+    navigate("/login");
   };
 
   const handleProfile = () => {
