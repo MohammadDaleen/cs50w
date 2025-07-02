@@ -4,8 +4,7 @@ import { useVM } from "../viewModel/context";
 import { Posts } from "./Posts";
 import { Loading } from "./Loading";
 import { NoData } from "./NoData";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { Container } from "react-bootstrap";
+import { Container, Pagination } from "react-bootstrap";
 import { makeStyles } from "@fluentui/react-components";
 
 const useStyles = makeStyles({
@@ -15,6 +14,10 @@ const useStyles = makeStyles({
   noData: {
     marginTop: "3rem",
     marginBottom: "3rem",
+  },
+  pagenation: {
+    display: "flex",
+    justifyContent: "center",
   },
 });
 
@@ -31,36 +34,55 @@ export const FollowingPage = observer(() => {
     }
   }, []);
 
-  // Function to load more posts when the user scrolls.
-  const fetchMoreFollowingPosts = async () => {
-    vm.FollowingPostSetNumber += 1;
-    await vm.FetchFollowingPosts(vm.FollowingPostSetNumber);
+  /**
+   * Handles page change for the following page posts.
+   * This function updates the `FollowingPostSetNumber` in the view model
+   * and fetches the posts for the following page.
+   * It also handles loading state and error messages.
+   * @param page - The new page number to fetch.
+   * @returns {Promise<void>}
+   */
+  const handlePageChange = async (page: number) => {
+    vm.FollowingPostSetNumber = page;
+    setIsLoading(true);
+    await vm.FetchFollowingPosts(page);
+    setIsLoading(false);
   };
 
   if (isLoading) return <Loading message={"Loading Following Page..."} />;
 
   return (
     <>
-      {!vm.FollowingPosts || !(vm.FollowingPosts.size > 0) ? (
-        <NoData message={"No Posts Yet! Follow Others To See Thier Posts Here."} />
-      ) : (
-        <InfiniteScroll
-          dataLength={vm.FollowingPosts.size}
-          next={fetchMoreFollowingPosts}
-          hasMore={vm.HasMoreFollowingPosts}
-          loader={<Loading message={"Loading more posts..."} />}
-          // TODO: change style (make different componenet)*
-          endMessage={
-            <div className={styles.noData}>
-              <NoData message={"No more posts to show."} addPadding={false} />
-            </div>
-          }
-        >
-          <Container className={styles.mobileContainer}>
-            <Posts posts={vm.FollowingPosts} />
-          </Container>
-        </InfiniteScroll>
-      )}
+      <Container className={styles.mobileContainer}>
+        {/* Ensure posts exist */}
+        {!vm.FollowingPosts || !(vm.FollowingPosts.size > 0) ? (
+          <NoData message={"No Posts Yet! Follow Others To See Thier Posts Here."} />
+        ) : (
+          <Posts posts={vm.FollowingPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+        )}
+        {/* Pagination Component */}
+        <Pagination className={styles.pagenation}>
+          <Pagination.Prev
+            onClick={() => handlePageChange(vm.FollowingPostSetNumber - 1)}
+            disabled={vm.FollowingPostSetNumber === 1}
+          />
+          {vm.FollowingPostSetNumber !== 1 && (
+            <Pagination.Item onClick={() => handlePageChange(vm.FollowingPostSetNumber - 1)}>
+              {vm.FollowingPostSetNumber - 1}
+            </Pagination.Item>
+          )}
+          <Pagination.Item active>{vm.FollowingPostSetNumber}</Pagination.Item>
+          {vm.HasMoreFollowingPosts && (
+            <Pagination.Item onClick={() => handlePageChange(vm.FollowingPostSetNumber + 1)}>
+              {vm.FollowingPostSetNumber + 1}
+            </Pagination.Item>
+          )}
+          <Pagination.Next
+            onClick={() => handlePageChange(vm.FollowingPostSetNumber + 1)}
+            disabled={!vm.HasMoreFollowingPosts}
+          />
+        </Pagination>
+      </Container>
     </>
   );
 });

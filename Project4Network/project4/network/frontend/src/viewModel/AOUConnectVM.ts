@@ -322,21 +322,12 @@ export default class AOUConnectVM {
       this.SetError(res.error.message);
       return;
     }
-    // TODO: maybe there is better way to do it*
     if (username) {
-      if (postSetNumber === 1) {
-        this.VisitedUserPosts = res.data.posts;
-      } else {
-        this.VisitedUserPosts = new Map([...this.VisitedUserPosts, ...res.data.posts]);
-      }
+      this.VisitedUserPosts = res.data.posts;
       this.VisitedUserPostSetNumber = postSetNumber;
       this.HasMoreVisitedUserPosts = res.data.next ? true : false;
     } else {
-      if (postSetNumber === 1) {
-        this.Posts = res.data.posts;
-      } else {
-        this.Posts = new Map([...this.Posts, ...res.data.posts]);
-      }
+      this.Posts = res.data.posts;
       this.PostSetNumber = postSetNumber;
       this.HasMorePosts = res.data.next ? true : false;
     }
@@ -355,11 +346,7 @@ export default class AOUConnectVM {
       this.SetError(res.error.message);
       return;
     }
-    if (postSetNumber === 1) {
-      this.AnnouncementsPosts = res.data.posts;
-    } else {
-      this.AnnouncementsPosts = new Map([...this.AnnouncementsPosts, ...res.data.posts]);
-    }
+    this.AnnouncementsPosts = res.data.posts;
     this.AnnouncementsPostSetNumber = postSetNumber;
     this.HasMoreAnnouncementsPosts = !!res.data.next;
   }
@@ -469,12 +456,7 @@ export default class AOUConnectVM {
       this.SetError(res.error.message);
       return;
     }
-    // TODO: maybe there is better way to do it*
-    if (postSetNumber === 1) {
-      this.FollowingPosts = res.data.posts;
-    } else {
-      this.FollowingPosts = new Map([...this.FollowingPosts, ...res.data.posts]);
-    }
+    this.FollowingPosts = res.data.posts;
     this.FollowingPostSetNumber = postSetNumber;
     this.HasMoreFollowingPosts = res.data.next ? true : false;
   }

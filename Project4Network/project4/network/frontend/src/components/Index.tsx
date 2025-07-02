@@ -1,13 +1,12 @@
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
 import { useVM } from "../viewModel/context";
 import { NewPostForm } from "./NewPostForm";
 import { Posts } from "./Posts";
 import { Loading } from "./Loading";
 import { NoData } from "./NoData";
 import { makeStyles } from "@fluentui/react-components";
-import { Container } from "react-bootstrap";
+import { Container, Pagination } from "react-bootstrap";
 
 const useStyles = makeStyles({
   mobileContainer: {
@@ -16,6 +15,10 @@ const useStyles = makeStyles({
   noData: {
     marginTop: "3rem",
     marginBottom: "3rem",
+  },
+  pagenation: {
+    display: "flex",
+    justifyContent: "center",
   },
 });
 
@@ -32,10 +35,17 @@ export const Index = observer(() => {
     }
   }, []);
 
-  // Function to load more posts when user scrolls down
-  const fetchMorePosts = async () => {
-    vm.PostSetNumber += 1;
-    await vm.FetchMainPage(vm.PostSetNumber);
+  /**
+   * Function to handle page changes in the pagination.
+   * It updates the current page number and fetches the posts for that page.
+   * @param page - The new page number to fetch.
+   * @returns {Promise<void>}
+   */
+  const handlePageChange = async (page: number) => {
+    vm.PostSetNumber = page;
+    setIsLoading(true);
+    await vm.FetchMainPage(page);
+    setIsLoading(false);
   };
 
   if (isLoading) return <Loading message={"Loading Posts..."} />;
@@ -48,26 +58,30 @@ export const Index = observer(() => {
           <NewPostForm />
         </Container>
       )}
-      <InfiniteScroll
-        dataLength={vm.Posts?.size || 0}
-        next={fetchMorePosts}
-        hasMore={vm.HasMorePosts}
-        loader={<Loading message={"Loading more posts..."} />}
-        // TODO: change style (make different componenet)*
-        endMessage={
-          <div className={styles.noData}>
-            <NoData message={"No more posts to show."} addPadding={false} />
-          </div>
-        }
-      >
-        <Container className={styles.mobileContainer}>
-          {!vm.Posts || !(vm.Posts.size > 0) ? (
-            <NoData message={"No Posts Yet!"} />
-          ) : (
-            <Posts posts={vm.Posts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+      <Container className={styles.mobileContainer}>
+        {/* Ensure posts exist */}
+        {!vm.Posts || !(vm.Posts.size > 0) ? (
+          <NoData message={"No Posts Yet!"} />
+        ) : (
+          <Posts posts={vm.Posts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+        )}
+        {/* Pagination Component */}
+        <Pagination className={styles.pagenation}>
+          <Pagination.Prev onClick={() => handlePageChange(vm.PostSetNumber - 1)} disabled={vm.PostSetNumber === 1} />
+          {vm.PostSetNumber !== 1 && (
+            <Pagination.Item onClick={() => handlePageChange(vm.PostSetNumber - 1)}>
+              {vm.PostSetNumber - 1}
+            </Pagination.Item>
           )}
-        </Container>
-      </InfiniteScroll>
+          <Pagination.Item active>{vm.PostSetNumber}</Pagination.Item>
+          {vm.HasMorePosts && (
+            <Pagination.Item onClick={() => handlePageChange(vm.PostSetNumber + 1)}>
+              {vm.PostSetNumber + 1}
+            </Pagination.Item>
+          )}
+          <Pagination.Next onClick={() => handlePageChange(vm.PostSetNumber + 1)} disabled={!vm.HasMorePosts} />
+        </Pagination>
+      </Container>
     </>
   );
 });

@@ -36,9 +36,8 @@ import {
 import { NoData } from "./NoData";
 import { Posts } from "./Posts";
 import { Loading } from "./Loading";
-import InfiniteScroll from "react-infinite-scroll-component";
 import { NotFound } from "./NotFound";
-import { Container } from "react-bootstrap";
+import { Container, Pagination } from "react-bootstrap";
 
 const useStyles = makeStyles({
   mobileContainer: {
@@ -99,6 +98,10 @@ const useStyles = makeStyles({
     marginTop: "3rem",
     marginBottom: "3rem",
   },
+  pagenation: {
+    display: "flex",
+    justifyContent: "center",
+  },
 });
 
 export const ProfilePage = observer(() => {
@@ -141,15 +144,23 @@ export const ProfilePage = observer(() => {
     vm.forceUpdate;
   };
 
-  // Function to fetch more posts on scroll
-  const fetchMoreProfilePosts = async () => {
+  /**
+   * Handles page change for the visited user's posts.
+   * This function updates the `VisitedUserPostSetNumber` in the view model
+   * and fetches the posts for the specified page.
+   * It also handles loading state and error messages.
+   * @param page - The new page number to fetch.
+   * @returns {Promise<void>}
+   */
+  const handlePageChange = async (page: number) => {
+    vm.VisitedUserPostSetNumber = page;
     if (!username) {
       vm.SetError("Couldn't get username from URL");
-      setIsLoading(false);
       return;
     }
-    vm.VisitedUserPostSetNumber += 1;
+    setIsLoading(true);
     await vm.FetchProfilePage(username, vm.VisitedUserPostSetNumber);
+    setIsLoading(false);
   };
 
   const handleUploadProfilePicture = async () => {
@@ -280,25 +291,36 @@ export const ProfilePage = observer(() => {
         </div>
       </Container>
 
-      {!vm.VisitedUserPosts || vm.VisitedUserPosts.size === 0 ? (
-        <NoData message="No Posts Yet!" />
-      ) : (
-        <InfiniteScroll
-          dataLength={vm.VisitedUserPosts.size}
-          next={fetchMoreProfilePosts}
-          hasMore={vm.HasMoreVisitedUserPosts}
-          loader={<Loading message="Loading more posts..." />}
-          endMessage={
-            <div className={styles.noData}>
-              <NoData message="No more posts to show." addPadding={false} />
-            </div>
-          }
-        >
-          <Container className={styles.mobileContainer}>
-            <Posts posts={vm.VisitedUserPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
-          </Container>
-        </InfiniteScroll>
-      )}
+      <Container className={styles.mobileContainer}>
+        {/* Ensure posts exist */}
+        {!vm.VisitedUserPosts || vm.VisitedUserPosts.size === 0 ? (
+          <NoData message={"No Posts Yet!"} />
+        ) : (
+          <Posts posts={vm.VisitedUserPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+        )}
+        {/* Pagination Component */}
+        <Pagination className={styles.pagenation}>
+          <Pagination.Prev
+            onClick={() => handlePageChange(vm.VisitedUserPostSetNumber - 1)}
+            disabled={vm.VisitedUserPostSetNumber === 1}
+          />
+          {vm.VisitedUserPostSetNumber !== 1 && (
+            <Pagination.Item onClick={() => handlePageChange(vm.VisitedUserPostSetNumber - 1)}>
+              {vm.VisitedUserPostSetNumber - 1}
+            </Pagination.Item>
+          )}
+          <Pagination.Item active>{vm.VisitedUserPostSetNumber}</Pagination.Item>
+          {vm.HasMoreVisitedUserPosts && (
+            <Pagination.Item onClick={() => handlePageChange(vm.VisitedUserPostSetNumber + 1)}>
+              {vm.VisitedUserPostSetNumber + 1}
+            </Pagination.Item>
+          )}
+          <Pagination.Next
+            onClick={() => handlePageChange(vm.VisitedUserPostSetNumber + 1)}
+            disabled={!vm.HasMoreVisitedUserPosts}
+          />
+        </Pagination>
+      </Container>
 
       {/* Delete Confirmation Dialog */}
       <Dialog
