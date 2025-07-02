@@ -55,30 +55,32 @@ export const AnnouncementsPage = observer(() => {
       {!vm.AnnouncementsPosts || !(vm.AnnouncementsPosts.size > 0) ? (
         <NoData message="No Announcements Yet!" />
       ) : (
-        <Posts posts={vm.AnnouncementsPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+        <>
+          <Posts posts={vm.AnnouncementsPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+          {/* Pagination Component */}
+          <Pagination className={styles.pagenation}>
+            <Pagination.Prev
+              onClick={() => handlePageChange(vm.AnnouncementsPostSetNumber - 1)}
+              disabled={vm.AnnouncementsPostSetNumber === 1}
+            />
+            {vm.AnnouncementsPostSetNumber !== 1 && (
+              <Pagination.Item onClick={() => handlePageChange(vm.AnnouncementsPostSetNumber - 1)}>
+                {vm.AnnouncementsPostSetNumber - 1}
+              </Pagination.Item>
+            )}
+            <Pagination.Item active>{vm.AnnouncementsPostSetNumber}</Pagination.Item>
+            {vm.HasMoreAnnouncementsPosts && (
+              <Pagination.Item onClick={() => handlePageChange(vm.AnnouncementsPostSetNumber + 1)}>
+                {vm.AnnouncementsPostSetNumber + 1}
+              </Pagination.Item>
+            )}
+            <Pagination.Next
+              onClick={() => handlePageChange(vm.AnnouncementsPostSetNumber + 1)}
+              disabled={!vm.HasMoreAnnouncementsPosts}
+            />
+          </Pagination>
+        </>
       )}
-      {/* Pagination Component */}
-      <Pagination className={styles.pagenation}>
-        <Pagination.Prev
-          onClick={() => handlePageChange(vm.AnnouncementsPostSetNumber - 1)}
-          disabled={vm.AnnouncementsPostSetNumber === 1}
-        />
-        {vm.AnnouncementsPostSetNumber !== 1 && (
-          <Pagination.Item onClick={() => handlePageChange(vm.AnnouncementsPostSetNumber - 1)}>
-            {vm.AnnouncementsPostSetNumber - 1}
-          </Pagination.Item>
-        )}
-        <Pagination.Item active>{vm.AnnouncementsPostSetNumber}</Pagination.Item>
-        {vm.HasMoreAnnouncementsPosts && (
-          <Pagination.Item onClick={() => handlePageChange(vm.AnnouncementsPostSetNumber + 1)}>
-            {vm.AnnouncementsPostSetNumber + 1}
-          </Pagination.Item>
-        )}
-        <Pagination.Next
-          onClick={() => handlePageChange(vm.AnnouncementsPostSetNumber + 1)}
-          disabled={!vm.HasMoreAnnouncementsPosts}
-        />
-      </Pagination>
     </Container>
   );
 });

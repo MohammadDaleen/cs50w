@@ -58,30 +58,32 @@ export const FollowingPage = observer(() => {
         {!vm.FollowingPosts || !(vm.FollowingPosts.size > 0) ? (
           <NoData message={"No Posts Yet! Follow Others To See Thier Posts Here."} />
         ) : (
-          <Posts posts={vm.FollowingPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+          <>
+            <Posts posts={vm.FollowingPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+            {/* Pagination Component */}
+            <Pagination className={styles.pagenation}>
+              <Pagination.Prev
+                onClick={() => handlePageChange(vm.FollowingPostSetNumber - 1)}
+                disabled={vm.FollowingPostSetNumber === 1}
+              />
+              {vm.FollowingPostSetNumber !== 1 && (
+                <Pagination.Item onClick={() => handlePageChange(vm.FollowingPostSetNumber - 1)}>
+                  {vm.FollowingPostSetNumber - 1}
+                </Pagination.Item>
+              )}
+              <Pagination.Item active>{vm.FollowingPostSetNumber}</Pagination.Item>
+              {vm.HasMoreFollowingPosts && (
+                <Pagination.Item onClick={() => handlePageChange(vm.FollowingPostSetNumber + 1)}>
+                  {vm.FollowingPostSetNumber + 1}
+                </Pagination.Item>
+              )}
+              <Pagination.Next
+                onClick={() => handlePageChange(vm.FollowingPostSetNumber + 1)}
+                disabled={!vm.HasMoreFollowingPosts}
+              />
+            </Pagination>
+          </>
         )}
-        {/* Pagination Component */}
-        <Pagination className={styles.pagenation}>
-          <Pagination.Prev
-            onClick={() => handlePageChange(vm.FollowingPostSetNumber - 1)}
-            disabled={vm.FollowingPostSetNumber === 1}
-          />
-          {vm.FollowingPostSetNumber !== 1 && (
-            <Pagination.Item onClick={() => handlePageChange(vm.FollowingPostSetNumber - 1)}>
-              {vm.FollowingPostSetNumber - 1}
-            </Pagination.Item>
-          )}
-          <Pagination.Item active>{vm.FollowingPostSetNumber}</Pagination.Item>
-          {vm.HasMoreFollowingPosts && (
-            <Pagination.Item onClick={() => handlePageChange(vm.FollowingPostSetNumber + 1)}>
-              {vm.FollowingPostSetNumber + 1}
-            </Pagination.Item>
-          )}
-          <Pagination.Next
-            onClick={() => handlePageChange(vm.FollowingPostSetNumber + 1)}
-            disabled={!vm.HasMoreFollowingPosts}
-          />
-        </Pagination>
       </Container>
     </>
   );

@@ -296,30 +296,32 @@ export const ProfilePage = observer(() => {
         {!vm.VisitedUserPosts || vm.VisitedUserPosts.size === 0 ? (
           <NoData message={"No Posts Yet!"} />
         ) : (
-          <Posts posts={vm.VisitedUserPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+          <>
+            <Posts posts={vm.VisitedUserPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+            {/* Pagination Component */}
+            <Pagination className={styles.pagenation}>
+              <Pagination.Prev
+                onClick={() => handlePageChange(vm.VisitedUserPostSetNumber - 1)}
+                disabled={vm.VisitedUserPostSetNumber === 1}
+              />
+              {vm.VisitedUserPostSetNumber !== 1 && (
+                <Pagination.Item onClick={() => handlePageChange(vm.VisitedUserPostSetNumber - 1)}>
+                  {vm.VisitedUserPostSetNumber - 1}
+                </Pagination.Item>
+              )}
+              <Pagination.Item active>{vm.VisitedUserPostSetNumber}</Pagination.Item>
+              {vm.HasMoreVisitedUserPosts && (
+                <Pagination.Item onClick={() => handlePageChange(vm.VisitedUserPostSetNumber + 1)}>
+                  {vm.VisitedUserPostSetNumber + 1}
+                </Pagination.Item>
+              )}
+              <Pagination.Next
+                onClick={() => handlePageChange(vm.VisitedUserPostSetNumber + 1)}
+                disabled={!vm.HasMoreVisitedUserPosts}
+              />
+            </Pagination>
+          </>
         )}
-        {/* Pagination Component */}
-        <Pagination className={styles.pagenation}>
-          <Pagination.Prev
-            onClick={() => handlePageChange(vm.VisitedUserPostSetNumber - 1)}
-            disabled={vm.VisitedUserPostSetNumber === 1}
-          />
-          {vm.VisitedUserPostSetNumber !== 1 && (
-            <Pagination.Item onClick={() => handlePageChange(vm.VisitedUserPostSetNumber - 1)}>
-              {vm.VisitedUserPostSetNumber - 1}
-            </Pagination.Item>
-          )}
-          <Pagination.Item active>{vm.VisitedUserPostSetNumber}</Pagination.Item>
-          {vm.HasMoreVisitedUserPosts && (
-            <Pagination.Item onClick={() => handlePageChange(vm.VisitedUserPostSetNumber + 1)}>
-              {vm.VisitedUserPostSetNumber + 1}
-            </Pagination.Item>
-          )}
-          <Pagination.Next
-            onClick={() => handlePageChange(vm.VisitedUserPostSetNumber + 1)}
-            disabled={!vm.HasMoreVisitedUserPosts}
-          />
-        </Pagination>
       </Container>
 
       {/* Delete Confirmation Dialog */}

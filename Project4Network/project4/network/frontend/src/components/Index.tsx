@@ -63,24 +63,29 @@ export const Index = observer(() => {
         {!vm.Posts || !(vm.Posts.size > 0) ? (
           <NoData message={"No Posts Yet!"} />
         ) : (
-          <Posts posts={vm.Posts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+          <>
+            <Posts posts={vm.Posts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+            {/* Pagination Component */}
+            <Pagination className={styles.pagenation}>
+              <Pagination.Prev
+                onClick={() => handlePageChange(vm.PostSetNumber - 1)}
+                disabled={vm.PostSetNumber === 1}
+              />
+              {vm.PostSetNumber !== 1 && (
+                <Pagination.Item onClick={() => handlePageChange(vm.PostSetNumber - 1)}>
+                  {vm.PostSetNumber - 1}
+                </Pagination.Item>
+              )}
+              <Pagination.Item active>{vm.PostSetNumber}</Pagination.Item>
+              {vm.HasMorePosts && (
+                <Pagination.Item onClick={() => handlePageChange(vm.PostSetNumber + 1)}>
+                  {vm.PostSetNumber + 1}
+                </Pagination.Item>
+              )}
+              <Pagination.Next onClick={() => handlePageChange(vm.PostSetNumber + 1)} disabled={!vm.HasMorePosts} />
+            </Pagination>
+          </>
         )}
-        {/* Pagination Component */}
-        <Pagination className={styles.pagenation}>
-          <Pagination.Prev onClick={() => handlePageChange(vm.PostSetNumber - 1)} disabled={vm.PostSetNumber === 1} />
-          {vm.PostSetNumber !== 1 && (
-            <Pagination.Item onClick={() => handlePageChange(vm.PostSetNumber - 1)}>
-              {vm.PostSetNumber - 1}
-            </Pagination.Item>
-          )}
-          <Pagination.Item active>{vm.PostSetNumber}</Pagination.Item>
-          {vm.HasMorePosts && (
-            <Pagination.Item onClick={() => handlePageChange(vm.PostSetNumber + 1)}>
-              {vm.PostSetNumber + 1}
-            </Pagination.Item>
-          )}
-          <Pagination.Next onClick={() => handlePageChange(vm.PostSetNumber + 1)} disabled={!vm.HasMorePosts} />
-        </Pagination>
       </Container>
     </>
   );
