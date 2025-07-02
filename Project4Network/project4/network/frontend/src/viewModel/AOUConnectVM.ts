@@ -283,7 +283,7 @@ export default class AOUConnectVM {
 
   public async Logout() {
     if (!this.Token) {
-      console.log("No token found, user is not authenticated");
+      console.warn("No token found, user is not authenticated");
       return;
     }
     const res: CdsResponse<void> = await this.cdsService.Logout(this.Token);
@@ -338,7 +338,7 @@ export default class AOUConnectVM {
    */
   public async FetchAnnouncementsPosts(postSetNumber: number) {
     if (!this.Token) {
-      console.log("No token found, user is not authenticated");
+      console.warn("No token found, user is not authenticated");
       return;
     }
     const res: CdsResponse<PostsSet> = await this.cdsService.FetchAnnouncementsPosts(this.Token, postSetNumber);
@@ -404,7 +404,7 @@ export default class AOUConnectVM {
       return;
     }
     if (!this.Token) {
-      console.log("No token found, user is not authenticated");
+      console.warn("No token found, user is not authenticated");
       return;
     }
     const res = await this.cdsService.Follow(this.Token, username);
