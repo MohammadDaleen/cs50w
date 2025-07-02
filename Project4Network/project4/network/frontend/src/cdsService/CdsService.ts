@@ -180,14 +180,14 @@ export default class CdsService {
   /**
    * Fetch posts created by announcer users only.
    */
-  public async FetchAnnouncementsPosts(token: string, page: number): Promise<CdsResponse<PostsSet>> {
+  public async FetchAnnouncementsPosts(page: number, token?: string): Promise<CdsResponse<PostsSet>> {
     const url = `${this.apiUrl}/api/announcements?page=${page}`;
     try {
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
+          ...(token ? { Authorization: `Token ${token}` } : {}),
         },
       });
       const data = await response.json();

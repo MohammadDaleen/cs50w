@@ -337,11 +337,7 @@ export default class AOUConnectVM {
    * Fetch paginated announcements (announcer posts).
    */
   public async FetchAnnouncementsPosts(postSetNumber: number) {
-    if (!this.Token) {
-      console.warn("No token found, user is not authenticated");
-      return;
-    }
-    const res: CdsResponse<PostsSet> = await this.cdsService.FetchAnnouncementsPosts(this.Token, postSetNumber);
+    const res: CdsResponse<PostsSet> = await this.cdsService.FetchAnnouncementsPosts(postSetNumber, this.Token);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -514,6 +510,7 @@ export default class AOUConnectVM {
     if (this.posts.has(postId)) this.posts.set(postId, res.data);
     if (this.visitedUserPosts.has(postId)) this.visitedUserPosts.set(postId, res.data);
     if (this.followingPosts.has(postId)) this.followingPosts.set(postId, res.data);
+    if (this.AnnouncementsPosts.has(postId)) this.AnnouncementsPosts.set(postId, res.data);
     if (this.dashboard?.top_posts.has(postId)) this.dashboard.top_posts.set(postId, res.data);
     // Update the post in CurrentPost if it is the same post
     if (this.CurrentPost?.id === postId) this.CurrentPost = res.data;

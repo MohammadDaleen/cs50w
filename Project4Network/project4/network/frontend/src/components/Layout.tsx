@@ -82,6 +82,9 @@ export const Layout = observer(() => {
                   <Nav.Link as={Link} to="/">
                     All Posts
                   </Nav.Link>
+                  <Nav.Link as={Link} to="/announcements">
+                    Announcements
+                  </Nav.Link>
                 </Nav>
                 <Nav className="ms-auto">
                   <Nav.Link as={Link} to="/login">

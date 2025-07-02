@@ -51,11 +51,11 @@ const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           { path: "/admin", element: <AdminDashboard /> },
-          { path: "/announcements", element: <AnnouncementsPage /> },
           { path: "/following", element: <FollowingPage /> },
           { path: "/post/:postId", element: <PostDetail /> },
         ],
       },
+      { path: "/announcements", element: <AnnouncementsPage /> },
       { path: "/:username", element: <ProfilePage /> },
       {
         path: "/:username/:listType", // listType: followers or followees
