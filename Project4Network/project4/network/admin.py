@@ -8,12 +8,12 @@ from .models import Comment, Follower, Like, Post, User
 
 # Register and customize the User model in the admin interface.
 class CustomUserAdmin(UserAdmin):
-    # Add the profilePicture and is_announcer fields to the default fieldsets
+    # Add the profilePicture field to the default fieldsets
     fieldsets = UserAdmin.fieldsets + (
-        ("Additional Info", {"fields": ("profilePicture", "is_announcer")}),
+        ("Additional Info", {"fields": ("profilePicture",)}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ("Additional Info", {"fields": ("profilePicture", "is_announcer")}),
+        ("Additional Info", {"fields": ("profilePicture",)}),
     )
     # Customize list display in the user changelist
     list_display = (
@@ -21,9 +21,8 @@ class CustomUserAdmin(UserAdmin):
         "email",
         "is_superuser",
         "is_staff",
-        "is_announcer",
     )
-    list_filter = ("is_staff", "is_superuser", "is_announcer")
+    list_filter = ("is_staff", "is_superuser")
 
 
 # Register the customized User admin

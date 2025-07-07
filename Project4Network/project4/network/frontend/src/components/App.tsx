@@ -28,8 +28,6 @@ import { Loading } from "./Loading";
 import { FollowingPage } from "./FollowingPage";
 import { PostDetail } from "./PostDetail";
 import { FollowList } from "./FollowList";
-import { AdminDashboard } from "./AdminDashboard";
-import { AnnouncementsPage } from "./AnnouncementsPage";
 
 export interface props {
   serviceProvider: ServiceProvider;
@@ -50,12 +48,10 @@ const router = createBrowserRouter([
         path: "/",
         element: <ProtectedRoute />,
         children: [
-          { path: "/admin", element: <AdminDashboard /> },
           { path: "/following", element: <FollowingPage /> },
           { path: "/post/:postId", element: <PostDetail /> },
         ],
       },
-      { path: "/announcements", element: <AnnouncementsPage /> },
       { path: "/:username", element: <ProfilePage /> },
       {
         path: "/:username/:listType", // listType: followers or followees

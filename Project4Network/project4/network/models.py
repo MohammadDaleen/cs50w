@@ -5,8 +5,6 @@ from django.db import models
 class User(AbstractUser):
     # Profile picture field; images are saved to "profile_pics/"
     profilePicture = models.ImageField(upload_to="profile_pics/", null=True, blank=True)
-    # Is Announcer field; Indicates this user can post announcements
-    is_announcer = models.BooleanField(default=False)
 
 
 class Post(models.Model):

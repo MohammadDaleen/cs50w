@@ -22,10 +22,6 @@ urlpatterns = [
     # Follow URLs
     path("api/follow", views.follow, name="api_follow"),
     path("api/following", views.following_posts, name="api_following_posts"),
-    # Announcements URLs
-    path(
-        "api/announcements", views.announcements_posts, name="api_announcements_posts"
-    ),
     # Profile Picture URLs
     path(
         "api/profile-picture/upload",
@@ -45,8 +41,6 @@ urlpatterns = [
     path(
         "api/<str:username>/followees", views.followees_list, name="api_followees_list"
     ),
-    # Admin Dashboard URLs
-    path("api/admin/dashboard", views.get_dashboard_data, name="api_admin_dashboard"),
 ]
 
 # TODO: change for production

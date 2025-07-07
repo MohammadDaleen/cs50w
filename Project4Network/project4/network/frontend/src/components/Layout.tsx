@@ -51,22 +51,14 @@ export const Layout = observer(() => {
                   <Nav.Link onClick={handleProfile}>
                     Welcome, <strong>{vm.User.username}</strong>
                   </Nav.Link>
-                  {vm.User.isAdmin && (
-                    <Nav.Link as={Link} to="/admin">
-                      <strong>Admin Dashboard</strong>
-                    </Nav.Link>
-                  )}
-                </Nav>
-                <Nav className="ms-auto">
                   <Nav.Link as={Link} to="/">
                     All Posts
                   </Nav.Link>
                   <Nav.Link as={Link} to="/following">
                     Following
                   </Nav.Link>
-                  <Nav.Link as={Link} to="/announcements">
-                    Announcements
-                  </Nav.Link>
+                </Nav>
+                <Nav className="ms-auto">
                   <Nav.Link onClick={handleLogout}>Log Out</Nav.Link>
                   <Nav.Link onClick={handleToggleMode}>
                     {vm.IsLightMode ? (
@@ -82,9 +74,6 @@ export const Layout = observer(() => {
                 <Nav className="me-auto">
                   <Nav.Link as={Link} to="/">
                     All Posts
-                  </Nav.Link>
-                  <Nav.Link as={Link} to="/announcements">
-                    Announcements
                   </Nav.Link>
                 </Nav>
                 <Nav className="ms-auto">

@@ -4,7 +4,6 @@ export type User = {
   first_name?: string;
   last_name?: string;
   email: string;
-  isAdmin: boolean;
   token: string;
   isAuthenticated: boolean;
   userFollowers: string[];

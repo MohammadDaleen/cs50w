@@ -26,9 +26,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 # Serializer for the user information
 class UserSerializer(serializers.ModelSerializer):
-    isAdmin = serializers.BooleanField(
-        source="is_superuser", read_only=True
-    )  # Add isAdmin field based on is_superuser
     # Custom field to return a list of follower usernames
     userFollowers = serializers.SerializerMethodField()
     # Custom field to return a list of followee usernames
@@ -37,10 +34,6 @@ class UserSerializer(serializers.ModelSerializer):
     postsCount = serializers.SerializerMethodField()
     # Custom field to return the profile picture of the user
     profilePicture = serializers.SerializerMethodField()
-    # # A field to return the profile picture of the user
-    # profilePicture = serializers.ImageField(
-    #     required=False, allow_null=True, use_url=True
-    # )
 
     class Meta:
         model = get_user_model()
@@ -48,7 +41,6 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
-            "isAdmin",
             "userFollowers",
             "userFollowees",
             "postsCount",

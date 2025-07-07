@@ -177,39 +177,6 @@ export default class CdsService {
     }
   }
 
-  /**
-   * Fetch posts created by announcer users only.
-   */
-  public async FetchAnnouncementsPosts(page: number, token?: string): Promise<CdsResponse<PostsSet>> {
-    const url = `${this.apiUrl}/api/announcements?page=${page}`;
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Token ${token}` } : {}),
-        },
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        return { error: Error(data.message || "Error fetching announcements") };
-      }
-      const postsMap = new Map<number, Post>();
-      data.results.posts.forEach((p: Post) => postsMap.set(p.id, p));
-      return {
-        data: {
-          count: data.count,
-          next: data.next,
-          previous: data.previous,
-          posts: postsMap,
-        },
-      };
-    } catch (err: any) {
-      console.error("Error fetching announcements:", err);
-      return { error: Error("Error fetching announcements") };
-    }
-  }
-
   public async FetchPost(token: string, postId: number): Promise<CdsResponse<Post>> {
     try {
       const response = await fetch(`${this.apiUrl}/api/post/${postId}`, {

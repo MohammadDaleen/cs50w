@@ -107,13 +107,6 @@ export default class AOUConnectVM {
   public set FollowingPosts(posts: Map<number, Post>) {
     this.followingPosts = posts;
   }
-  private announcementsPosts: Map<number, Post> = new Map();
-  public get AnnouncementsPosts() {
-    return this.announcementsPosts;
-  }
-  public set AnnouncementsPosts(posts: Map<number, Post>) {
-    this.announcementsPosts = posts;
-  }
 
   private currentPost: Post | undefined = undefined;
   public get CurrentPost() {
@@ -168,21 +161,6 @@ export default class AOUConnectVM {
   }
   public set HasMoreFollowingPosts(hasMoreFollowingPosts: boolean) {
     this.hasMoreFollowingPosts = hasMoreFollowingPosts;
-  }
-  // Pagination state for announcements page
-  private announcementsPostSetNumber: number = 1;
-  public get AnnouncementsPostSetNumber() {
-    return this.announcementsPostSetNumber;
-  }
-  public set AnnouncementsPostSetNumber(n: number) {
-    this.announcementsPostSetNumber = n;
-  }
-  private hasMoreAnnouncementsPosts: boolean = true;
-  public get HasMoreAnnouncementsPosts() {
-    return this.hasMoreAnnouncementsPosts;
-  }
-  public set HasMoreAnnouncementsPosts(v: boolean) {
-    this.hasMoreAnnouncementsPosts = v;
   }
 
   // Comments
@@ -331,20 +309,6 @@ export default class AOUConnectVM {
       this.PostSetNumber = postSetNumber;
       this.HasMorePosts = res.data.next ? true : false;
     }
-  }
-
-  /**
-   * Fetch paginated announcements (announcer posts).
-   */
-  public async FetchAnnouncementsPosts(postSetNumber: number) {
-    const res: CdsResponse<PostsSet> = await this.cdsService.FetchAnnouncementsPosts(postSetNumber, this.Token);
-    if (res.error) {
-      this.SetError(res.error.message);
-      return;
-    }
-    this.AnnouncementsPosts = res.data.posts;
-    this.AnnouncementsPostSetNumber = postSetNumber;
-    this.HasMoreAnnouncementsPosts = !!res.data.next;
   }
 
   public async FetchCurrentPost(postId: number) {
@@ -507,11 +471,10 @@ export default class AOUConnectVM {
       return;
     }
     // Update the post in the Maps if it is found
-    if (this.posts.has(postId)) this.posts.set(postId, res.data);
-    if (this.visitedUserPosts.has(postId)) this.visitedUserPosts.set(postId, res.data);
-    if (this.followingPosts.has(postId)) this.followingPosts.set(postId, res.data);
-    if (this.AnnouncementsPosts.has(postId)) this.AnnouncementsPosts.set(postId, res.data);
-    if (this.dashboard?.top_posts.has(postId)) this.dashboard.top_posts.set(postId, res.data);
+    if (this.Posts.has(postId)) this.Posts.set(postId, res.data);
+    if (this.VisitedUserPosts.has(postId)) this.visitedUserPosts.set(postId, res.data);
+    if (this.FollowingPosts.has(postId)) this.followingPosts.set(postId, res.data);
+    if (this.Dashboard?.top_posts.has(postId)) this.Dashboard.top_posts.set(postId, res.data);
     // Update the post in CurrentPost if it is the same post
     if (this.CurrentPost?.id === postId) this.CurrentPost = res.data;
   }
