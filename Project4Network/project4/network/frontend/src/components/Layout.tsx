@@ -41,7 +41,7 @@ export const Layout = observer(() => {
         <Container>
           <Navbar.Brand as={Link} to="/">
             <Image alt="AOU Connect Logo" src="../../public/assets/AOU_Connect_3.png" height={75} width={75} />
-            <b>{"AOU Connect"}</b>
+            <b>{"Network"}</b>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">

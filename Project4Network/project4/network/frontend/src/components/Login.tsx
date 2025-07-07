@@ -56,7 +56,7 @@ export const Login = observer(() => {
   };
 
   // Prevent already logged in users from visiting login page
-  if (vm.Token && vm.User?.isAuthenticated) navigate("/", { replace: true });
+  if (vm.GetToken() && vm.User?.isAuthenticated) navigate("/", { replace: true });
 
   if (isLoading) {
     return <Loading />;

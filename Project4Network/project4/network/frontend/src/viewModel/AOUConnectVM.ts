@@ -60,15 +60,6 @@ export default class AOUConnectVM {
     this.IsLightMode = !this.IsLightMode;
   }
 
-  // User Authentication's Token
-  public get Token() {
-    return localStorage.getItem("token") || undefined;
-  }
-  public set Token(token: string | undefined) {
-    if (token) localStorage.setItem("token", token);
-    else localStorage.removeItem("token");
-  }
-
   // TODO: Do you really need a User and a Token ?*
   private user?: User = undefined;
   get User() {
@@ -210,14 +201,24 @@ export default class AOUConnectVM {
     if (this.forceUpdate) this.forceUpdate();
   }
 
+  // User Authentication's Token
+  public GetToken() {
+    return localStorage.getItem("token") || undefined;
+  }
+  public SetToken(token: string | undefined) {
+    if (token) localStorage.setItem("token", token);
+    else localStorage.removeItem("token");
+  }
+
   public async init() {
     this.IsLoading = true;
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       console.warn("No token found, user is not authenticated");
       this.IsLoading = false;
       return;
     }
-    await this.checkAuthStatus(this.Token);
+    await this.checkAuthStatus(token);
     this.IsLoading = false;
   }
 
@@ -246,7 +247,7 @@ export default class AOUConnectVM {
       return;
     }
     this.User = res.data;
-    this.Token = res.data.token;
+    this.SetToken(res.data.token);
   }
 
   public async Login(username: string, password: string) {
@@ -256,22 +257,42 @@ export default class AOUConnectVM {
       return;
     }
     this.User = res.data;
-    this.Token = res.data.token;
+    this.SetToken(res.data.token);
   }
 
   public async Logout() {
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       console.warn("No token found, user is not authenticated");
       return;
     }
-    const res: CdsResponse<void> = await this.cdsService.Logout(this.Token);
+    const res: CdsResponse<void> = await this.cdsService.Logout(token);
     if (res.error) {
       this.SetError(res.error.message);
       return;
     }
-    this.Token = undefined;
+    this.SetToken(undefined);
     this.User = undefined;
   }
+
+  // TODO: Remove if not needed
+  // private clearData() {
+  //   this.VisitedUser = undefined;
+  //   this.Posts.clear();
+  //   this.VisitedUserPosts.clear();
+  //   this.FollowingPosts.clear();
+  //   this.AnnouncementsPosts.clear();
+  //   this.CurrentPost = undefined;
+  //   this.PostSetNumber = 1;
+  //   this.HasMorePosts = true;
+  //   this.VisitedUserPostSetNumber = 1;
+  //   this.HasMoreVisitedUserPosts = true;
+  //   this.FollowingPostSetNumber = 1;
+  //   this.HasMoreFollowingPosts = true;
+  //   this.AnnouncementsPostSetNumber = 1;
+  //   this.HasMoreAnnouncementsPosts = true;
+  //   this.Dashboard = undefined;
+  // }
 
   public async FetchMainPage(postSetNumber: number) {
     await this.fetchPosts(postSetNumber);
@@ -286,7 +307,7 @@ export default class AOUConnectVM {
   }
 
   private async fetchUser(username: string) {
-    const res: CdsResponse<User> = await this.cdsService.FetchUser(username, this.Token);
+    const res: CdsResponse<User> = await this.cdsService.FetchUser(username, this.GetToken());
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -295,7 +316,7 @@ export default class AOUConnectVM {
   }
 
   private async fetchPosts(postSetNumber: number, username?: string) {
-    const res: CdsResponse<PostsSet> = await this.cdsService.FetchPosts(postSetNumber, username, this.Token);
+    const res: CdsResponse<PostsSet> = await this.cdsService.FetchPosts(postSetNumber, username, this.GetToken());
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -319,11 +340,12 @@ export default class AOUConnectVM {
   }
 
   private async fetchPost(postId: number): Promise<Post | undefined> {
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       this.SetError("No token found, user is not authenticated");
       return;
     }
-    const res = await this.cdsService.FetchPost(this.Token, postId);
+    const res = await this.cdsService.FetchPost(token, postId);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -333,7 +355,8 @@ export default class AOUConnectVM {
 
   public async Post(postContent: string, imageFile?: File) {
     // Logic to submit the new post to the server
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       this.SetError("No token found, user is not authenticated");
       return;
     }
@@ -343,7 +366,7 @@ export default class AOUConnectVM {
       formData.append("image", imageFile);
     }
     // Call the service method that handles FormData uploads.
-    const res = await this.cdsService.Post(this.Token, formData);
+    const res = await this.cdsService.Post(token, formData);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -363,11 +386,12 @@ export default class AOUConnectVM {
       this.SetError("Requested user is not same as visted user in VM");
       return;
     }
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       console.warn("No token found, user is not authenticated");
       return;
     }
-    const res = await this.cdsService.Follow(this.Token, username);
+    const res = await this.cdsService.Follow(token, username);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -407,11 +431,12 @@ export default class AOUConnectVM {
   }
 
   public async FetchFollowingPosts(postSetNumber: number) {
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       this.SetError("No token found, user is not authenticated");
       return;
     }
-    const res: CdsResponse<PostsSet> = await this.cdsService.FetchFollowingPosts(this.Token, postSetNumber);
+    const res: CdsResponse<PostsSet> = await this.cdsService.FetchFollowingPosts(token, postSetNumber);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -425,11 +450,12 @@ export default class AOUConnectVM {
    * Delete a post and remove it from all Maps.
    */
   public async DeletePost(postId: number): Promise<void> {
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       this.SetError("No token found, user is not authenticated");
       return;
     }
-    const res = await this.cdsService.DeletePost(this.Token, postId);
+    const res = await this.cdsService.DeletePost(token, postId);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -443,11 +469,12 @@ export default class AOUConnectVM {
   }
 
   public async EditPost(postId: number, newContent: string) {
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       this.SetError("No token found, user is not authenticated");
       return;
     }
-    const res = await this.cdsService.EditPost(this.Token, postId, newContent);
+    const res = await this.cdsService.EditPost(token, postId, newContent);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -461,11 +488,12 @@ export default class AOUConnectVM {
   }
 
   public async ToggleLike(postId: number) {
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       this.SetError("No token found, user is not authenticated");
       return;
     }
-    const res = await this.cdsService.ToggleLike(this.Token, postId);
+    const res = await this.cdsService.ToggleLike(token, postId);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -509,12 +537,13 @@ export default class AOUConnectVM {
   // Method to post a comment using the CDS service
   public async PostComment(postId: number, content: string) {
     // Check for authentication token
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       this.SetError("No token found, user is not authenticated");
       return;
     }
     // Call the service to post the comment
-    const res = await this.cdsService.PostComment(this.Token, postId, content);
+    const res = await this.cdsService.PostComment(token, postId, content);
     if (res.error) {
       // Set error message if posting fails
       this.SetError(res.error.message);
@@ -529,12 +558,13 @@ export default class AOUConnectVM {
   // Method to fetch comments for a given post using the CDS service
   public async FetchComments(postId: number) {
     // Check for authentication token
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       this.SetError("No token found, user is not authenticated");
       return;
     }
     // Call the service to fetch comments
-    const res = await this.cdsService.FetchComments(this.Token, postId);
+    const res = await this.cdsService.FetchComments(token, postId);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -544,11 +574,12 @@ export default class AOUConnectVM {
   }
 
   public async UploadProfilePicture(file: File) {
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       this.SetError("No token found, user is not authenticated");
       return;
     }
-    const res = await this.cdsService.UploadProfilePicture(this.Token, file);
+    const res = await this.cdsService.UploadProfilePicture(token, file);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -574,11 +605,12 @@ export default class AOUConnectVM {
   }
 
   public async RemoveProfilePicture() {
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       this.SetError("No token found, user is not authenticated");
       return;
     }
-    const res = await this.cdsService.RemoveProfilePicture(this.Token);
+    const res = await this.cdsService.RemoveProfilePicture(token);
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -608,7 +640,7 @@ export default class AOUConnectVM {
   public async FetchFollowers(username: string, page: number, search?: string): Promise<UsersSet | undefined> {
     if (this.VisitedUser?.username !== username) await this.fetchUser(username);
     if (this.VisitedUser?.username !== username) return;
-    const res = await this.cdsService.FetchFollowers(this.VisitedUser.username, page, search, this.Token);
+    const res = await this.cdsService.FetchFollowers(this.VisitedUser.username, page, search, this.GetToken());
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -619,7 +651,7 @@ export default class AOUConnectVM {
   public async FetchFollowees(username: string, page: number, search?: string): Promise<UsersSet | undefined> {
     if (this.VisitedUser?.username !== username) await this.fetchUser(username);
     if (this.VisitedUser?.username !== username) return;
-    const res = await this.cdsService.FetchFollowees(this.VisitedUser.username, page, search, this.Token);
+    const res = await this.cdsService.FetchFollowees(this.VisitedUser.username, page, search, this.GetToken());
     if (res.error) {
       this.SetError(res.error.message);
       return;
@@ -629,11 +661,12 @@ export default class AOUConnectVM {
 
   // Method to fetch dashboard data
   public async FetchDashboard(timeframe: "day" | "week" | "month" | "lifetime"): Promise<void> {
-    if (!this.Token) {
+    const token = this.GetToken();
+    if (!token) {
       this.SetError("No token found, user is not authenticated");
       return;
     }
-    const res: CdsResponse<Dashboard> = await this.cdsService.FetchDashboard(this.Token, timeframe);
+    const res: CdsResponse<Dashboard> = await this.cdsService.FetchDashboard(token, timeframe);
     if (res.error) {
       this.SetError(res.error.message);
       return;
