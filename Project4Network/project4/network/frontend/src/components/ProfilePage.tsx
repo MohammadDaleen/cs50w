@@ -297,7 +297,7 @@ export const ProfilePage = observer(() => {
           <NoData message={"No Posts Yet!"} />
         ) : (
           <>
-            <Posts posts={vm.VisitedUserPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+            <Posts posts={vm.VisitedUserPosts} disabled={!(vm.GetToken() && vm.User?.isAuthenticated)} />
             {/* Pagination Component */}
             <Pagination className={styles.pagenation}>
               <Pagination.Prev

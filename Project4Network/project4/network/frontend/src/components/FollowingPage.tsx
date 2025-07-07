@@ -59,7 +59,7 @@ export const FollowingPage = observer(() => {
           <NoData message={"No Posts Yet! Follow Others To See Thier Posts Here."} />
         ) : (
           <>
-            <Posts posts={vm.FollowingPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+            <Posts posts={vm.FollowingPosts} disabled={!(vm.GetToken() && vm.User?.isAuthenticated)} />
             {/* Pagination Component */}
             <Pagination className={styles.pagenation}>
               <Pagination.Prev

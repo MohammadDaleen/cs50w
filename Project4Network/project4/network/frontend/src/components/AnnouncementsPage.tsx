@@ -56,7 +56,7 @@ export const AnnouncementsPage = observer(() => {
         <NoData message="No Announcements Yet!" />
       ) : (
         <>
-          <Posts posts={vm.AnnouncementsPosts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+          <Posts posts={vm.AnnouncementsPosts} disabled={!(vm.GetToken() && vm.User?.isAuthenticated)} />
           {/* Pagination Component */}
           <Pagination className={styles.pagenation}>
             <Pagination.Prev

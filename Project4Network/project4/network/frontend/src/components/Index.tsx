@@ -53,7 +53,7 @@ export const Index = observer(() => {
   return (
     <>
       {/* Only authenticated users are allowed to post new posts */}
-      {vm.Token && vm.User?.isAuthenticated && (
+      {vm.GetToken() && vm.User?.isAuthenticated && (
         <Container className={styles.mobileContainer}>
           <NewPostForm />
         </Container>
@@ -64,7 +64,7 @@ export const Index = observer(() => {
           <NoData message={"No Posts Yet!"} />
         ) : (
           <>
-            <Posts posts={vm.Posts} disabled={!(vm.Token && vm.User?.isAuthenticated)} />
+            <Posts posts={vm.Posts} disabled={!(vm.GetToken() && vm.User?.isAuthenticated)} />
             {/* Pagination Component */}
             <Pagination className={styles.pagenation}>
               <Pagination.Prev
