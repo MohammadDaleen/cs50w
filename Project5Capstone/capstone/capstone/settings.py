@@ -37,10 +37,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
+    "rest_framework",
+    "rest_framework.authtoken",
     "authoring_tool",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -48,6 +53,29 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+    # TODO: Remove if not needed
+    # Pagination settings
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
+
+CORS_ALLOWED_ORIGINS = [
+    # TODO: Change for production
+    "http://localhost:5173",  # React app URL
+]
+
+# Allow credentials to be sent with requests
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    # TODO: Change for production
+    "http://localhost:5173",  # React app URL
 ]
 
 ROOT_URLCONF = "capstone.urls"
@@ -79,6 +107,12 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+# What is this?
+# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-user-model
+# This setting allows you to specify a custom user model for your application.
+# In this case, it is set to use the User model from the 'authoring_tool' app.
+AUTH_USER_MODEL = "authoring_tool.User"
 
 
 # Password validation
