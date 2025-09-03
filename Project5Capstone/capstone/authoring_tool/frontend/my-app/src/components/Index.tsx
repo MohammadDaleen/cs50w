@@ -26,7 +26,7 @@ export const Index = observer(() => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (!vm.ErrorMessage) {
+    if (!vm.ErrorMessages) {
       setIsLoading(false);
     }
   }, []);

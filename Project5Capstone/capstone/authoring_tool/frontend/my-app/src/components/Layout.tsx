@@ -12,11 +12,12 @@ export const Layout = observer(() => {
   const vm = useVM();
   const navigate = useNavigate();
 
-  const location = useLocation(); // Get current location (i.e., route)
-  useEffect(() => {
-    // Execute when the user navigates to different route
-    vm.SetError(undefined);
-  }, [location]); // Re-run effect on location change
+  //TODO
+  // const location = useLocation(); // Get current location (i.e., route)
+  // useEffect(() => {
+  //   // Execute when the user navigates to different route
+  //   vm.AddError(undefined);
+  // }, [location]); // Re-run effect on location change
 
   const handleLogout = async () => {
     await vm.Logout();
@@ -25,7 +26,7 @@ export const Layout = observer(() => {
 
   const handleProfile = () => {
     if (!vm.User?.isAuthenticated) {
-      vm.SetError("User is not authenticated");
+      vm.AddError("User is not authenticated");
       return;
     }
     navigate(`/${vm.User.username}`);
@@ -40,7 +41,7 @@ export const Layout = observer(() => {
       <Navbar expand={"lg"} className="bg-body-tertiary">
         <Container>
           <Navbar.Brand as={Link} to="/">
-            <Image alt="AOU Connect Logo" src="../../public/assets/AOU_Connect_3.png" height={75} width={75} />
+            <Image alt="AOU Connect Logo" src="/assets/AOU_Connect_3.png" height={75} width={75} />
             <b>{"Network"}</b>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />

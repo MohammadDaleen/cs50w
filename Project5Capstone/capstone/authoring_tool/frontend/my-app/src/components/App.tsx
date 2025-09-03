@@ -99,17 +99,17 @@ export const App = observer(({ serviceProvider }: props) => {
               <Loading />
             ) : (
               <>
-                {vm.ErrorMessage && (
+                {vm.ErrorMessages && (
                   <MessageBar intent="error">
                     <MessageBarBody>
-                      <MessageBarTitle>{vm.ErrorMessage}</MessageBarTitle>
+                      <MessageBarTitle>{vm.ErrorMessages}</MessageBarTitle>
                     </MessageBarBody>
                     <MessageBarActions
                       containerAction={
                         <Button
                           appearance="transparent"
                           onClick={() => {
-                            vm.SetError(undefined);
+                            vm.AddError(undefined);
                           }}
                           icon={<DismissRegular />}
                         />
