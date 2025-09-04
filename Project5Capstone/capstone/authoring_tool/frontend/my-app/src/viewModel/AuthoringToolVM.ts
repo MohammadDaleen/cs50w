@@ -566,31 +566,6 @@ export default class AuthoringToolVM {
     this.init();
   }
 
-  //TODO
-  // constructor(
-  //   serviceProvider: ServiceProvider,
-  //   subjectStatus: axa_status | undefined,
-  //   subjectCode: string | undefined,
-  //   subjectUseRefId: boolean
-  // ) {
-  //   // Initialize dependencies and context
-  //   this.serviceProvider = serviceProvider;
-  //   this.context = serviceProvider.get("context");
-  //   this.notifyOutputChanged = serviceProvider.get("notifyOutputChanged");
-  //   this.cdsService = serviceProvider.get(CdsService.serviceName);
-  //   this.Status = subjectStatus;
-  //   this.SubjectCode = subjectCode;
-  //   this.SubjectUseRefId = subjectUseRefId;
-  //   // Retrieve course category GUID from context
-  //   // @ts-ignore
-  //   this.courseCategoryGuid = this.context.mode.contextInfo.entityId;
-  //   // @ts-ignore
-  //   this.ClientUrl = this.context.page.getClientUrl();
-  //   // Make this class observable for MobX
-  //   makeAutoObservable(this);
-  //   this.init();
-  // }
-
   /**
    * Sets a general application error.
    * @param errorMessage The error message to set.
@@ -613,6 +588,9 @@ export default class AuthoringToolVM {
   public DismissError(errorIdx: number) {
     this.ErrorMessages.delete(errorIdx);
   }
+  public ClearErrors() {
+    this.ErrorMessages.clear();
+  }
 
   // User Authentication's Token
   public GetToken() {
@@ -623,75 +601,79 @@ export default class AuthoringToolVM {
     else localStorage.removeItem("token");
   }
 
+  /**
+   * Initializes the control.
+   */
   public async init() {
     this.IsLoading = true;
     console.info("AT v0.9.3");
+
+    this.ClientUrl = this.cdsService.ClientUrl;
+
+    //TODO get these values from backend
+    // this.SubjectCode = subjectCode;
+    // this.SubjectUseRefId = subjectUseRefId;
+    // this.courseCategoryGuid = this.context.mode.contextInfo.entityId;
+
     const token = this.GetToken();
     if (!token) {
       console.warn("No token found, user is not authenticated");
       this.IsLoading = false;
       return;
     }
-    //TODO await this.checkAuthStatus(token);
-    this.IsLoading = false;
+    if (!this.courseCategoryGuid) {
+      this.SetAppError("courseCategoryGuid is undefined");
+      this.isLoading = false;
+      return;
+    }
+    try {
+      const [treeRes, resourceRes, privilegeRes, _checkAuthRes] = await Promise.all([
+        this.cdsService.fetchTree(this.courseCategoryGuid),
+        this.cdsService.fetchSubjectResources(this.courseCategoryGuid),
+        this.cdsService.checkUserPrivileges(),
+        this.checkAuthStatus(token),
+      ]);
+      if (treeRes.error) {
+        this.AddError(treeRes.error.message);
+        this.isLoading = false;
+        return;
+      }
+      if (resourceRes.error) {
+        this.AddError(resourceRes.error.message);
+        this.isLoading = false;
+        return;
+      }
+      if (privilegeRes.error) {
+        this.AddError(privilegeRes.error.message);
+        this.canUserEdit = false;
+      } else {
+        this.canUserEdit = privilegeRes.data;
+      }
+      this.Records = [treeRes.content];
+      // Ensure the first tree level 1 node is selected if no node is selected
+      if (!this.SelectedNode) {
+        let firstTreeLevel1Node =
+          this.Records[0].treeLevel === 0 // Check if the root node is a tree level 0 node
+            ? this.Records[0].children && this.Records[0].children[0]
+            : this.Records[0];
+        if (firstTreeLevel1Node) this.SelectedNode = { ...firstTreeLevel1Node, attachments: {} };
+      }
+      this.resources = resourceRes.data;
+      const doc = document; // this is the current document
+      if (!doc.getElementById(this.STYLE_ID)) {
+        const style = doc.createElement("style");
+        style.id = this.STYLE_ID;
+        style.textContent = ".tox-tinymce-aux{z-index:1000001!important}";
+        doc.head.appendChild(style);
+      }
+      this.isLoading = false;
+    } catch (e: any) {
+      this.AddError(`Error fetching content tree: ${e.message}`);
+      this.isLoading = false;
+    } finally {
+      this.IsLoading = false;
+    }
   }
-
-  //TODO
-  // /**
-  //  * Initializes the control by fetching the content tree.
-  //  */
-  // public async init() {
-  //   this.isLoading = true;
-  //   if (!this.courseCategoryGuid) {
-  //     this.SetAppError("courseCategoryGuid is undefined");
-  //     this.isLoading = false;
-  //     return;
-  //   }
-  //   try {
-  //     const [treeRes, resourceRes, privilegeRes] = await Promise.all([
-  //       this.cdsService.fetchTree(this.courseCategoryGuid),
-  //       this.cdsService.fetchSubjectResources(this.courseCategoryGuid),
-  //       this.cdsService.checkUserPrivileges(),
-  //     ]);
-  //     if (treeRes.error) {
-  //       this.AddError(treeRes.error.message);
-  //       this.isLoading = false;
-  //       return;
-  //     }
-  //     if (resourceRes.error) {
-  //       this.AddError(resourceRes.error.message);
-  //       this.isLoading = false;
-  //       return;
-  //     }
-  //     if (privilegeRes.error) {
-  //       this.AddError(privilegeRes.error.message);
-  //       this.canUserEdit = false;
-  //     } else {
-  //       this.canUserEdit = privilegeRes.data;
-  //     }
-  //     this.Records = [treeRes.content];
-  //     // Ensure the first tree level 1 node is selected if no node is selected
-  //     if (!this.SelectedNode) {
-  //       let firstTreeLevel1Node =
-  //         this.Records[0].treeLevel === 0 // Check if the root node is a tree level 0 node
-  //           ? this.Records[0].children && this.Records[0].children[0]
-  //           : this.Records[0];
-  //       if (firstTreeLevel1Node) this.SelectedNode = { ...firstTreeLevel1Node, attachments: {} };
-  //     }
-  //     this.resources = resourceRes.data;
-  //     const doc = document; // this is the current document
-  //     if (!doc.getElementById(this.STYLE_ID)) {
-  //       const style = doc.createElement("style");
-  //       style.id = this.STYLE_ID;
-  //       style.textContent = ".tox-tinymce-aux{z-index:1000001!important}";
-  //       doc.head.appendChild(style);
-  //     }
-  //     this.isLoading = false;
-  //   } catch (e: any) {
-  //     this.AddError(`Error fetching content tree: ${e.message}`);
-  //     this.isLoading = false;
-  //   }
-  // }
 
   private async checkAuthStatus(token: string) {
     const res: CdsResponse<User> = await this.cdsService.CheckAuthStatus(token);
@@ -1184,7 +1166,6 @@ export default class AuthoringToolVM {
     const mainObjectRegex = /Deleting records from ([\w_]+) \(ObjectTypeCode: (\d+)\)/;
     const mainObjectMatch = errorMessage.match(mainObjectRegex);
     const objectName = mainObjectMatch ? mainObjectMatch[1] : "the object";
-    const objectTypeCode = mainObjectMatch ? mainObjectMatch[2] : "unknown";
     // Regular expression to capture the node ID
     const nodeIdRegex = /for Id\(s\) : ([a-f0-9-]+)/;
     const nodeIdMatch = errorMessage.match(nodeIdRegex);
@@ -1727,7 +1708,7 @@ export default class AuthoringToolVM {
       // Collect placeholders for all exact wrapper matches.
       const placeholders: Record<string, string> = {};
       let placeholderIndex = 0;
-      $("article").each((index, articleElement) => {
+      $("article").each((_index, articleElement) => {
         const $article = $(articleElement);
         const syllabus = $article.children("div.syllabus").first();
         const extsyllabus = $article.children("div.extsyllabus").first();
@@ -1747,7 +1728,7 @@ export default class AuthoringToolVM {
       });
       // Escape partial matches anywhere (won't touch preserved placeholders).
       const partialSelector = 'div.syllabus, div.extsyllabus, [id^="editable_"]';
-      $(partialSelector).each((index, element) => {
+      $(partialSelector).each((_index, element) => {
         const outer = $.html(element) ?? "";
         // replace the element with a text node containing the escaped outerHTML
         $(element).replaceWith(this.EscapeHtmlForEditor(outer));

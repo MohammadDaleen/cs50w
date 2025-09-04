@@ -5,6 +5,7 @@ import {
   MessageBar,
   MessageBarActions,
   MessageBarBody,
+  MessageBarGroup,
   MessageBarTitle,
   teamsDarkTheme,
   teamsLightTheme,
@@ -17,13 +18,7 @@ import AuthoringToolVM from "../viewModel/AuthoringToolVM";
 import ServiceProvider from "../ServiceProvider";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Layout } from "./Layout";
-import { NotFound } from "./NotFound";
-import { Login } from "./Login";
-import { Register } from "./Register";
-import { Index } from "./Index";
-import { ProtectedRoute } from "./ProtectedRoute";
-import { Loading } from "./Loading";
+import { Loading, ProtectedRoute, MainPage, Register, Login, Layout, NotFound } from "./index";
 
 export interface props {
   serviceProvider: ServiceProvider;
@@ -39,7 +34,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
-      { path: "/", element: <Index /> },
+      { path: "/", element: <MainPage /> },
       {
         path: "/",
         element: <ProtectedRoute />,
@@ -68,6 +63,9 @@ const useStyles = makeStyles({
   },
   warpper: {
     minHeight: "100vh",
+  },
+  messageBarGroup: {
+    flexShrink: "0", // Prevent the message bar group from shrinking
   },
 });
 
@@ -99,24 +97,25 @@ export const App = observer(({ serviceProvider }: props) => {
               <Loading />
             ) : (
               <>
-                {vm.ErrorMessages && (
-                  <MessageBar intent="error">
-                    <MessageBarBody>
-                      <MessageBarTitle>{vm.ErrorMessages}</MessageBarTitle>
-                    </MessageBarBody>
-                    <MessageBarActions
-                      containerAction={
-                        <Button
-                          appearance="transparent"
-                          onClick={() => {
-                            vm.AddError(undefined);
-                          }}
-                          icon={<DismissRegular />}
-                        />
-                      }
-                    />
-                  </MessageBar>
-                )}
+                <MessageBarGroup animate="both" className={styles.messageBarGroup}>
+                  {Array.from(vm.ErrorMessages).map((errMsg, idx) => (
+                    <MessageBar key={`error-${idx}`} intent="error">
+                      <MessageBarBody>
+                        <MessageBarTitle>{errMsg[1]}</MessageBarTitle>
+                      </MessageBarBody>
+                      <MessageBarActions
+                        containerAction={
+                          <Button
+                            onClick={() => vm.DismissError(errMsg[0])}
+                            aria-label="dismiss"
+                            appearance="transparent"
+                            icon={<DismissRegular />}
+                          />
+                        }
+                      />
+                    </MessageBar>
+                  ))}
+                </MessageBarGroup>
                 <RouterProvider router={router} />
               </>
             )}

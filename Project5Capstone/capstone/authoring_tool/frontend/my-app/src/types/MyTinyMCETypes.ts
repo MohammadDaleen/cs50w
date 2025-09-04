@@ -80,10 +80,7 @@ interface DialogFooterToggleButtonSpec extends BaseDialogFooterButtonSpec {
   text?: string;
   active?: boolean;
 }
-type DialogFooterButtonSpec =
-  | DialogFooterNormalButtonSpec
-  | DialogFooterMenuButtonSpec
-  | DialogFooterToggleButtonSpec;
+type DialogFooterButtonSpec = DialogFooterNormalButtonSpec | DialogFooterMenuButtonSpec | DialogFooterToggleButtonSpec;
 interface TabSpec {
   name?: string;
   title: string;
@@ -108,21 +105,14 @@ interface DialogTabChangeDetails {
   oldTabName: string;
 }
 
-type DialogActionHandler<T extends DialogData> = (
-  api: DialogInstanceApi<T>,
-  details: DialogActionDetails
-) => void;
+type DialogActionHandler<T extends DialogData> = (api: DialogInstanceApi<T>, details: DialogActionDetails) => void;
 export type DialogChangeHandler<T extends DialogData> = (
   api: DialogInstanceApi<T>,
   details: DialogChangeDetails<T>
 ) => void;
-type DialogSubmitHandler<T extends DialogData> = (
-  api: DialogInstanceApi<T>
-) => void;
+type DialogSubmitHandler<T extends DialogData> = (api: DialogInstanceApi<T>) => void;
 type DialogCloseHandler = () => void;
-type DialogCancelHandler<T extends DialogData> = (
-  api: DialogInstanceApi<T>
-) => void;
+type DialogCancelHandler<T extends DialogData> = (api: DialogInstanceApi<T>) => void;
 type DialogTabChangeHandler<T extends DialogData> = (
   api: DialogInstanceApi<T>,
   details: DialogTabChangeDetails
@@ -313,3 +303,12 @@ type BodyComponentSpec =
   // | TreeSpec
   | PanelSpec
   | CustomEditorSpec;
+
+interface BaseToolbarButtonInstanceApi {
+  isEnabled: () => boolean;
+  setEnabled: (state: boolean) => void;
+  setText: (text: string) => void;
+  setIcon: (icon: string) => void;
+}
+
+export interface ToolbarButtonInstanceApi extends BaseToolbarButtonInstanceApi {}

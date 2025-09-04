@@ -1,11 +1,11 @@
+import type { resourcetype } from "../enums";
 import type { Guid } from "./index";
-import { axa_resourcetype } from "../cds-generated/enums/axa_resourcetype";
 
 export type Resource = {
   guid: Guid;
   subjectGuid: Guid;
   fileName: string;
-  type: axa_resourcetype;
+  type: resourcetype;
   title: string;
   blobUrl?: string;
   url: string;

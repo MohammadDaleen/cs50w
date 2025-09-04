@@ -8,14 +8,12 @@ import { filetype, resourcetype } from "../enums";
 
 export default class CdsService {
   public static readonly serviceName = "CdsService";
-  private readonly clientUrl: string = "http://localhost:8000";
+  public readonly ClientUrl: string = "http://localhost:8000";
   private readonly apiUrl: string = "http://localhost:8000/api/data/v9.2";
   private readonly apiRoute: string = "/api/data/v9.2";
 
   private groupResrourceAlias = "groupresourceid";
   private resourceAlias = "resourceid";
-  private groupSubjectAlias = "coursecategory_resourcegroupid";
-  private subjectAlias = "coursecategoryid";
 
   public async Register(username: string, email: string, password: string): Promise<CdsResponse<User>> {
     try {
@@ -161,7 +159,7 @@ export default class CdsService {
       // get fetchXml for group resources and subject resources
       const groupResourcesFetchXml = "this.groupResourcesFetchXml(subjectGuid)";
       // make a batch request to get group resources and subject resources
-      const resourcesBatchRequest = new BatchRequest(this.clientUrl);
+      const resourcesBatchRequest = new BatchRequest(this.ClientUrl);
       resourcesBatchRequest.addOperation(
         HTTPMethod.GET,
         `${this.apiUrl}/resourcegroups?fetchXml=${encodeURIComponent(groupResourcesFetchXml)}`
@@ -173,7 +171,7 @@ export default class CdsService {
       // format the resources
       const resources = this.formatGroupResources(groupResources, subjectGuid);
       // make a batch request to get the content for the resources
-      const batchRequest = new BatchRequest(this.clientUrl);
+      const batchRequest = new BatchRequest(this.ClientUrl);
       for (const resource of Object.values(resources))
         if (!resource.blobUrl) batchRequest.addOperation(HTTPMethod.GET, resource.url);
       const res = await batchRequest.execute();
@@ -530,8 +528,9 @@ export default class CdsService {
         else reject({ error: new Error(request.statusText) });
       };
       request.onerror = () => reject({ error: new Error(request.statusText) });
-      //TODO if (!firstRequest) request.send(bytes);
-      //TODO else request.send();
+      //TODO
+      if (!firstRequest) request.send(bytes);
+      else request.send();
     });
   };
 
@@ -637,7 +636,7 @@ export default class CdsService {
   public async DeleteContentNode(node: Content): Promise<CdsResponse<void>> {
     try {
       // Initialize BatchRequest with the Organization URL
-      const batchRequest = new BatchRequest(this.clientUrl);
+      const batchRequest = new BatchRequest(this.ClientUrl);
       /**
        * Recursively processes a content node by adding a corresponding detete (DELETE)
        * operation to the batch request. Also processes any child nodes.
@@ -685,7 +684,7 @@ export default class CdsService {
    */
   public async SaveContentSequence(newContent: Content[]): Promise<CdsResponse<Content[]>> {
     // Initialize BatchRequest with the Organization URL
-    const batchRequest = new BatchRequest(this.clientUrl);
+    const batchRequest = new BatchRequest(this.ClientUrl);
     // Mapping of temporary node IDs (e.g. "new123456") to the assigned batch Content-ID.
     const newIdMapping: Record<string, number> = {};
     /**
@@ -882,7 +881,7 @@ export default class CdsService {
       // Build an OData literal for a collection of strings (quote‑and‑comma‑join)
       const privilegesParam: string = requiredPrivileges.map((p) => `'${p}'`).join(","); // This produces a string
       // Construct the URL using the documented syntax.
-      const url = `${this.clientUrl}/api/data/v9.2/systemusers(${userId})/Microsoft.Dynamics.CRM.RetrieveUserSetOfPrivilegesByNames(PrivilegeNames=@p)?@p=[${privilegesParam}]`;
+      const url = `${this.ClientUrl}/api/data/v9.2/systemusers(${userId})/Microsoft.Dynamics.CRM.RetrieveUserSetOfPrivilegesByNames(PrivilegeNames=@p)?@p=[${privilegesParam}]`;
       const response = await fetch(url, {
         method: "GET",
         headers: {

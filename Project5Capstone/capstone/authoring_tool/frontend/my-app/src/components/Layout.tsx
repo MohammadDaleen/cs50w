@@ -12,12 +12,11 @@ export const Layout = observer(() => {
   const vm = useVM();
   const navigate = useNavigate();
 
-  //TODO
-  // const location = useLocation(); // Get current location (i.e., route)
-  // useEffect(() => {
-  //   // Execute when the user navigates to different route
-  //   vm.AddError(undefined);
-  // }, [location]); // Re-run effect on location change
+  const location = useLocation(); // Get current location (i.e., route)
+  useEffect(() => {
+    // Execute when the user navigates to different route
+    vm.ClearErrors();
+  }, [location]); // Re-run effect on location change
 
   const handleLogout = async () => {
     await vm.Logout();
