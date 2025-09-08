@@ -1,7 +1,8 @@
 import { observer } from "mobx-react";
-import { useVM } from "../../viewModel/context";
+import { useVM } from "../../../viewModel/context";
 import { makeStyles, Spinner } from "@fluentui/react-components";
-import { HtmlFileRenderer, NoData } from "..";
+import { HtmlFileRenderer } from ".";
+import { NoData } from "../..";
 
 // Define styles using Fluent UI's makeStyles
 const useStyles = makeStyles({

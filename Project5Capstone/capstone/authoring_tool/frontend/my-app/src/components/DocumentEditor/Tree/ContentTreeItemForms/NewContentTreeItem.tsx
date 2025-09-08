@@ -1,6 +1,5 @@
 import { observer } from "mobx-react";
 import { useEffect, useState } from "react";
-import { useVM } from "../../../viewModel/context";
 import {
   Button,
   Input,
@@ -16,9 +15,10 @@ import {
   useSubtreeContext_unstable,
 } from "@fluentui/react-components";
 import { CheckmarkFilled, DismissFilled } from "@fluentui/react-icons";
-import type { Content } from "../../../types";
-import { NoData } from "../../NoData";
-import { getIconByTreeLevel } from "..";
+import { NoData } from "../../..";
+import { useVM } from "../../../../viewModel/context";
+import type { Content } from "../../../../types";
+import { getIconByTreeLevel } from "../";
 
 // Define styles for the component
 const useStyles = makeStyles({

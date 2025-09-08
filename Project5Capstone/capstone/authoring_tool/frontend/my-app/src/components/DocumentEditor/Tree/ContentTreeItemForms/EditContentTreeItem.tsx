@@ -2,9 +2,9 @@ import { observer } from "mobx-react";
 import React from "react";
 import { Button, Input, Label, Tooltip, makeStyles, mergeClasses, tokens, useId } from "@fluentui/react-components";
 import { CheckmarkFilled, DismissFilled } from "@fluentui/react-icons";
-import { useVM } from "../../../viewModel/context";
-import type { Content } from "../../../types";
-import { NoData } from "../../NoData";
+import type { Content } from "../../../../types";
+import { useVM } from "../../../../viewModel/context";
+import { NoData } from "../../../NoData";
 
 const useStyles = makeStyles({
   form: { display: "flex" },

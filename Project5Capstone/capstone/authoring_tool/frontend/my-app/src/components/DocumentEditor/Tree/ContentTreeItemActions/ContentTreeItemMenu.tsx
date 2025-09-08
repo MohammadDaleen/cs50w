@@ -17,9 +17,9 @@ import {
   Tooltip,
 } from "@fluentui/react-components";
 import { AddFilled, SquareAddRegular, EditFilled, DeleteFilled, MoreVerticalFilled } from "@fluentui/react-icons";
-import type { Content } from "../../../types";
-import { useVM } from "../../../viewModel/context";
 import { observer } from "mobx-react";
+import type { Content } from "../../../../types";
+import { useVM } from "../../../../viewModel/context";
 
 const useStyles = makeStyles({
   dialogButton: {

@@ -12,11 +12,11 @@ import {
   TableCellLayout,
   type TableColumnDefinition,
 } from "@fluentui/react-components";
-import { useVM } from "../../../viewModel/context";
+import { useVM } from "../../../../viewModel/context";
 import { AddRegular, DeleteRegular, ImageRegular, VideoRegular, MicRegular, AppsRegular } from "@fluentui/react-icons";
-import type { Attachment } from "../../../types";
+import type { Attachment } from "../../../../types";
 import { RawImageDialog } from ".";
-import { filetype } from "../../../enums";
+import { filetype } from "../../../../enums";
 
 type FileCell = { label: string; icon: JSX.Element };
 

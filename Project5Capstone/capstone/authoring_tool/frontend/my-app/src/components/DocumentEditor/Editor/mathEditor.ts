@@ -1,7 +1,7 @@
 // src/components/Editor/imageOverlay.ts
 import type { Editor as TinyMCEEditor } from "tinymce/tinymce";
-import type AuthoringToolVM from "../../viewModel/AuthoringToolVM";
-import type { ToolbarButtonInstanceApi } from "../../types";
+import type AuthoringToolVM from "../../../viewModel/AuthoringToolVM";
+import type { ToolbarButtonInstanceApi } from "../../../types";
 
 /**
  * Installs the math editor functionality for TinyMCE editor.

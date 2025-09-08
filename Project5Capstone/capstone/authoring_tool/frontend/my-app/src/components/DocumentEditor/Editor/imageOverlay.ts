@@ -1,7 +1,7 @@
 // src/components/Editor/imageOverlay.ts
 import type { Editor as TinyMCEEditor } from "tinymce/tinymce";
 import { resizeImageByFactor, setImageMaxSize, setImageMinSize, STEP } from ".";
-import type AuthoringToolVM from "../../viewModel/AuthoringToolVM";
+import type AuthoringToolVM from "../../../viewModel/AuthoringToolVM";
 
 /**
  * Installs the image overlay functionality for TinyMCE editor.

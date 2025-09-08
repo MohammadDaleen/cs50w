@@ -14,7 +14,7 @@ import {
   Tooltip,
   makeStyles,
 } from "@fluentui/react-components";
-import { useVM } from "../../../viewModel/context";
+import { useVM } from "../../../../viewModel/context";
 import { LinkDismissRegular, LinkRegular } from "@fluentui/react-icons";
 
 const useStyles = makeStyles({

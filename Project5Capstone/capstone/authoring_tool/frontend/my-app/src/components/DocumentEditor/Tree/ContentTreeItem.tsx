@@ -17,14 +17,13 @@ import {
   Spinner,
 } from "@fluentui/react-components";
 import { observer } from "mobx-react";
-import { useVM } from "../../viewModel/context";
-import type { Content } from "../../types";
-import { ContentTreeItemLayout } from "./ContentTreeItemLayout";
-import { ContentTreeItemMenu, ReorderContentActions } from "./ContentTreeItemActions";
-import { ContentTreeItemChildren } from "./ContentTreeItemChildren";
 import { CounterBadge } from "@fluentui/react-components";
-import { EditContentFormAction, NewContentTreeItem } from "./ContentTreeItemForms";
 import { useState } from "react";
+import { useVM } from "../../../viewModel/context";
+import type { Content } from "../../../types";
+import { ContentTreeItemMenu, ReorderContentActions } from "./ContentTreeItemActions";
+import { EditContentFormAction, NewContentTreeItem } from "./ContentTreeItemForms";
+import { ContentTreeItemChildren, ContentTreeItemLayout } from ".";
 
 // Define styles using Fluent UI's makeStyles
 const useStyles = makeStyles({

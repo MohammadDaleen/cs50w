@@ -1,9 +1,9 @@
 import { observer } from "mobx-react";
 import { useRef, useEffect } from "react";
-import { useVM } from "../../viewModel/context";
-import { LoadingCover } from "..";
+import { useVM } from "../../../viewModel/context";
+import { LoadingCover } from "../..";
 import { makeStyles } from "@fluentui/react-components";
-import type { Resource } from "../../types";
+import type { Resource } from "../../../types";
 
 // Define styles using Fluent UI's makeStyles
 const useStyles = makeStyles({

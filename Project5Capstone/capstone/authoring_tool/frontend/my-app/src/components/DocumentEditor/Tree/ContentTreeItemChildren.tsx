@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
-import type { Content } from "../../types/Content";
-import { ContentTreeItem } from "./ContentTreeItem";
+import type { Content } from "../../../types/Content";
+import { ContentTreeItem } from ".";
 
 export const ContentTreeItemChildren = observer(({ content, level }: { content: Content; level: string }) => {
   if (!content.children?.length) return null;

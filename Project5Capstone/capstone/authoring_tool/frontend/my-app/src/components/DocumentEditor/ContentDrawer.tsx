@@ -37,16 +37,11 @@ import {
 } from "@fluentui/react-icons";
 import { observer } from "mobx-react";
 import { useState } from "react";
-import { useVM } from "../viewModel/context";
-import {
-  NoData,
-  ContentTree,
-  ContentViewer,
-  ContentEditor,
-  ExpandableText,
-  TreeMenuButton,
-  LoadingCover,
-} from "./index";
+import { useVM } from "../../viewModel/context";
+import { ContentEditor } from "./Editor";
+import { LoadingCover, NoData } from "..";
+import { ContentTree, ExpandableText, TreeMenuButton } from "./Tree";
+import { ContentViewer } from "./Viewer";
 
 // Define styles using Fluent UI's makeStyles
 const useStyles = makeStyles({

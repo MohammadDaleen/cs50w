@@ -1,8 +1,9 @@
 import { observer } from "mobx-react";
-import { useVM } from "../../viewModel/context";
+import { useVM } from "../../../viewModel/context";
 import { makeStyles, Spinner } from "@fluentui/react-components";
-import { TinyMCE, AttachmentDialog } from "..";
+import { AttachmentDialog } from "./AttachmentsDialog";
 import { MathDialog } from "./MathDialog";
+import { TinyMCE } from ".";
 
 // Define styles using Fluent UI's makeStyles
 const useStyles = makeStyles({

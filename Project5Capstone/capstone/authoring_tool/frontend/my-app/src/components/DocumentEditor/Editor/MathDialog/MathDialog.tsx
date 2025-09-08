@@ -13,7 +13,7 @@ import {
   MessageBarTitle,
   Spinner,
 } from "@fluentui/react-components";
-import { useVM } from "../../../viewModel/context";
+import { useVM } from "../../../../viewModel/context";
 import { DismissRegular } from "@fluentui/react-icons";
 import { MathLiveEditor } from "./MathLiveEditor";
 

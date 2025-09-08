@@ -19,10 +19,10 @@ import {
   NotebookAddRegular,
 } from "@fluentui/react-icons";
 import { ExpandableText } from ".";
-import { useVM } from "../../viewModel/context";
+import { useVM } from "../../../viewModel/context";
 import { observer } from "mobx-react";
+import type { Content } from "../../../types";
 import { EditContentTreeItem } from "./ContentTreeItemForms";
-import type { Content } from "../../types";
 
 // Define styles for the component
 const useStyles = makeStyles({

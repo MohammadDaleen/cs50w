@@ -14,7 +14,7 @@ import {
   Spinner,
   Tooltip,
 } from "@fluentui/react-components";
-import { useVM } from "../../../viewModel/context";
+import { useVM } from "../../../../viewModel/context";
 import { ArrowUploadFilled, DismissRegular } from "@fluentui/react-icons";
 import { AttachmentList } from "./AttachmentsList";
 

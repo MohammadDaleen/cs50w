@@ -5,9 +5,9 @@ import {
   ArrowSortDownLinesFilled,
   ArrowSortUpLinesFilled,
 } from "@fluentui/react-icons";
-import { useVM } from "../../../viewModel/context";
-import type { Content } from "../../../types/Content";
 import { observer } from "mobx-react";
+import type { Content } from "../../../../types";
+import { useVM } from "../../../../viewModel/context";
 
 export const ReorderContentActions = observer(({ record }: { record: Content }) => {
   const vm = useVM();

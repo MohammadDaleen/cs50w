@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { observer } from "mobx-react";
 import { BundledEditor } from "./BundledEditor";
-import { useVM } from "../../viewModel/context";
+import { useVM } from "../../../viewModel/context";
 import type { Editor as TinyMCEEditor } from "tinymce/tinymce";
 import { installImageOverlay, installMathEditor } from ".";
 

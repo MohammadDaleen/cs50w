@@ -1,6 +1,6 @@
 import { Hamburger, makeStyles, mergeClasses, Tooltip, useRestoreFocusTarget } from "@fluentui/react-components";
 import { observer } from "mobx-react-lite";
-import { useVM } from "../../viewModel/context";
+import { useVM } from "../../../viewModel/context";
 
 const useStyles = makeStyles({
   marginRight: {

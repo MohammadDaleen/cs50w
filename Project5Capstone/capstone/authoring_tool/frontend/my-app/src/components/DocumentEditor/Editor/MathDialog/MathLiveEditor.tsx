@@ -1,6 +1,6 @@
 import { Field, makeStyles, Textarea, tokens } from "@fluentui/react-components";
 import React, { useRef, useEffect, useCallback } from "react";
-import { useVM } from "../../../viewModel/context";
+import { useVM } from "../../../../viewModel/context";
 import { observer } from "mobx-react-lite";
 import "mathlive";
 import { MathfieldElement } from "mathlive";
