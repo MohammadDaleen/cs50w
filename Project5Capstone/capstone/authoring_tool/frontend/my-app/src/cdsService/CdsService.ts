@@ -241,158 +241,59 @@ export default class CdsService {
     }
   }
 
-  public async fetchSubjectResources(subjectGuid: string): Promise<CdsResponse<Record<string, Resource>>> {
+  public async fetchDocumentResources(token: string): Promise<CdsResponse<Record<string, Resource>>> {
     try {
-      //TODO
-      // get fetchXml for group resources and subject resources
-      const groupResourcesFetchXml = "this.groupResourcesFetchXml(subjectGuid)";
-      // make a batch request to get group resources and subject resources
-      const resourcesBatchRequest = new BatchRequest(this.ClientUrl);
-      resourcesBatchRequest.addOperation(
-        HTTPMethod.GET,
-        `${this.apiUrl}/resourcegroups?fetchXml=${encodeURIComponent(groupResourcesFetchXml)}`
-      );
-      const resourcesBatchData = await resourcesBatchRequest.execute();
-      const groupResources = resourcesBatchData[0].body.value;
-      // check if there are no resources
-      if (!groupResources || !groupResources.length) return { data: {} };
-      // format the resources
-      const resources = this.formatGroupResources(groupResources, subjectGuid);
-      // make a batch request to get the content for the resources
-      const batchRequest = new BatchRequest(this.ClientUrl);
-      for (const resource of Object.values(resources))
-        if (!resource.blobUrl) batchRequest.addOperation(HTTPMethod.GET, resource.url);
-      const res = await batchRequest.execute();
-      // format the result and create a blob url for each resource
-      res.forEach((response) => {
-        const fileContent: string = response.body;
-        const headers = response.headers;
-        let fileName: string = headers["x-ms-file-name"];
-        let mimeType = headers["mimetype"];
-        if (mimeType === "text/plain") {
-          mimeType = "application/javascript";
-        }
-        const resource = resources[fileName];
-        if (!resource) return;
-        // make a url for the file as a blob object, use the file name as the key
-        const blob = new Blob([fileContent], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        resource.blobUrl = url;
-        resources[fileName] = resource;
+      const response = await fetch(`${this.apiUrl}/resources`, {
+        method: "GET",
+        headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
       });
-      if (!this.allKeysHaveValues(resources)) return { error: Error("Some or all resources are invaild") };
+      if (!response.ok) throw new Error(`Failed to fetch resources: ${response.statusText}`);
+      const resourcesData = await response.json();
+      // Transform the response to match the expected format
+      const resources: Record<string, Resource> = {};
+      for (const res of resourcesData) {
+        resources[res.name] = {
+          guid: res.id,
+          subjectGuid: "", //TODO Not used in new implementation
+          fileName: res.name,
+          type: res.type, //TODO this.mapResourceType(res.type), // Map to numeric value if needed
+          title: res.name,
+          blobUrl: res.file_url, //TODO Use the direct URL from Django
+          url: res.file_url,
+          order: 0, //TODO Not used in new implementation
+        };
+      }
+
       return { data: resources };
     } catch (error: any) {
       console.error("Error in fetchSubjectResources:", error);
-      return { error: Error("An unexpected error occurred.") };
+      return { error: new Error("An unexpected error occurred.") };
     }
-  }
-
-  private formatGroupResources(data: { [key: string]: any }[], subjectGuid: string): Record<string, Resource> {
-    const resources: Record<string, Resource> = {};
-    for (const entity of data) {
-      const resourceGuid: Guid = entity[`${this.resourceAlias}.ResourceId`];
-      if (!resourceGuid) continue;
-      const title: string = entity[`${this.resourceAlias}.Title`];
-      let fileName: string = entity[`${this.resourceAlias}.File_Name`];
-      const type: resourcetype = entity[`${this.resourceAlias}.Type`];
-      const order = entity[`${this.groupResrourceAlias}.Order}`];
-      const resourceFileUrl = `${this.apiUrl}/resources(${resourceGuid})/File/$value`;
-      const resource: Resource = {
-        guid: resourceGuid,
-        subjectGuid,
-        fileName,
-        title,
-        type,
-        order,
-        url: resourceFileUrl,
-      };
-      resources[fileName] = resource;
-    }
-    return resources;
   }
 
   /**
-   * Fetches the content tree from the MDA.
+   * Fetches the content tree from the backend.
    */
   public async fetchTree(
-    courseCategoryGuid: string
+    token: string,
+    documentId: string
   ): Promise<{ content: Content; error?: never } | { content?: never; error: Error }> {
-    const apiUrl = `${this.apiUrl}/axa_GetContentTreeByCourseCategoryId`;
+    const apiUrl = `${this.apiUrl}/document/${documentId}/content`;
     const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ CourseCategoryId: courseCategoryGuid }),
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`, // Attach the token in the Authorization header
+      },
     };
     const response = await fetch(apiUrl, requestOptions);
     if (!response.ok) return { error: Error(`Error: ${response.status} - ${response.statusText}`) };
     const data = await response.json();
     // Extract the relevant data
-    const contentTree = JSON.parse(data.ContentTree); // Convert ContentTree string to JSON
-    if (!Array.isArray(contentTree)) return { error: Error("ContentTree is not an array") };
-    if (!(contentTree.length > 0)) return { error: Error("ContentTree array is empty") };
+    if (!Array.isArray(data)) return { error: Error("data is not an array") };
+    if (!(data.length > 0)) return { error: Error("data array is empty") };
     // Format the content tree and store it
-    const formattedData = this.formatTree(contentTree[0]); // Assuming a single root
-    // TODO: Remove if not needed (Note: it doesn't work)
-    // /** batch-count and annotate flags using BatchRequest */
-    // // Flatten all nodes into a single array so we can query counts in bulk
-    // const allNodes: Content[] = [];
-    // const collect = (node: Content) => {
-    //   allNodes.push(node);
-    //   // Recursively collect child nodes
-    //   node.children?.forEach((child) => collect(child));
-    // };
-    // collect(formattedData);
-    // if (allNodes.length > 0) {
-    //   // Build comma-separated list of IDs for use in the OData `in` filter
-    //   const idList = allNodes.map((nodes) => `'${nodes.id}'`).join(",");
-    //   // Build OData aggregation query strings to count records grouped by content ID
-    //   const questionQuery = [
-    //     `${axa_questionMetadata.collectionName}`,
-    //     `?$apply=filter(`,
-    //     `    ${this.toGuidField(axa_contentMetadata.logicalName)} in (${idList})`,
-    //     `)`,
-    //     `/groupby(`,
-    //     `    (${this.toGuidField(axa_contentMetadata.logicalName)}),`,
-    //     `    aggregate($count as count)`,
-    //     `)`,
-    //   ]
-    //     .map((line) => line.trim())
-    //     .join("");
-    //   const examRuleQuery = [
-    //     `${axa_examtemplateruleMetadata.collectionName}`,
-    //     `?$apply=filter(`,
-    //     `    ${this.toGuidField(axa_contentMetadata.logicalName)} in (${idList})`,
-    //     `)`,
-    //     `/groupby(`,
-    //     `    (${this.toGuidField(axa_contentMetadata.logicalName)}),`,
-    //     `    aggregate($count as count)`,
-    //     `)`,
-    //   ]
-    //     .map((line) => line.trim())
-    //     .join("");
-    //   // Initialize a single BatchRequest to execute both queries in one HTTP call
-    //   const batch = new BatchRequest(this.clientUrl);
-    //   // Add GET operation for questions count
-    //   batch.addOperation(HTTPMethod.GET, `${this.apiRoute}/${questionQuery}`);
-    //   // Add GET operation for exam template rules count
-    //   batch.addOperation(HTTPMethod.GET, `${this.apiRoute}/${examRuleQuery}`);
-    //   const responses = await batch.execute();
-    //   // Extract and map results
-    //   // Parse batch responses and create lookup maps of boolean flags
-    //   const qBody = (responses[0].body as any).value as { _axa_content_value: string; count: number }[];
-    //   const rBody = (responses[1].body as any).value as { _axa_content_value: string; count: number }[];
-    //   // Map of content ID to whether it has any related Questions
-    //   const qMap = new Map(qBody.map((e) => [e._axa_content_value, e.count > 0]));
-    //   // Map of content ID to whether it has any related ExamTemplateRules
-    //   const rMap = new Map(rBody.map((e) => [e._axa_content_value, e.count > 0]));
-    //   // Annotate each node with the flags based on lookup maps
-    //   allNodes.forEach((node) => {
-    //     node.hasQuestions = qMap.get(node.id) || false;
-    //     node.hasExamTemplateRules = rMap.get(node.id) || false;
-    //   });
-    // }
-    // /** end batch-count and annotate --- */
+    const formattedData = this.formatTree(data[0]); // Assuming a single root
     return { content: formattedData };
   }
 
@@ -404,22 +305,20 @@ export default class CdsService {
    */
   private formatTree = (node: any, parent: Content | null = null): Content => {
     const parentOfChild: Content = {
-      id: node.ContentId,
-      name: node.Name,
-      order: node.Order,
-      parentId: node.ParentId,
-      path: node.Path,
-      referenceID: node.ReferenceID,
-      treeLevel: node.TreeLevel,
+      id: node.id,
+      name: node.name,
+      order: node.order,
+      parentId: node.parent,
+      treeLevel: node.level,
       parent: parent ? parent : undefined,
     };
     const formattedNode: Content = {
       ...parentOfChild,
       // Recurse into children and sort by Order
       children:
-        node.Children.map((child: Content) => this.formatTree(child, parentOfChild)).sort(
-          (a: Content, b: Content) => a.order - b.order
-        ) ?? [],
+        node.children
+          .map((child: Content) => this.formatTree(child, parentOfChild))
+          .sort((a: Content, b: Content) => a.order - b.order) ?? [],
     };
     return formattedNode;
   };
@@ -927,68 +826,4 @@ export default class CdsService {
     }
     return `${attachmentPath}\\${fileName}`;
   };
-
-  /**
-   * Checks whether the current user has both WRITE and APPEND/APPEND‑TO privileges
-   * for the specified custom entities.
-   *
-   * This method invokes the RetrieveUserSetOfPrivilegesByNames function in the Web API
-   * to fetch the user's global privilege set for both write and append operations
-   * on axa_Content, axa_ContentAttachment, axa_CourseCategory, and axa_LearningObjective.
-   * It returns true only if the user possesses *all* of the required privileges.
-   *
-   * @async
-   * @function
-   * @returns {Promise<CdsResponse<boolean>>}
-   *   A promise that resolves to a CdsResponse containing:
-   *   - .data: `true` if the user has all required WRITE, APPEND, and APPEND‑TO privileges;
-   *   - .error: an Error if the HTTP request failed or the response could not be parsed.
-   */
-  public async checkUserPrivileges(): Promise<CdsResponse<boolean>> {
-    try {
-      // Get the current user's GUID without curly braces
-      const userId = ""; //TODO Xrm.Utility.getGlobalContext().userSettings.userId.replace("{", "").replace("}", "");
-      // Define the privileges to check
-      const requiredPrivileges = [
-        // WRITE
-        "prvWriteaxa_Content",
-        "prvWriteaxa_ContentAttachment",
-        "prvWriteaxa_CourseCategory",
-        "prvWriteaxa_LearningObjective",
-        // APPEND
-        "prvAppendaxa_Content",
-        "prvAppendaxa_ContentAttachment",
-        "prvAppendaxa_CourseCategory",
-        "prvAppendaxa_LearningObjective",
-        // APPEND TO
-        "prvAppendToaxa_Content",
-        "prvAppendToaxa_ContentAttachment",
-        "prvAppendToaxa_CourseCategory",
-        "prvAppendToaxa_LearningObjective",
-      ];
-      // Build an OData literal for a collection of strings (quote‑and‑comma‑join)
-      const privilegesParam: string = requiredPrivileges.map((p) => `'${p}'`).join(","); // This produces a string
-      // Construct the URL using the documented syntax.
-      const url = `${this.ClientUrl}/api/data/v9.2/systemusers(${userId})/Microsoft.Dynamics.CRM.RetrieveUserSetOfPrivilegesByNames(PrivilegeNames=@p)?@p=[${privilegesParam}]`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "OData-MaxVersion": "4.0",
-          "OData-Version": "4.0",
-          Accept: "application/json",
-        },
-      });
-      if (!response.ok) {
-        return { error: new Error(`Error fetching privileges: ${response.status} - ${response.statusText}`) };
-      }
-      const data = await response.json();
-      // Extract the 'RolePrivileges' array from the response
-      const userPrivileges = data.RolePrivileges.map((priv: { PrivilegeName: string }) => priv.PrivilegeName);
-      // Check if the user has all the required privileges
-      const hasPrivileges = requiredPrivileges.every((privilege) => userPrivileges.includes(privilege));
-      return { data: hasPrivileges };
-    } catch (error: any) {
-      return { error: new Error(error.message) };
-    }
-  }
 }

@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { configure, makeAutoObservable } from "mobx";
 import type { Bookmark, Editor as TinyMCEEditor } from "tinymce/tinymce";
 import CdsService from "../cdsService/CdsService";
 import ServiceProvider from "../ServiceProvider";
@@ -482,12 +482,12 @@ export default class AuthoringToolVM {
   }
 
   // Course category ID derived from the context
-  private _courseCategoryGuid?: string = undefined;
+  private _documentId?: string = undefined;
   private get documentId() {
-    return this._courseCategoryGuid;
+    return this._documentId;
   }
   private set documentId(value: string | undefined) {
-    this._courseCategoryGuid = value;
+    this._documentId = value;
   }
 
   // Course category code derived from the context
@@ -511,7 +511,7 @@ export default class AuthoringToolVM {
     this._subjectUseRefId = value;
   }
 
-  private canUserEdit: boolean = false;
+  private canUserEdit: boolean = true;
   public get CanUserEdit(): boolean {
     return this.canUserEdit;
   }
@@ -571,6 +571,8 @@ export default class AuthoringToolVM {
     this.cdsService = serviceProvider.get(CdsService.serviceName);
     // Make this class observable for MobX
     makeAutoObservable(this);
+    //TODO
+    configure({ enforceActions: "never" }); // disable strict-mode
     this.init();
   }
 
@@ -631,18 +633,6 @@ export default class AuthoringToolVM {
   public async LoadMainPage(): Promise<number[]> {
     const errorIds: number[] = [];
 
-    //TODO get these values from backend
-    // this.SubjectCode = subjectCode;
-    // this.SubjectUseRefId = subjectUseRefId;
-    // this.courseCategoryGuid = this.context.mode.contextInfo.entityId;
-    // const foo = await this.cdsService.FetchDocumentId();
-
-    //TODO
-    this.documentId = "foo";
-    this.canUserEdit = false;
-    this.Records = [{ id: "foo", name: "foo", order: 1, treeLevel: 1 }];
-    this.resources = {};
-
     try {
       const token = this.GetToken();
       // Check for authentication token
@@ -655,53 +645,45 @@ export default class AuthoringToolVM {
     } finally {
       return errorIds;
     }
-
-    // if (!this.documentId) {
-    //   errorIds.push(this.AddError("documentId is undefined"));
-    //   return errorIds;
-    // }
-    // try {
-    //   const [treeRes, resourceRes, privilegeRes] = await Promise.all([
-    //     this.cdsService.fetchTree(this.documentId),
-    //     this.cdsService.fetchSubjectResources(this.documentId),
-    //     this.cdsService.checkUserPrivileges(),
-    //   ]);
-    //   if (treeRes.error) {
-    //     errorIds.push(this.AddError(treeRes.error.message));
-    //     return errorIds;
-    //   }
-    //   if (resourceRes.error) {
-    //     errorIds.push(this.AddError(resourceRes.error.message));
-    //     return errorIds;
-    //   }
-    //   if (privilegeRes.error) {
-    //     errorIds.push(this.AddError(privilegeRes.error.message));
-    //     this.canUserEdit = false;
-    //   } else {
-    //     this.canUserEdit = privilegeRes.data;
-    //   }
-    //   this.Records = [treeRes.content];
-    //   // Ensure the first tree level 1 node is selected if no node is selected
-    //   if (!this.SelectedNode) {
-    //     let firstTreeLevel1Node =
-    //       this.Records[0].treeLevel === 0 // Check if the root node is a tree level 0 node
-    //         ? this.Records[0].children && this.Records[0].children[0]
-    //         : this.Records[0];
-    //     if (firstTreeLevel1Node) this.SelectedNode = { ...firstTreeLevel1Node, attachments: {} };
-    //   }
-    //   this.resources = resourceRes.data;
-    //   const doc = document; // this is the current document
-    //   if (!doc.getElementById(this.STYLE_ID)) {
-    //     const style = doc.createElement("style");
-    //     style.id = this.STYLE_ID;
-    //     style.textContent = ".tox-tinymce-aux{z-index:1000001!important}";
-    //     doc.head.appendChild(style);
-    //   }
-    // } catch (e: any) {
-    //   errorIds.push(this.AddError(`Error fetching content tree: ${e.message}`));
-    // } finally {
-    //   return errorIds;
-    // }
+  }
+  public async LoadDocumentEditor(docId: number): Promise<number[]> {
+    const errorIds: number[] = [];
+    //TODO remove these (planned to not use)
+    // this.SubjectCode = subjectCode;
+    // this.SubjectUseRefId = subjectUseRefId;
+    this.documentId = `${docId}`;
+    try {
+      if (!this.documentId) throw new Error("documentId is undefined");
+      const token = this.GetToken();
+      if (!token) throw new Error("No token found, user is not authenticated");
+      const [treeRes, resourceRes] = await Promise.all([
+        this.cdsService.fetchTree(token, this.documentId),
+        this.cdsService.fetchDocumentResources(token),
+      ]);
+      if (treeRes.error) throw new Error(`Error fetching content tree: ${treeRes.error.message}`);
+      if (resourceRes.error) throw new Error(`Error fetching resources: ${resourceRes.error.message}`);
+      this.Records = [treeRes.content];
+      // Ensure the first tree level 1 node is selected if no node is selected
+      if (!this.SelectedNode) {
+        let firstTreeLevel1Node =
+          this.Records[0].treeLevel === 0 // Check if the root node is a tree level 0 node
+            ? this.Records[0].children && this.Records[0].children[0]
+            : this.Records[0];
+        if (firstTreeLevel1Node) this.SelectedNode = { ...firstTreeLevel1Node, attachments: {} };
+      }
+      this.resources = resourceRes.data;
+      const doc = document; // this is the current document
+      if (!doc.getElementById(this.STYLE_ID)) {
+        const style = doc.createElement("style");
+        style.id = this.STYLE_ID;
+        style.textContent = ".tox-tinymce-aux{z-index:1000001!important}";
+        doc.head.appendChild(style);
+      }
+    } catch (e: any) {
+      errorIds.push(this.AddError(e.message));
+    } finally {
+      return errorIds;
+    }
   }
 
   private async checkAuthStatus(token: string) {
@@ -1135,8 +1117,9 @@ export default class AuthoringToolVM {
       // Ensure no errors
       if (res.error) throw new Error(`Error saving resequenced content: ${res.error.message}`);
       // TODO: Improve using result.data
+      //TODO: implement with proper token validation
       // Update the records to be the same as on the database
-      const treeRes = await this.cdsService.fetchTree(this.documentId);
+      const treeRes = await this.cdsService.fetchTree(this.GetToken() ?? "", this.documentId);
       if (treeRes.error) throw new Error(treeRes.error.message);
       this.Records = [treeRes.content];
       // Refetch chapter in preview mode, if opened

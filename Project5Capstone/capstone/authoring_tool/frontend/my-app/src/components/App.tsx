@@ -19,6 +19,7 @@ import ServiceProvider from "../ServiceProvider";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Loading, ProtectedRoute, MainPage, Register, Login, Layout, NotFound } from "./index";
+import { DocumentEditor } from "./DocumentEditor/DocumentEditor";
 
 export interface props {
   serviceProvider: ServiceProvider;
@@ -41,7 +42,7 @@ const router = createBrowserRouter([
         children: [
           // Protected routes
           // { path: "/following", element: <FollowingPage /> },
-          // { path: "/post/:postId", element: <PostDetail /> },
+          { path: "/document/:documentId", element: <DocumentEditor /> },
         ],
       },
       // { path: "/:username", element: <ProfilePage /> },
@@ -63,9 +64,18 @@ const useStyles = makeStyles({
   },
   warpper: {
     minHeight: "100vh",
+    display: "flex", // Add flex display
+    flexDirection: "column", // Stack children vertically
+    flex: 1, // Take available space
   },
   messageBarGroup: {
     flexShrink: "0", // Prevent the message bar group from shrinking
+  },
+  // The main content area
+  contentArea: {
+    flex: 1, // Take all available space
+    display: "flex",
+    flexDirection: "column",
   },
 });
 
@@ -96,7 +106,7 @@ export const App = observer(({ serviceProvider }: props) => {
             {vm.IsLoading ? (
               <Loading />
             ) : (
-              <>
+              <div className={styles.contentArea}>
                 <MessageBarGroup animate="both" className={styles.messageBarGroup}>
                   {Array.from(vm.ErrorMessages).map((errMsg, idx) => (
                     <MessageBar key={`error-${idx}`} intent="error">
@@ -117,7 +127,7 @@ export const App = observer(({ serviceProvider }: props) => {
                   ))}
                 </MessageBarGroup>
                 <RouterProvider router={router} />
-              </>
+              </div>
             )}
           </ContextProvider>
         )}

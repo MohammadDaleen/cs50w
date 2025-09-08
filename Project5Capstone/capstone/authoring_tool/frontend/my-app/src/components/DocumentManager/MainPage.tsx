@@ -1,9 +1,9 @@
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
-import { useVM } from "../viewModel/context";
-import { Loading } from "./Loading";
-import { NoData } from "./NoData";
-import { Documents } from "./DocumentManager";
+import { useVM } from "../../viewModel/context";
+import { Loading } from "../Loading";
+import { NoData } from "../NoData";
+import { Documents } from ".";
 
 export const MainPage = observer(() => {
   const vm = useVM();

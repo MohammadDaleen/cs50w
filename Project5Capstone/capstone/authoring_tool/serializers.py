@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
-from .models import Content, Doc
+from .models import Content, Doc, Resource
 
 
 # Serializer for the register information
@@ -91,7 +91,6 @@ class ContentSerializer(serializers.ModelSerializer):
             "order",
             "document",
             "level",
-            "number",
             "author",
             "timestamp",
         ]
@@ -111,7 +110,6 @@ class ContentTreeSerializer(serializers.ModelSerializer):
             "order",
             "document",
             "level",
-            "number",
             "author",
             "timestamp",
             "children",
@@ -121,3 +119,25 @@ class ContentTreeSerializer(serializers.ModelSerializer):
         # Recursively get children for tree structure
         children = obj.children.all().order_by("order")
         return ContentTreeSerializer(children, many=True).data
+
+
+class ResourceSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Resource
+        fields = [
+            "id",
+            "name",
+            "file_url",
+            "type",
+            "description",
+            "is_active",
+            "created_at",
+        ]
+
+    def get_file_url(self, obj):
+        request = self.context.get("request")
+        if obj.file and request:
+            return request.build_absolute_uri(obj.file.url)
+        return None

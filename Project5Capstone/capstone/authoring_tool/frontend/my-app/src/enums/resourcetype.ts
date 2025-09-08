@@ -1,3 +1,4 @@
+//TODO: remove (planned to not use)
 export const enum resourcetype {
   JS = 860420000,
   CSS = 860420001,

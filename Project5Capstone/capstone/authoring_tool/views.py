@@ -13,11 +13,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .models import Content, Doc, User
+from .models import Content, Doc, Resource, User
 from .serializers import (
     ContentSerializer,
     ContentTreeSerializer,
     DocSerializer,
+    ResourceSerializer,
     UserSerializer,
 )
 
@@ -243,3 +244,12 @@ def content_batch_update(request: Request) -> Response:
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_resources(request):
+    """Get all active resources"""
+    resources = Resource.objects.filter(is_active=True).order_by("type", "name")
+    serializer = ResourceSerializer(resources, many=True, context={"request": request})
+    return Response(serializer.data)

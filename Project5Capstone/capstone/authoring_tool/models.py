@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -57,3 +59,25 @@ class Content(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ResourceType(models.TextChoices):
+    JS = "JS", "JavaScript"
+    CSS = "CSS", "CSS"
+    FONT = "FONT", "Font"
+    SVG = "SVG", "SVG"
+    HTML = "HTML", "HTML"
+
+
+class Resource(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    file = models.FileField(upload_to="resources/")
+    type = models.CharField(max_length=10, choices=ResourceType.choices)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.get_type_display()})"

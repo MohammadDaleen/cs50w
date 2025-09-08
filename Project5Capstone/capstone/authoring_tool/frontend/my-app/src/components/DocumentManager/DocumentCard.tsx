@@ -67,12 +67,7 @@ export const DocumentCard = observer(({ doc }: { doc: Doc }) => {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
-          <Button
-            appearance="subtle"
-            icon={<EditFilled />}
-            //TODO
-            // onClick={() => navigate(editRoute(doc.id))}
-          />
+          <Button appearance="subtle" icon={<EditFilled />} onClick={() => navigate(`document/${doc.id}`)} />
 
           <Menu>
             <MenuTrigger>
@@ -205,7 +200,6 @@ export const DocumentCard = observer(({ doc }: { doc: Doc }) => {
             </Button>
             <Button
               appearance="outline"
-              //TODO
               onClick={async () => {
                 setWorking(true);
                 await vm.DeleteDocument(doc.id);
