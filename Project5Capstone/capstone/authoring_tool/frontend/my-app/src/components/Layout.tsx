@@ -12,11 +12,12 @@ export const Layout = observer(() => {
   const vm = useVM();
   const navigate = useNavigate();
 
-  const location = useLocation(); // Get current location (i.e., route)
-  useEffect(() => {
-    // Execute when the user navigates to different route
-    vm.ClearErrors();
-  }, [location]); // Re-run effect on location change
+  // TODO: handle clearing indvisual errors properly
+  // const location = useLocation(); // Get current location (i.e., route)
+  // useEffect(() => {
+  //   // Execute when the user navigates to different route
+  //   vm.ClearErrors();
+  // }, [location]); // Re-run effect on location change
 
   const handleLogout = async () => {
     await vm.Logout();
@@ -40,7 +41,7 @@ export const Layout = observer(() => {
       <Navbar expand={"lg"} className="bg-body-tertiary">
         <Container>
           <Navbar.Brand as={Link} to="/">
-            <Image alt="AOU Connect Logo" src="/assets/AOU_Connect_3.png" height={75} width={75} />
+            <Image alt="React Logo" src="/assets/react.svg" height={75} width={75} style={{ paddingRight: "1rem" }} />
             <b>{"Network"}</b>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />

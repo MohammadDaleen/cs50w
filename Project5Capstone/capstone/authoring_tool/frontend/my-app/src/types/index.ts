@@ -8,3 +8,4 @@ export * from "./Guid";
 export * from "./DrawerType";
 export * from "./DrawerSize";
 export * from "./SelectedContent";
+export * from "./Doc";

@@ -1,6 +1,6 @@
 import { contentMetadata, ContentAttributes, type Content as ContentInterface } from "../entities/Content";
 
-import type { Guid, User, Resource, CdsResponse, Attachment, Content } from "../types/index";
+import type { Guid, User, Resource, CdsResponse, Attachment, Content, Doc } from "../types/index";
 
 import BatchRequest, { HTTPMethod } from "./BatchRequest";
 
@@ -9,7 +9,7 @@ import { filetype, resourcetype } from "../enums";
 export default class CdsService {
   public static readonly serviceName = "CdsService";
   public readonly ClientUrl: string = "http://localhost:8000";
-  private readonly apiUrl: string = "http://localhost:8000/api/data/v9.2";
+  private readonly apiUrl: string = "http://localhost:8000/api";
   private readonly apiRoute: string = "/api/data/v9.2";
 
   private groupResrourceAlias = "groupresourceid";
@@ -17,7 +17,7 @@ export default class CdsService {
 
   public async Register(username: string, email: string, password: string): Promise<CdsResponse<User>> {
     try {
-      const response = await fetch(`${this.apiUrl}/api/register`, {
+      const response = await fetch(`${this.ClientUrl}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -53,7 +53,7 @@ export default class CdsService {
 
   public async Login(username: string, password: string): Promise<CdsResponse<User>> {
     try {
-      const response = await fetch(`${this.apiUrl}/api/login`, {
+      const response = await fetch(`${this.ClientUrl}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -77,7 +77,7 @@ export default class CdsService {
 
   public async Logout(token: string): Promise<CdsResponse<void>> {
     try {
-      const response = await fetch(`${this.apiUrl}/api/logout`, {
+      const response = await fetch(`${this.ClientUrl}/api/logout`, {
         method: "POST",
         credentials: "include", // Send cookies for session management
         headers: {
@@ -101,7 +101,7 @@ export default class CdsService {
 
   public async CheckAuthStatus(token: string): Promise<CdsResponse<User>> {
     try {
-      const response = await fetch(`${this.apiUrl}/api/auth-status`, {
+      const response = await fetch(`${this.ClientUrl}/api/auth-status`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -130,7 +130,7 @@ export default class CdsService {
     username: string
   ): Promise<CdsResponse<{ username: string; isFollowee: boolean }>> {
     try {
-      const res = await fetch(`${this.apiUrl}/api/follow`, {
+      const res = await fetch(`${this.ClientUrl}/api/follow`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -150,6 +150,94 @@ export default class CdsService {
     } catch (error: any) {
       console.error("Error follow user (${username}):", error);
       return { error: Error("Error follow user (${username})") };
+    }
+  }
+
+  /**
+   * Fetch documents of current user
+   */
+  public async FetchDocuments(token: string): Promise<CdsResponse<Doc[]>> {
+    try {
+      const response = await fetch(`${this.apiUrl}/documents`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`, // Attach the token in the Authorization header
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error("Failed to get the documents (${response.statusText})");
+      const documents: Doc[] = data.documents;
+      return { data: documents };
+    } catch (error: any) {
+      return { error };
+    }
+  }
+
+  /**
+   * Create a new document
+   */
+  public async CreateDocument(token: string, name: string, description?: string): Promise<CdsResponse<Doc>> {
+    try {
+      // Build the payload for the document.
+      const payload: Partial<Doc> = { name };
+      if (description) payload.description = description;
+      const response: Response = await fetch(`${this.apiUrl}/document`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(`Failed to create document (${response.statusText})`);
+      // Return the document from the response (expected in data.document)
+      return { data: data.document };
+    } catch (error: any) {
+      return { error };
+    }
+  }
+
+  /**
+   * Update an existing document
+   */
+  public async UpdateDocument(token: string, id: string, updatedDoc: Partial<Doc>): Promise<CdsResponse<Doc>> {
+    try {
+      const response: Response = await fetch(`${this.apiUrl}/document/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify(updatedDoc),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(`Failed to update document (${response.statusText})`);
+      // Return the document from the response (expected in data.document)
+      return { data: data.document };
+    } catch (error: any) {
+      return { error };
+    }
+  }
+
+  /**
+   * Delete an existing document
+   */
+  public async DeleteDocument(token: string, id: string): Promise<CdsResponse<string>> {
+    try {
+      const response: Response = await fetch(`${this.apiUrl}/document/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(`Failed to update document (${response.statusText})`);
+      return { data: data.message };
+    } catch (error: any) {
+      return { error };
     }
   }
 
