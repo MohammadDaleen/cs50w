@@ -18,7 +18,7 @@ import AuthoringToolVM from "../viewModel/AuthoringToolVM";
 import ServiceProvider from "../ServiceProvider";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Loading, ProtectedRoute, MainPage, Register, Login, Layout, NotFound } from "./index";
+import { Loading, ProtectedRoute, DocumentManager, Register, Login, Layout, NotFound } from "./index";
 import { DocumentEditor } from "./DocumentEditor/DocumentEditor";
 
 export interface props {
@@ -35,7 +35,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
-      { path: "/", element: <MainPage /> },
+      { path: "/", element: <DocumentManager /> },
       {
         path: "/",
         element: <ProtectedRoute />,

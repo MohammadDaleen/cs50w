@@ -5,7 +5,7 @@ import { Loading } from "../Loading";
 import { NoData } from "../NoData";
 import { Documents } from ".";
 
-export const MainPage = observer(() => {
+export const DocumentManager = observer(() => {
   const vm = useVM();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorIndices, setErrorIndices] = useState<number[]>([]);
