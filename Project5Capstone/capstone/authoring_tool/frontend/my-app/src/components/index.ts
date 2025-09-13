@@ -4,7 +4,7 @@ export * from "./LoadingCover";
 export * from "./Layout";
 export * from "./Loading";
 export * from "./Login";
-export * from "./DocumentManager/MainPage";
+export * from "./DocumentManager/DocumentManager";
 export * from "./NotFound";
 export * from "./ProtectedRoute";
 export * from "./Register";
