@@ -36,4 +36,15 @@ urlpatterns = [
     path("api/resources", views.get_resources, name="api_resources"),
     # Batch operation URL
     path("api/$batch", views.batch, name="api_batch"),
+    # Attachments URLs
+    path(
+        "api/content/<int:content_id>/attachments",
+        views.content_attachments,
+        name="api_content_attachments",
+    ),
+    path(
+        "api/attachments/<uuid:attachment_id>",
+        views.attachment_detail,
+        name="api_attachment_detail",
+    ),
 ]

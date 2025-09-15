@@ -1,10 +1,10 @@
-import { Guid } from "cdsify";
-import { axa_filetype } from "../cds-generated/enums/axa_filetype";
+import type { Guid } from ".";
+import type { filetype } from "../enums";
 
 export type Attachment = {
   guid: Guid;
   url: string;
   fileName: string;
-  path?: string;
-  type: axa_filetype;
+  type: filetype;
+  uploaded_at: string;
 };

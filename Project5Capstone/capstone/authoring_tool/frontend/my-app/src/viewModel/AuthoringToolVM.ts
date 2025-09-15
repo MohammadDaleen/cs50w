@@ -352,7 +352,7 @@ export default class AuthoringToolVM {
       const token = this.GetToken();
       if (!token) throw new Error("No token found, user is not authenticated");
       const [attachmentsRes, contentRes] = await Promise.all([
-        this.cdsService.fetchAttachments(this.SelectedNode.id),
+        this.cdsService.fetchAttachments(token, this.SelectedNode.id),
         this.cdsService.fetchContent(token, this.SelectedNode, false),
       ]);
       // attachmentsRes
@@ -360,7 +360,6 @@ export default class AuthoringToolVM {
       attachmentsRes.data.map((attachment) => {
         if (this.SelectedNode) this.SelectedNode.attachments[attachment.guid] = attachment;
       });
-      this.isNodeAttachmentsLoading = false;
       // contentRes
       if (contentRes.error) throw new Error(contentRes.error.message);
       let content = contentRes.data;
@@ -381,6 +380,7 @@ export default class AuthoringToolVM {
       this.AddError(`Error fetching documents: ${e.message}`);
     } finally {
       this.isNodeAttachmentsLoading = false;
+      this.isNodeContentFileLoading = false;
     }
   }
 
@@ -1444,54 +1444,49 @@ export default class AuthoringToolVM {
   }
 
   public async UploadAttachment() {
-    //open file explorer to select file
-    if (!this.SelectedNode) {
-      this.SetAttachmentsDialogError("No selected node found");
-      return;
-    }
-    this.IsAttachmentsDialogLoading = true;
-    const file = await this.openFileExplorer();
-    if (!file) {
+    try {
+      this.IsAttachmentsDialogLoading = true;
+      //open file explorer to select file
+      if (!this.SelectedNode) throw new Error("No selected node found");
+      const file = await this.openFileExplorer();
+      if (!file) return; // Let finally handle the loading state
+      // Ensure file is not duplicate
+      const isDuplicate = Object.values(this.SelectedNode.attachments).some(
+        (attachment) => file.name == attachment.fileName
+      );
+      if (isDuplicate) throw new Error(`duplicate file`);
+      const token = this.GetToken();
+      if (!token) throw new Error("No token found, user is not authenticated");
+      const response = await this.cdsService.UploadContentAttachment(token, this.SelectedNode.id, file);
+      if (response.error) throw new Error(`${response.error.message}`);
+      // Add the newly set attachment to the this and items[]
+      this.SelectedNode.attachments[response.data.guid] = response.data;
+    } catch (e: any) {
+      this.SetAttachmentsDialogError(`Error uploading attachment: ${e.message}`);
+    } finally {
       this.IsAttachmentsDialogLoading = false;
-      return;
     }
-    // Ensure file is not duplicate
-    const isDuplicate = Object.values(this.SelectedNode.attachments).some(
-      (attachment) => file.name == attachment.fileName
-    );
-    if (isDuplicate) {
-      this.SetAttachmentsDialogError(`Error uploading attachment: duplicate file`);
-      this.IsAttachmentsDialogLoading = false;
-      return;
-    }
-    const response = await this.cdsService.uploadContentAttachment(this.SelectedNode, file);
-    if (response.error) {
-      this.SetAttachmentsDialogError(`Error uploading attachment: ${response.error.message}`);
-      this.IsAttachmentsDialogLoading = false;
-      return;
-    }
-    // Add the newly set attachment to the this and items[]
-    this.SelectedNode.attachments[response.data.guid] = response.data;
-    this.IsAttachmentsDialogLoading = false;
   }
 
   public async DeleteAttachment(attachmentId: string) {
-    this.IsAttachmentsDialogLoading = true;
     if (!this.SelectedNode) {
       this.IsAttachmentsDialogOpen = false;
       this.AddError("No selected node found");
       return;
     }
-    this.IsAttachmentsDialogLoading = true;
-    const response = await this.cdsService.deleteAttachment(attachmentId);
-    if (response.error) {
-      this.SetAttachmentsDialogError(response.error.message);
+    try {
+      this.IsAttachmentsDialogLoading = true;
+      const token = this.GetToken();
+      if (!token) throw new Error("No token found, user is not authenticated");
+      const response = await this.cdsService.DeleteAttachment(token, attachmentId);
+      if (response.error) throw new Error(response.error.message);
+      // Remove the newly deleted attachment from the this and items[]
+      delete this.SelectedNode.attachments[response.data.id];
+    } catch (e: any) {
+      this.SetAttachmentsDialogError(`Error deleting attachment: ${e.message}`);
+    } finally {
       this.IsAttachmentsDialogLoading = false;
-      return;
     }
-    // Remove the newly deleted attachment from the this and items[]
-    delete this.SelectedNode.attachments[response.data.id];
-    this.IsAttachmentsDialogLoading = false;
   }
 
   public InsertAttachment = (attachmentId: string, raw?: boolean, rawWidth?: number, rawHeight?: number) => {
@@ -1673,6 +1668,7 @@ export default class AuthoringToolVM {
       return;
     }
     const mathfield = this.MathfieldRef?.current; // Get reference to mathfield component
+    // TODO: fix: Unable to reference mathfield
     // Validate mathfield reference exists
     if (!mathfield) {
       this.SetMathDialogError("Unable to reference mathfield.");

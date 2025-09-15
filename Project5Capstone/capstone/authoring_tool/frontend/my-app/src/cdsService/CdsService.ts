@@ -4,8 +4,6 @@ import type { Guid, User, Resource, CdsResponse, Attachment, Content, Doc } from
 
 import BatchRequest, { HTTPMethod } from "./BatchRequest";
 
-import { filetype } from "../enums";
-
 export default class CdsService {
   public static readonly serviceName = "CdsService";
   public readonly ClientUrl: string = "http://localhost:8000";
@@ -381,188 +379,78 @@ export default class CdsService {
     }
   }
 
-  public async fetchAttachments(contentGuid: string): Promise<CdsResponse<Attachment[]>> {
+  // Fetches all attachments for a given content ID
+  public async fetchAttachments(token: string, contentId: Guid): Promise<CdsResponse<Attachment[]>> {
+    const apiUrl = `${this.apiUrl}/content/${contentId}/attachments`;
+    const requestOptions = { method: "GET", headers: { Authorization: `Token ${token}` } };
     try {
-      const data: any = {};
-      let attachments: Attachment[] = [];
-      data.entities.map((entity: any) => {
-        const contentAttachmentGuid: Guid = entity[`ContentAttachmentId`];
-        const fileName: string = entity[`File_Name`];
-        const baseUrl = `${this.apiRoute}/contentattachments(${contentAttachmentGuid})/File`;
-        const path = entity[`path`];
-        const url: string = baseUrl + "/$value";
-        const type: filetype = entity[`Type`];
-        const attachment: Attachment = {
-          guid: contentAttachmentGuid,
-          fileName,
-          path,
-          url,
-          type,
-        };
-        attachments.push(attachment);
-      });
+      const response = await fetch(apiUrl, requestOptions);
+      if (!response.ok) throw new Error(`Error fetching attachments: ${response.statusText}`);
+      const data = await response.json();
+      const attachments: Attachment[] = data.map((att: any) => ({
+        guid: att.id,
+        content: att.content,
+        fileName: att.name,
+        url: att.file_url,
+        type: att.type,
+        uploaded_at: att.uploaded_at,
+      }));
       return { data: attachments };
-    } catch (e: any) {
-      e.message = `Error fetching attachments: ${e.message}`;
-      return { error: e };
+    } catch (error) {
+      return { error: error as Error };
     }
   }
 
-  public async uploadContentAttachment(content: Content, file: File): Promise<CdsResponse<Attachment>> {
-    if (!content.path) return { error: new Error("Content path is not set") };
+  // Uploads a file as an attachment to a given content ID
+  public async UploadContentAttachment(token: string, contentId: Guid, file: File): Promise<CdsResponse<Attachment>> {
+    const apiUrl = `${this.apiUrl}/content/${contentId}/attachments`;
+    // Use FormData for multipart file uploads
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("name", file.name); // Send original filename
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${token}`,
+        // IMPORTANT: DO NOT set 'Content-Type'. The browser will automatically
+        // set it to 'multipart/form-data' with the correct boundary.
+      },
+      body: formData,
+    };
     try {
-      const type: filetype | undefined = file.type.startsWith("image/")
-        ? filetype.Image
-        : file.type.startsWith("video/")
-        ? filetype.Video
-        : file.type.startsWith("audio/")
-        ? filetype.Audio
-        : file.type === "application/zip" || file.type === "application/x-zip-compressed"
-        ? filetype.InteractiveModel
-        : undefined; //TODO: not too sure about 3d model, recheck when implemented
-      if (!type) return { error: new Error(`Unsupported file type: ${file.type}`) };
-      const path = this.getAttachmentPath(type, file.name, content.path);
-      //TODO
-      const createRecordRes: any = {};
-      const contentAttachementGuid: Guid = createRecordRes.id;
-      const fileName = file.name;
-      const baseUrl = `${this.apiRoute}/contentattachments(${contentAttachementGuid})/File`;
-      const url = baseUrl + `?x-ms-file-name=${fileName}`;
-      const array = await this.fileToUint8Array(file);
-      let makeRequestRes = await this.makeRequest({ method: "PATCH", fileName, url, bytes: null, firstRequest: true });
-      if (makeRequestRes.error) return { error: makeRequestRes.error };
-      let uploadRes = await this.fileChunckUpload({
-        response: makeRequestRes.data,
-        fileName: fileName,
-        fileBytes: array,
-      });
-      if (uploadRes.error) {
-        this.deleteAttachment(contentAttachementGuid);
-        return { error: new Error("Error uploading file") };
+      const response = await fetch(apiUrl, requestOptions);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Error uploading file: ${JSON.stringify(errorData)}`);
       }
+      const data = await response.json();
       const attachment: Attachment = {
-        guid: createRecordRes.id,
-        fileName: file.name,
-        path,
-        url: baseUrl + "/$value",
-        type: type,
+        guid: data.id,
+        fileName: data.name,
+        url: data.file_url,
+        type: data.type,
+        uploaded_at: data.uploaded_at,
       };
       return { data: attachment };
-    } catch (e: any) {
-      return { error: new Error(e.message) };
+    } catch (error) {
+      return { error: error as Error };
     }
   }
 
-  public async deleteAttachment(contentAttachementGuid: Guid): Promise<
-    CdsResponse<{
-      id: string;
-      name?: string | undefined;
-      entityType: string;
-    }>
-  > {
+  // Deletes a specific attachment by its ID
+  public async DeleteAttachment(token: string, attachmentId: Guid): Promise<CdsResponse<{ id: Guid }>> {
+    const apiUrl = `${this.apiUrl}/attachments/${attachmentId}`;
+    const requestOptions = { method: "DELETE", headers: { Authorization: `Token ${token}` } };
     try {
-      const response = { id: "", entityType: "", name: undefined };
-      if (response instanceof Error || !response) return { error: new Error("No response from the API") };
-      return { data: response };
-    } catch (e: any) {
-      return { error: new Error(e.message) };
+      const response = await fetch(apiUrl, requestOptions);
+      if (!response.ok) throw new Error(`Error deleting attachment: ${response.statusText}`);
+      // Parse the JSON body to get the returned ID
+      const data: { id: Guid } = await response.json();
+      return { data }; // Success
+    } catch (error) {
+      return { error: error as Error };
     }
   }
-
-  private makeRequest = async ({
-    method,
-    fileName,
-    url,
-    bytes,
-    firstRequest,
-    offset,
-    count,
-    fileBytes,
-  }: {
-    method: string;
-    fileName: string;
-    url: string;
-    bytes: Uint8Array | null;
-    firstRequest: boolean;
-    offset?: number;
-    count?: number;
-    fileBytes?: Uint8Array;
-  }): Promise<CdsResponse<XMLHttpRequest>> => {
-    return new Promise(function (resolve, reject) {
-      const request = new XMLHttpRequest();
-      request.open(method, url);
-      request.setRequestHeader("OData-Version", "4.0");
-      request.setRequestHeader("OData-MaxVersion", "4.0");
-      request.setRequestHeader("Accept", "application/json");
-      if (firstRequest) request.setRequestHeader("x-ms-transfer-mode", "chunked");
-      if (!firstRequest) {
-        request.setRequestHeader("x-ms-file-name", fileName);
-        request.setRequestHeader("Content-Type", "application/octet-stream");
-        request.setRequestHeader(
-          "Content-Range",
-          `bytes ${offset}-${(offset ?? 0) + (count ?? 0) - 1}/${fileBytes?.length}`
-        );
-        // request.setRequestHeader("Content-Length", `${count ?? 0}`);
-      }
-      request.onload = () => {
-        if (request.status >= 200 && request.status < 300) resolve({ data: request });
-        else reject({ error: new Error(request.statusText) });
-      };
-      request.onerror = () => reject({ error: new Error(request.statusText) });
-      //TODO
-      if (!firstRequest) request.send(bytes);
-      else request.send();
-    });
-  };
-
-  private fileChunckUpload = async ({
-    response,
-    fileName,
-    fileBytes,
-  }: {
-    response: XMLHttpRequest;
-    fileName: string;
-    fileBytes: Uint8Array;
-  }): Promise<CdsResponse> => {
-    const url = response.getResponseHeader("location") || "";
-    const chunkSize = parseInt(response.getResponseHeader("x-ms-chunk-size") || "");
-    let offset = 0;
-    try {
-      while (offset <= fileBytes.length) {
-        const count = offset + chunkSize > fileBytes.length ? fileBytes.length % chunkSize : chunkSize;
-        const content = new Uint8Array(count);
-        for (let i = 0; i < count; i++) content[i] = fileBytes[offset + i];
-        const res = await this.makeRequest({
-          method: "PATCH",
-          fileName,
-          url,
-          bytes: content,
-          firstRequest: false,
-          offset,
-          count,
-          fileBytes,
-        });
-        if (res.error) {
-          return { error: new Error("error happened") };
-        }
-        response = res.data;
-        if (response.status === 206)
-          // partial content, so please continue.
-          offset += chunkSize;
-        else if (response.status === 204)
-          // request complete.
-          return { data: undefined };
-        else {
-          // error happened. log error and take necessary action.
-          console.error("error happened");
-          return { error: new Error("error happened" + response.status) };
-        }
-      }
-    } catch (e: any) {
-      return { error: new Error(e.message) };
-    }
-    return { data: undefined };
-  };
 
   /**
    * Create a new content node
@@ -753,30 +641,4 @@ export default class CdsService {
   public allKeysHaveValues<T>(record: Record<string, T>): boolean {
     return Object.values(record).every((value) => value !== undefined && value !== null);
   }
-
-  private getAttachmentPath = (type: filetype, fileName: string, contentPath: string): string => {
-    const path = contentPath.split("\\");
-    // eg L0O0\L1O1\Images\image.png
-    // Level 1 path
-    const level1PathIndex = path.findIndex((p) => p.includes("L1"));
-    const level1Path = path.slice(0, level1PathIndex + 1).join("\\");
-    let attachmentPath = "";
-    switch (type) {
-      case filetype.Image:
-        attachmentPath = `${level1Path}\\images`;
-        break;
-      case filetype.Video:
-        attachmentPath = `${level1Path}\\videos`;
-        break;
-      case filetype.Audio:
-        attachmentPath = `${level1Path}\\sounds`;
-        break;
-      case filetype.InteractiveModel:
-        attachmentPath = `${level1Path}\\attachments`;
-        break;
-      default:
-        break;
-    }
-    return `${attachmentPath}\\${fileName}`;
-  };
 }

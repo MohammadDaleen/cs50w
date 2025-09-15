@@ -18,8 +18,9 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .models import Content, Doc, Resource, User
+from .models import Attachment, AttachmentType, Content, Doc, Resource, User
 from .serializers import (
+    AttachmentSerializer,
     ContentSerializer,
     ContentTreeSerializer,
     DocSerializer,
@@ -474,3 +475,90 @@ def content_file(request: Request, content_id: int) -> Response:
     )
 
     return Response({"content": aggregated_content})
+
+
+def get_attachment_type(mime_type):
+    """Determines the attachment type from the file's MIME type."""
+    if mime_type.startswith("image/"):
+        return AttachmentType.IMAGE
+    if mime_type.startswith("video/"):
+        return AttachmentType.VIDEO
+    if mime_type.startswith("audio/"):
+        return AttachmentType.AUDIO
+    if mime_type in ["application/zip", "application/x-zip-compressed"]:
+        return AttachmentType.MODEL
+    # Add other specific types as needed
+    return AttachmentType.OTHER
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def content_attachments(request: Request, content_id: int) -> Response:
+    """
+    GET: List all attachments for a content node.
+    POST: Upload a new attachment for a content node.
+    """
+    content_node = get_object_or_404(Content, id=content_id, author=request.user)
+
+    if request.method == "GET":
+        attachments = Attachment.objects.filter(content=content_node)
+        serializer = AttachmentSerializer(
+            attachments, many=True, context={"request": request}
+        )
+        return Response(serializer.data)
+
+    elif request.method == "POST":
+        if "file" not in request.FILES:
+            return Response(
+                {"detail": "No file was attached."}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Manually construct a dictionary for the serializer.
+        # This avoids the deepcopy error on the file object.
+        file_obj = request.FILES["file"]
+        serializer_data = {
+            "name": request.data.get(
+                "name", file_obj.name
+            ),  # Use provided name or default to filename
+            "file": file_obj,
+            "type": get_attachment_type(file_obj.content_type),
+        }
+
+        serializer = AttachmentSerializer(
+            data=serializer_data, context={"request": request}
+        )
+
+        if serializer.is_valid():
+            # Pass the content_node directly to the save method for association.
+            serializer.save(content=content_node)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
+    """
+    DELETE: Deletes a specific attachment and returns its ID.
+    """
+    attachment = get_object_or_404(
+        Attachment, id=attachment_id, content__author=request.user
+    )
+
+    # Store the ID before deleting the object
+    deleted_attachment_id = str(attachment.id)
+
+    attachment.delete()
+
+    # Return a 200 OK response with the ID of the deleted object
+    return Response({"id": deleted_attachment_id}, status=status.HTTP_200_OK)
+
+
+# TODO: upload resources to server (and finalize them)
+# TODO: add now models to admin
+# TODO: fix: accessing ref variables in VM
+# TODO: remove batch content update endpoint
+# TODO: remove unused parts of code
+# TODO: support dark mode in Tinymce editor (or remove dark mode completely)
+# TODO: support IMs in browser

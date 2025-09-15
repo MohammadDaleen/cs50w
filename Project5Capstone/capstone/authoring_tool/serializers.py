@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
-from .models import Content, Doc, Resource
+from .models import Attachment, Content, Doc, Resource
 
 
 # Serializer for the register information
@@ -135,6 +135,33 @@ class ResourceSerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
         ]
+
+    def get_file_url(self, obj):
+        request = self.context.get("request")
+        if obj.file and request:
+            return request.build_absolute_uri(obj.file.url)
+        return None
+
+
+class AttachmentSerializer(serializers.ModelSerializer):
+    # Use a method field to return the full URL of the file
+    file_url = serializers.SerializerMethodField()
+    # Make the file field write-only, as we don't need to send it back
+    file = serializers.FileField(write_only=True)
+
+    class Meta:
+        model = Attachment
+        fields = [
+            "id",
+            "content",
+            "name",
+            "file",
+            "file_url",
+            "type",
+            "uploaded_at",
+        ]
+        # The content ID will be provided via the URL, not the request body
+        read_only_fields = ["content"]
 
     def get_file_url(self, obj):
         request = self.context.get("request")

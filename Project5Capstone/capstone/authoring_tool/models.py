@@ -113,3 +113,39 @@ class Resource(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_type_display()})"
+
+
+class AttachmentType(models.TextChoices):
+    IMAGE = "IMAGE", "Image"
+    VIDEO = "VIDEO", "Video"
+    AUDIO = "AUDIO", "Audio"
+    MODEL = "MODEL", "Interactive Model"
+    OTHER = "OTHER", "Other"
+
+
+def attachment_upload_path(instance, filename):
+    """Generates a unique path for each attachment file."""
+    # file will be uploaded to MEDIA_ROOT/attachments/<content_id>/<filename>
+    return f"attachments/{instance.content.id}/{filename}"
+
+
+class Attachment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    content = models.ForeignKey(
+        Content, on_delete=models.CASCADE, related_name="attachments"
+    )
+    name = models.CharField(max_length=255)  # Original filename
+    file = models.FileField(upload_to=attachment_upload_path)
+    type = models.CharField(
+        max_length=10, choices=AttachmentType.choices, default=AttachmentType.OTHER
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def delete(self, *args, **kwargs):
+        """Deletes the file from storage when the model instance is deleted."""
+        if self.file and os.path.isfile(self.file.path):
+            os.remove(self.file.path)
+        super().delete(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
