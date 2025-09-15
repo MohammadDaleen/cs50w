@@ -313,9 +313,6 @@ def batch(request: Request) -> HttpResponse:
     content_type = request.content_type
     params = request.content_params
 
-    print("Content-Type:", content_type)
-    print("Content Params:", params)
-
     if not content_type.startswith("multipart/mixed") or "boundary" not in params:
         return HttpResponse(
             "Invalid Content-Type. Expected 'multipart/mixed' with a boundary.",
@@ -453,3 +450,27 @@ def batch(request: Request) -> HttpResponse:
         status=status.HTTP_200_OK,
         content_type=f"multipart/mixed; boundary={response_boundary}",
     )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def content_file(request: Request, content_id: int) -> Response:
+    """
+    Retrieves the aggregated file content for a given content node.
+    Accepts an 'include_children' query parameter (true/false).
+    """
+    # Fetch the content node, ensuring the user is the author
+    content_node = get_object_or_404(Content, id=content_id, author=request.user)
+
+    # Check for the 'include_children' query parameter
+    include_children_param = request.query_params.get(
+        "include_children", "false"
+    ).lower()
+    include_children = include_children_param == "true"
+
+    # Use the model method to get the aggregated content
+    aggregated_content = content_node.get_aggregated_content(
+        include_children=include_children
+    )
+
+    return Response({"content": aggregated_content})

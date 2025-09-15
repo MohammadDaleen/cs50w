@@ -4,7 +4,7 @@ import type { Guid, User, Resource, CdsResponse, Attachment, Content, Doc } from
 
 import BatchRequest, { HTTPMethod } from "./BatchRequest";
 
-import { filetype} from "../enums";
+import { filetype } from "../enums";
 
 export default class CdsService {
   public static readonly serviceName = "CdsService";
@@ -321,47 +321,41 @@ export default class CdsService {
   };
 
   // TODO: make this a batch request, this is unbelievably slow
-  public async fetchContent(content: Content, includeChildren: boolean): Promise<CdsResponse<string | undefined>> {
-    let allContent: string = "";
-    let page = 1;
-    let totalPages = 1;
-    // Keep fetching until all pages are retrieved
-    while (page <= totalPages) {
-      const response = await this.fetchContentPage(content.id, includeChildren, page);
-      if (response instanceof Error) return { error: response };
-      allContent += response.ContentFile;
-      totalPages = response.TotalPages;
-      page++;
-    }
-    if (!allContent || allContent === "undefined") return { data: undefined };
-    return { data: allContent };
-  }
-
-  private fetchContentPage = async (
-    contentId: string,
-    includeChildren: boolean,
-    page: number
-  ): Promise<any | Error> => {
-    const apiUrl = `${this.apiUrl}/axa_GetContentFileByContentId`;
+  /**
+   * Fetches the aggregated file content for a content node from the new Django endpoint.
+   *
+   * @param token The authentication token.
+   * @param contentId The ID of the root content node.
+   * @param includeChildren Whether to recursively include the content of all child nodes.
+   * @returns A CdsResponse containing the aggregated content string or an error.
+   */
+  public async fetchContent(
+    token: string,
+    content: Content,
+    includeChildren: boolean
+  ): Promise<CdsResponse<string | undefined>> {
+    // Construct the URL with the query parameter
+    const apiUrl = `${this.apiUrl}/content/${content.id}/file?include_children=${includeChildren}`;
     const requestOptions = {
-      method: "POST",
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
-        accept: "application/json",
+        Accept: "application/json",
+        Authorization: `Token ${token}`,
       },
-      body: JSON.stringify({
-        ContentId: contentId,
-        IncludeChildren: includeChildren,
-        Page: page,
-        PageSize: 100000,
-      }),
     };
-    const response = await fetch(apiUrl, requestOptions);
-    if (!response.ok && response.status !== 404)
-      return new Error(`Page ${page} - Error${response.status} - ${response.statusText}`);
-    const data = await response.json();
-    return data;
-  };
+    try {
+      const response = await fetch(apiUrl, requestOptions);
+      if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+      const data: { content: string } = await response.json();
+      // Check if the returned content is empty or just the string "undefined"
+      if (!data.content || data.content === "undefined") return { data: undefined };
+      return { data: data.content };
+    } catch (error) {
+      console.error("Failed to fetch content file:", error);
+      return { error: error as Error };
+    }
+  }
 
   public async setContentFile(
     token: string,

@@ -1,3 +1,4 @@
+import os
 import uuid
 
 from django.contrib.auth.models import AbstractUser
@@ -45,6 +46,15 @@ class Content(models.Model):
     )
     timestamp = models.DateTimeField(auto_now_add=True)  # Auto-set on creation
 
+    def delete(self, *args, **kwargs):
+        # Check if there is a file associated with this object
+        if self.file:
+            # If so, delete the file from the filesystem
+            if os.path.isfile(self.file.path):
+                os.remove(self.file.path)
+        # Call the superclass's delete method to remove the database record
+        super().delete(*args, **kwargs)
+
     def get_descendants(self, include_self=False):
         """Get all descendants of this node in tree structure"""
         descendants = []
@@ -56,6 +66,28 @@ class Content(models.Model):
             descendants.extend(child.get_descendants(include_self=True))
 
         return descendants
+
+    def get_aggregated_content(self, include_children: bool = False) -> str:
+        """
+        Reads and concatenates the file content for this node and, optionally, its descendants.
+        """
+        nodes_to_process = []
+        if include_children:
+            # Get the node itself and all its children in the correct order
+            nodes_to_process = self.get_descendants(include_self=True)
+        else:
+            nodes_to_process = [self]
+
+        aggregated_html = ""
+        for node in nodes_to_process:
+            if node.file and hasattr(node.file, "path"):
+                try:
+                    with open(node.file.path, "r", encoding="utf-8") as f:
+                        aggregated_html += f.read() + "\n"
+                except FileNotFoundError:
+                    # Handle case where file is missing from storage
+                    pass
+        return aggregated_html
 
     def __str__(self):
         return self.name

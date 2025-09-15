@@ -37,7 +37,7 @@ export const ContentViewer = observer(() => {
         <Spinner label="Loading..." style={{ margin: "10em" }} />
       ) : vm.SelectedNode && vm.selectedNodeChapterFileUrl && !(vm.selectedNodeChapterFileUrl === "undefined") ? (
         // Render the HTML content if a file is selected and available
-        <HtmlFileRenderer src={`${vm.selectedNodeChapterFileUrl}#${vm.encodeWhitespace(vm.SelectedNode.id)}`} />
+        <HtmlFileRenderer src={`${vm.selectedNodeChapterFileUrl}#${vm.encodeWhitespace(`${vm.SelectedNode.id}`)}`} />
       ) : firstLoad ? (
         // Ensure no tree level 1 nodes exist under the root (i.e., the tree level 0 node)
         vm.Records[0] && vm.Records[0].level === 0 && vm.Records[0].children && vm.Records[0].children.length > 0 ? (

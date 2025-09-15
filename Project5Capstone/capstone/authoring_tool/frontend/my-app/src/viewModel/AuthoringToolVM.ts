@@ -345,47 +345,43 @@ export default class AuthoringToolVM {
   }
 
   private async fetchCurrentNodeContent(entireFile: boolean = false) {
-    if (!this.SelectedNode) {
-      this.AddError("No node selected for editing");
-      return;
-    }
-    this.isNodeContentFileLoading = true;
-    this.isNodeAttachmentsLoading = true;
-    const [attachmentsRes, contentRes] = await Promise.all([
-      this.cdsService.fetchAttachments(this.SelectedNode.id),
-      this.cdsService.fetchContent(this.SelectedNode, false),
-    ]);
-    // attachmentsRes
-    if (attachmentsRes.error) {
-      this.AddError(attachmentsRes.error.message);
+    try {
+      this.isNodeContentFileLoading = true;
+      this.isNodeAttachmentsLoading = true;
+      if (!this.SelectedNode) throw new Error("No node selected for editing");
+      const token = this.GetToken();
+      if (!token) throw new Error("No token found, user is not authenticated");
+      const [attachmentsRes, contentRes] = await Promise.all([
+        this.cdsService.fetchAttachments(this.SelectedNode.id),
+        this.cdsService.fetchContent(token, this.SelectedNode, false),
+      ]);
+      // attachmentsRes
+      if (attachmentsRes.error) throw new Error(attachmentsRes.error.message);
+      attachmentsRes.data.map((attachment) => {
+        if (this.SelectedNode) this.SelectedNode.attachments[attachment.guid] = attachment;
+      });
       this.isNodeAttachmentsLoading = false;
-      return;
-    }
-    attachmentsRes.data.map((attachment) => {
-      if (this.SelectedNode) this.SelectedNode.attachments[attachment.guid] = attachment;
-    });
-    this.isNodeAttachmentsLoading = false;
-    // contentRes
-    if (contentRes.error) {
-      this.AddError(contentRes.error.message);
-      this.isNodeContentFileLoading = false;
-      return;
-    }
-    let content = contentRes.data;
-    if (!entireFile && content) {
-      const $ = load(content);
-      const editableDiv = $(`div[id="editable_${this.SelectedNode.id}"]`);
-      // Get the content of the editable div
-      const editableDivContent = editableDiv.html();
-      // Ensure the editable div is found
-      if (editableDiv.length > 0 && editableDivContent) {
-        // Set the content to the editable div
-        content = editableDivContent;
+      // contentRes
+      if (contentRes.error) throw new Error(contentRes.error.message);
+      let content = contentRes.data;
+      if (!entireFile && content) {
+        const $ = load(content);
+        const editableDiv = $(`div[id="editable_${this.SelectedNode.id}"]`);
+        // Get the content of the editable div
+        const editableDivContent = editableDiv.html();
+        // Ensure the editable div is found
+        if (editableDiv.length > 0 && editableDivContent) {
+          // Set the content to the editable div
+          content = editableDivContent;
+        }
       }
+      this.SelectedNode.htmlContent = content;
+      if (!entireFile) this.CurrentHtml = content;
+    } catch (e: any) {
+      this.AddError(`Error fetching documents: ${e.message}`);
+    } finally {
+      this.isNodeAttachmentsLoading = false;
     }
-    this.SelectedNode.htmlContent = content;
-    if (!entireFile) this.CurrentHtml = content;
-    this.isNodeContentFileLoading = false;
   }
 
   public async FetchChapterContents(refetch?: boolean) {
@@ -394,36 +390,35 @@ export default class AuthoringToolVM {
       return;
     }
     if (this.AreChapterContentFilesAvailable(this.SelectedChapter.id) && !refetch) return;
-    this.areChapterContentFilesLoading = true;
-    // Fetch the content for the chapter
-    const res = await this.cdsService.fetchContent(this.SelectedChapter, true);
-    if (!this.SelectedChapter?.id) {
-      this.AddError("No chapter ID for the selected node");
-      return;
-    }
-    if (res.error) {
-      this.AddError(res.error.message);
+    try {
+      this.areChapterContentFilesLoading = true;
+      const token = this.GetToken();
+      if (!token) throw new Error("No token found, user is not authenticated");
+      // Fetch the content for the chapter
+      const res = await this.cdsService.fetchContent(token, this.SelectedChapter, true);
+      if (!this.SelectedChapter?.id) throw new Error("No chapter ID for the selected node");
+      if (res.error) throw new Error(res.error.message);
+      // check if the content is an HTML doc or just the body contents
+      if (res.data && !res.data.startsWith("<!DOCTYPE html>") && !res.data.startsWith("<html>")) {
+        this.ChapterContentFiles = [
+          `<!DOCTYPE html>`,
+          `<html>`,
+          `  <head>`,
+          // the base has to be inserted before the load event of the viewer's iframe
+          // this sets the base url for use in the rendered document's tags
+          `    <base href="${this.ClientUrl}/">`,
+          `  </head>`,
+          `  <body>`,
+          `    ${res.data}`,
+          `  </body>`,
+          `</html>`,
+        ].join("");
+      }
+    } catch (e: any) {
+      this.AddError(`Error fetching content file: ${e.message}`);
+    } finally {
       this.areChapterContentFilesLoading = false;
-      return;
     }
-    // check if the content is an HTML doc or just the body contents
-    if (res.data && !res.data.startsWith("<!DOCTYPE html>") && !res.data.startsWith("<html>")) {
-      this.ChapterContentFiles = [
-        `<!DOCTYPE html>`,
-        `<html>`,
-        `  <head>`,
-        // the base has to be inserted before the load event of the viewer's iframe
-        // this sets the base url for use in the rendered document's tags
-        `    <base href="${this.ClientUrl}/">`,
-        `  </head>`,
-        `  <body>`,
-        `    ${res.data}`,
-        `  </body>`,
-        `</html>`,
-      ].join("");
-    }
-    // Store the chapter content in the VM
-    this.areChapterContentFilesLoading = false;
   }
 
   private isResequencingMode: boolean = false;

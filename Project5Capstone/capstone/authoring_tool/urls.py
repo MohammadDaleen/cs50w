@@ -26,6 +26,11 @@ urlpatterns = [
         views.content_node_detail,
         name="api_content_detail",
     ),
+    path(
+        "api/content/<int:content_id>/file",
+        views.content_file,
+        name="api_content_file",
+    ),
     path("api/content/batch", views.content_batch_update, name="api_content_batch"),
     # Resouces URLs
     path("api/resources", views.get_resources, name="api_resources"),
