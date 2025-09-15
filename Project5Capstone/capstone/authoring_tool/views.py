@@ -1,15 +1,20 @@
-from typing import Any, Dict, List
+import uuid
+from email import message_from_bytes
+from typing import Any, Dict
 
 from django.contrib.auth import authenticate, get_user_model, logout
 from django.contrib.auth.models import update_last_login
 from django.db import transaction
+from django.http import HttpRequest, HttpResponse
 
 # Create your views here.
 from django.shortcuts import get_object_or_404
+from django.urls import resolve
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -196,13 +201,13 @@ def content_node(request: Request) -> Response:
         return Response(serializer.data)
 
 
-@api_view(["PUT", "DELETE"])
+@api_view(["PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def content_node_detail(request: Request, content_id: int) -> Response:
     """Update or delete a specific content node"""
     content_node = get_object_or_404(Content, id=content_id, author=request.user)
 
-    if request.method == "PUT":
+    if request.method == "PATCH":
         serializer = ContentSerializer(content_node, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -243,7 +248,6 @@ def content_batch_update(request: Request) -> Response:
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET"])
@@ -253,3 +257,199 @@ def get_resources(request):
     resources = Resource.objects.filter(is_active=True).order_by("type", "name")
     serializer = ResourceSerializer(resources, many=True, context={"request": request})
     return Response(serializer.data)
+
+
+# Helper function to parse a raw HTTP request from a string
+def _parse_http_request(request_str: str) -> tuple[str, str, dict, bytes]:
+    """Parses a raw HTTP request string into method, path, headers, and body."""
+    lines = request_str.split("\r\n")
+    request_line = lines[0]
+    method, path, _ = request_line.split(" ", 2)
+
+    headers = {}
+    body_start_index = 1
+    for i, line in enumerate(lines[1:], 1):
+        if not line:
+            body_start_index = i + 1
+            break
+        key, value = line.split(": ", 1)
+        headers[key] = value
+
+    body = "\r\n".join(lines[body_start_index:]).encode("utf-8")
+    return method, path, headers, body
+
+
+# Helper function to format an HTTP response
+def _format_http_response(response: Response) -> str:
+    """Formats a DRF Response object into a raw HTTP response string."""
+
+    # FIX: Manually set renderer if it's not already set
+    if not getattr(response, "accepted_renderer", None):
+        response.accepted_renderer = JSONRenderer()
+        response.accepted_media_type = "application/json"
+        response.renderer_context = {}
+
+    # Render the response to get status code, headers, and body
+    response.render()
+
+    status_line = f"HTTP/1.1 {response.status_code} {response.reason_phrase}"
+
+    headers = "\r\n".join([f"{key}: {value}" for key, value in response.items()])
+
+    body = response.content.decode("utf-8") if response.content else ""
+
+    return f"{status_line}\r\n{headers}\r\n\r\n{body}"
+
+
+# Main Batch View
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def batch(request: Request) -> HttpResponse:
+    """
+    Processes a batch request containing multiple API calls.
+    Parses a multipart/mixed request, handles each part as a sub-request,
+    and returns a multipart/mixed response.
+    """
+    content_type = request.content_type
+    params = request.content_params
+
+    print("Content-Type:", content_type)
+    print("Content Params:", params)
+
+    if not content_type.startswith("multipart/mixed") or "boundary" not in params:
+        return HttpResponse(
+            "Invalid Content-Type. Expected 'multipart/mixed' with a boundary.",
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Add headers to the raw body to make it a valid MIME message
+    raw_body = request.body
+    # Reconstruct the full Content-Type header string
+    full_content_type_header = (
+        f"Content-Type: {content_type}; boundary={params['boundary']}"
+    )
+    headers = f"{full_content_type_header}\r\n\r\n".encode("utf-8")
+    full_message_body = headers + raw_body
+
+    # Parse the multipart message
+    msg = message_from_bytes(full_message_body)
+
+    responses = []
+    # Use uuid to generate random, unique boundaries
+    response_boundary = f"batchresponse_{uuid.uuid4().hex}"
+
+    for part in msg.get_payload():
+        if part.get_content_type() == "multipart/mixed":  # It's a changeset
+            changeset_responses = []
+            changeset_boundary = f"changesetresponse_{uuid.uuid4().hex}"
+            try:
+                with transaction.atomic():
+                    for sub_part in part.get_payload():
+                        if sub_part.get_content_type() == "application/http":
+                            content_id = sub_part.get("Content-ID", "")
+                            http_request_str = sub_part.get_payload(decode=True).decode(
+                                "utf-8"
+                            )
+
+                            # Process the sub-request
+                            method, path, headers, body = _parse_http_request(
+                                http_request_str
+                            )
+
+                            # Resolve the URL to the corresponding view
+                            resolver_match = resolve(path)
+                            view_func = resolver_match.func
+
+                            # Create a new HttpRequest for the sub-request
+                            sub_request = HttpRequest()
+                            sub_request.method = method
+                            sub_request.path = path
+                            sub_request.user = request.user  # Crucial for permissions
+                            sub_request.META.update(request.META)
+                            sub_request.META["HTTP_CONTENT_TYPE"] = headers.get(
+                                "Content-Type", "application/json"
+                            )
+                            sub_request._body = body
+
+                            # The target view expects a raw HttpRequest, so we pass sub_request directly.
+                            # The @api_view decorator on the target view will handle the wrapping.
+                            view_response = view_func(
+                                sub_request,
+                                *resolver_match.args,
+                                **resolver_match.kwargs,
+                            )
+
+                            # Format response
+                            response_part = f"--{changeset_boundary}\r\n"
+                            response_part += "Content-Type: application/http\r\n"
+                            response_part += "Content-Transfer-Encoding: binary\r\n"
+                            if content_id:
+                                response_part += f"Content-ID: {content_id}\r\n"
+                            response_part += "\r\n"
+                            response_part += _format_http_response(view_response)
+                            changeset_responses.append(response_part)
+
+            except Exception as e:
+                # If any request in the transaction fails, the whole changeset fails
+                error_response = Response(
+                    {"error": "Changeset failed", "detail": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+                # Create a single failure response for the entire changeset
+                response_part = f"--{response_boundary}\r\n"
+                response_part += f"Content-Type: multipart/mixed; boundary={changeset_boundary}\r\n\r\n"
+                response_part += f"--{changeset_boundary}\r\n"
+                response_part += "Content-Type: application/http\r\nContent-Transfer-Encoding: binary\r\n\r\n"
+                response_part += _format_http_response(error_response)
+                response_part += f"\r\n--{changeset_boundary}--\r\n"
+                responses.append(response_part)
+                continue  # Move to the next part in the main request
+
+            # If changeset succeeded
+            response_part = f"--{response_boundary}\r\n"
+            response_part += (
+                f"Content-Type: multipart/mixed; boundary={changeset_boundary}\r\n\r\n"
+            )
+            response_part += "".join(changeset_responses)
+            response_part += f"\r\n--{changeset_boundary}--\r\n"
+            responses.append(response_part)
+
+        elif part.get_content_type() == "application/http":  # Standalone request
+            # This logic is very similar to the one inside the changeset loop
+            # For brevity, this part can be refactored into a helper function
+            content_id = part.get("Content-ID", "")
+            http_request_str = part.get_payload(decode=True).decode("utf-8")
+            method, path, headers, body = _parse_http_request(http_request_str)
+            resolver_match = resolve(path)
+            view_func = resolver_match.func
+            sub_request = HttpRequest()
+            sub_request.method = method
+            sub_request.path = path
+            sub_request.user = request.user
+            sub_request.META.update(request.META)
+            sub_request.META["HTTP_CONTENT_TYPE"] = headers.get(
+                "Content-Type", "application/json"
+            )
+            sub_request._body = body
+            # Pass the raw HttpRequest here as well.
+            view_response = view_func(
+                sub_request, *resolver_match.args, **resolver_match.kwargs
+            )
+
+            response_part = f"--{response_boundary}\r\n"
+            response_part += "Content-Type: application/http\r\n"
+            response_part += "Content-Transfer-Encoding: binary\r\n"
+            if content_id:
+                response_part += f"Content-ID: {content_id}\r\n"
+            response_part += "\r\n"
+            response_part += _format_http_response(view_response)
+            responses.append(response_part)
+
+    final_response_body = "".join(responses) + f"\r\n--{response_boundary}--\r\n"
+
+    return HttpResponse(
+        final_response_body,
+        status=status.HTTP_200_OK,
+        content_type=f"multipart/mixed; boundary={response_boundary}",
+    )

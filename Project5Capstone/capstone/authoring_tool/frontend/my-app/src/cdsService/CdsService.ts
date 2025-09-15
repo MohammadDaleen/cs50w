@@ -1,19 +1,16 @@
-import { contentMetadata, ContentAttributes, type Content as ContentInterface } from "../entities/Content";
+import { ContentAttributes, type Content as ContentInterface } from "../entities/Content";
 
 import type { Guid, User, Resource, CdsResponse, Attachment, Content, Doc } from "../types/index";
 
 import BatchRequest, { HTTPMethod } from "./BatchRequest";
 
-import { filetype, resourcetype } from "../enums";
+import { filetype} from "../enums";
 
 export default class CdsService {
   public static readonly serviceName = "CdsService";
   public readonly ClientUrl: string = "http://localhost:8000";
   private readonly apiUrl: string = "http://localhost:8000/api";
-  private readonly apiRoute: string = "/api/data/v9.2";
-
-  private groupResrourceAlias = "groupresourceid";
-  private resourceAlias = "resourceid";
+  private readonly apiRoute: string = "/api";
 
   public async Register(username: string, email: string, password: string): Promise<CdsResponse<User>> {
     try {
@@ -309,7 +306,7 @@ export default class CdsService {
       name: node.name,
       order: node.order,
       parentId: node.parent,
-      treeLevel: node.level,
+      level: node.level,
       parent: parent ? parent : undefined,
     };
     const formattedNode: Content = {
@@ -366,24 +363,27 @@ export default class CdsService {
     return data;
   };
 
-  public async setContentFile(content: Content, htmlString: string, fileName: string): Promise<CdsResponse> {
+  public async setContentFile(
+    token: string,
+    content: Content,
+    htmlString: string,
+    fileName: string
+  ): Promise<CdsResponse> {
     try {
-      const array = new TextEncoder().encode(htmlString);
-      const url = `${this.apiUrl}/${contentMetadata.collectionName}(${content.id})/ContentFile?x-ms-file-name=${fileName}`;
-      let makeRequestRes = await this.makeRequest({ method: "PATCH", fileName, url, bytes: null, firstRequest: true });
-      if (makeRequestRes.error) return makeRequestRes;
-      let [uploadRes] = await Promise.all([
-        this.fileChunckUpload({ response: makeRequestRes.data, fileName: fileName, fileBytes: array }),
-        // im updating the path here just to make sure we have the right path of the content, since it's normally filled with our import api (i dont trust it)
-        //TODO
-        // this.Context.webAPI.updateRecord(contentMetadata.logicalName, content.id, {
-        //   [ContentAttributes.axa_Path]: content.path,
-        // }),
-      ]);
-      if (uploadRes.error) return { error: new Error("Error uploading file") };
-      else return { data: undefined };
-    } catch (e: any) {
-      return { error: new Error(e.message) };
+      const fileBlob = new Blob([htmlString], { type: "text/html" });
+      const file = new File([fileBlob], fileName, { type: "text/html" });
+      const formData = new FormData();
+      formData.append(ContentAttributes.File, file);
+      const response = await fetch(`${this.apiUrl}/content/${content.id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Token ${token}` },
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) throw data.errors ?? new Error("Error uploading file");
+      return { data: undefined };
+    } catch (error: any) {
+      return { error };
     }
   }
 
@@ -571,32 +571,27 @@ export default class CdsService {
   };
 
   /**
-   * Create a new content node in Dataverse
+   * Create a new content node
    */
-  public async CreateContentNode(node: Content, subjectGuid: Guid): Promise<CdsResponse<{ id: Guid }>> {
+  public async CreateContentNode(token: string, node: Content, documentId: Guid): Promise<CdsResponse<{ id: Guid }>> {
     try {
       // Build the payload for the content node.
-      const payload: Partial<ContentInterface> = {};
-      // If the node has a reference ID, include it in the payload.
-      if (node.referenceID) payload[ContentAttributes.ReferenceID] = node.referenceID;
+      const payload: Partial<ContentInterface> = {
+        [ContentAttributes.Name]: node.name,
+        [ContentAttributes.Order]: node.order,
+        [ContentAttributes.Level]: node.level,
+        [ContentAttributes.DocumentId]: documentId,
+      };
       // If the node has a parent, set up the lookup binding.
-      //TODO
-      // if (node.parent)
-      //   payload[this.toLookupField(ContentAttributes.Parent)] = `/${contentMetadata.collectionName}(${node.parent.id})`;
-      const response = await fetch(`${this.apiUrl}/${contentMetadata.collectionName}`, {
+      if (node.parent) payload[ContentAttributes.Parent] = node.parent.id;
+      const response = await fetch(`${this.apiUrl}/content`, {
         method: "POST",
-        headers: {
-          "OData-MaxVersion": "4.0",
-          "OData-Version": "4.0",
-          Accept: "application/json",
-          "Content-Type": "application/json; charset=utf-8",
-          Prefer: "return=representation",
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Token ${token}` },
         body: JSON.stringify(payload),
       });
       const data = await response.json();
-      if (!response.ok) throw data.error ?? new Error("Failed to create content node");
-      return { data: { id: data[contentMetadata.primaryIdAttribute] } };
+      if (!response.ok) throw data.errors ?? new Error("Failed to create content node");
+      return { data: { id: data[ContentAttributes.Id] } };
     } catch (error: any) {
       return { error };
     }
@@ -605,12 +600,16 @@ export default class CdsService {
   /**
    * Update an existing content node in Dataverse
    */
-  public async UpdateContentNode(node: Content): Promise<CdsResponse<void>> {
+  public async UpdateContentNode(token: string, node: Content): Promise<CdsResponse<void>> {
     try {
-      const data: Partial<ContentInterface> = { [ContentAttributes.Name]: node.name };
-      // If the node has a reference ID, include it in the data payload.
-      if (node.referenceID) data[ContentAttributes.ReferenceID] = node.referenceID;
-      //TODO await this.Context.webAPI.updateRecord(contentMetadata.logicalName, node.id, data);
+      const payload: Partial<ContentInterface> = { [ContentAttributes.Name]: node.name };
+      const response = await fetch(`${this.apiUrl}/content/${node.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Token ${token}` },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) throw data.errors ?? new Error("Failed to update content node");
       return { data: undefined };
     } catch (error: any) {
       return { error };
@@ -620,7 +619,7 @@ export default class CdsService {
   /**
    * Delete a content node from Dataverse
    */
-  public async DeleteContentNode(node: Content): Promise<CdsResponse<void>> {
+  public async DeleteContentNode(token: string, node: Content): Promise<CdsResponse<void>> {
     try {
       // Initialize BatchRequest with the Organization URL
       const batchRequest = new BatchRequest(this.ClientUrl);
@@ -634,9 +633,9 @@ export default class CdsService {
         // Add DELETE operation (delete) for the node.
         batchRequest.addOperation(
           HTTPMethod.DELETE,
-          `${this.apiRoute}/${contentMetadata.collectionName}(${content.id})`,
+          `${this.apiRoute}/content/${content.id}`,
           {},
-          {},
+          { Authorization: `Token ${token}` },
           true // Include in changeset
         );
         // Recursively process all child nodes.
@@ -648,7 +647,7 @@ export default class CdsService {
       processNode(node);
       // Step 2: Execute the batch request and process the response.
       try {
-        const res: any[] = await batchRequest.execute();
+        const res: any[] = await batchRequest.execute(token);
         return { data: undefined }; // No errors, resequencing is successful
       } catch (error: any) {
         throw new Error(`Batch Request Error: ${error.message}`);
@@ -660,50 +659,32 @@ export default class CdsService {
 
   // TODO: Maybe needs to be improved to expect only the resequneced Content objects (not all the Content including the not resequenced!)
   /**
-   * Saves the content sequence (the entire branch of new and updated nodes) in a single BatchRequest.
-   * This method recursively traverses the content trees (or branches) to be saved and:
-   *  - For existing nodes, it adds a PATCH operation to update changes (order, path, parent, etc.).
-   * Parent references for new nodes are set using OData content-ID references if the parent is also new.
+   * Resequence content nodes in Dataverse based on the provided newContent structure.
+   * This method uses a batch request to efficiently update the order of multiple content nodes.
    *
-   * @param newContent - An array of root content nodes (branches) to be saved.
-   * @param subjectGuid - The Guid of the Subject to which these Content nodes belong.
-   * @returns A promise resolving to a CdsResponse containing the updated content trees.
+   * @param newContent - An array of Content objects representing the new sequence and hierarchy.
+   * @returns A CdsResponse containing the updated Content objects or an error.
    */
-  public async SaveContentSequence(newContent: Content[]): Promise<CdsResponse<Content[]>> {
+  public async SaveContentSequence(token: string, newContent: Content[]): Promise<CdsResponse<Content[]>> {
     // Initialize BatchRequest with the Organization URL
     const batchRequest = new BatchRequest(this.ClientUrl);
-    // Mapping of temporary node IDs (e.g. "new123456") to the assigned batch Content-ID.
-    const newIdMapping: Record<string, number> = {};
     /**
-     * Recursively processes a content node by adding a corresponding create (POST) or update (PATCH)
+     * Recursively processes a content node by adding a corresponding update (PATCH)
      * operation to the batch request. Also processes any and child nodes.
      *
      * @param content - The current content node being processed.
      */
     const processNode = (content: Content) => {
       // Build payload with updated fields.
-      const payload: Partial<ContentInterface> = {
-        [ContentAttributes.Order]: content.order,
-        [ContentAttributes.Path]: content.path,
-      };
-      //TODO
-      // // If the node has a parent, reference the parent's persisted ID.
-      // if (content.parent) {
-      //   payload[
-      //     this.toLookupField(ContentAttributes.Parent)
-      //   ] = `/${contentMetadata.collectionName}(${content.parent.id})`;
-      // }
+      const payload: Partial<ContentInterface> = { [ContentAttributes.Order]: content.order };
+      // If the node has a parent, reference the parent's persisted ID.
+      if (content.parent) payload[ContentAttributes.Parent] = content.parent.id;
       // Add PATCH operation (update) for the existing node.
       batchRequest.addOperation(
         HTTPMethod.PATCH,
-        `${this.apiRoute}/${contentMetadata.collectionName}(${content.id})`,
+        `${this.apiRoute}/content/${content.id}`,
         payload,
-        {
-          "Content-Type": "application/json",
-          "OData-MaxVersion": "4.0",
-          "OData-Version": "4.0",
-          "If-Match": "*",
-        },
+        { "Content-Type": "application/json", Authorization: `Token ${token}` },
         true // Include in changeset
       );
       // Recursively process all child nodes.
@@ -717,34 +698,12 @@ export default class CdsService {
     });
     // Step 2: Execute the batch request and process the response.
     try {
-      const res: any[] = await batchRequest.execute();
+      const res: any[] = await batchRequest.execute(token);
       return { data: res }; // No errors, resequencing is successful
     } catch (error: any) {
       console.error("Batch Request Error:", error);
       return { error: error };
     }
-  }
-
-  /**
-   * Recursively searches for a node with the given temporary ID in the content tree and updates it with the new ID.
-   * @param tempId - The temporary node ID (e.g. "new12345").
-   * @param newId - The actual Dataverse-assigned ID.
-   * @param node - The current node in the tree.
-   * @returns true if the node was found and updated, false otherwise.
-   */
-  private updateNodeId(tempId: string, newId: string, node: Content): boolean {
-    if (node.id === tempId) {
-      node.id = newId;
-      return true;
-    }
-    if (node.children && node.children.length > 0) {
-      for (let child of node.children) {
-        if (this.updateNodeId(tempId, newId, child)) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   // Helper function to encode xml

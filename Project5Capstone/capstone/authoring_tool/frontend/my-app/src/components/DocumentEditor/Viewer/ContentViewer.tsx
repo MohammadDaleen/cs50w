@@ -40,10 +40,7 @@ export const ContentViewer = observer(() => {
         <HtmlFileRenderer src={`${vm.selectedNodeChapterFileUrl}#${vm.encodeWhitespace(vm.SelectedNode.id)}`} />
       ) : firstLoad ? (
         // Ensure no tree level 1 nodes exist under the root (i.e., the tree level 0 node)
-        vm.Records[0] &&
-        vm.Records[0].treeLevel === 0 &&
-        vm.Records[0].children &&
-        vm.Records[0].children.length > 0 ? (
+        vm.Records[0] && vm.Records[0].level === 0 && vm.Records[0].children && vm.Records[0].children.length > 0 ? (
           vm.IsResequencingMode ? (
             // Display a message for the case of not exiting the Resequencing Mode
             <NoData message={<span>Save changes to view content</span>} />

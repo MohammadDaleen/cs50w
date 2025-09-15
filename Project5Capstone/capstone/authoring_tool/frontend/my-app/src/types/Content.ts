@@ -9,5 +9,5 @@ export type Content = {
   parentId?: string;
   path?: string; // TODO: Remove if not needed
   referenceID?: string; // TODO: Remove if not needed
-  treeLevel: number;
+  level: number;
 };

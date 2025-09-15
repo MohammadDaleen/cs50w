@@ -29,4 +29,6 @@ urlpatterns = [
     path("api/content/batch", views.content_batch_update, name="api_content_batch"),
     # Resouces URLs
     path("api/resources", views.get_resources, name="api_resources"),
+    # Batch operation URL
+    path("api/$batch", views.batch, name="api_batch"),
 ]

@@ -136,7 +136,7 @@ export const NewContentTreeItem = observer(({ firstNode }: { firstNode?: boolean
                   if (hasError) return;
                   // Determine the parent node for the new content
                   const parent: Content | undefined =
-                    contentNodeBefore.treeLevel === formTreeLevel
+                    contentNodeBefore.level === formTreeLevel
                       ? contentNodeBefore.parent // Same parent as contentNodeBefore
                       : {
                           // Otherwise, treat contentNodeBefore as the parent itself
@@ -147,7 +147,7 @@ export const NewContentTreeItem = observer(({ firstNode }: { firstNode?: boolean
                           parentId: contentNodeBefore.parentId,
                           path: contentNodeBefore.path,
                           referenceID: contentNodeBefore.referenceID,
-                          treeLevel: contentNodeBefore.treeLevel,
+                          level: contentNodeBefore.level,
                         };
                   // Create the new content node object
                   const newNode: Content = {
@@ -155,22 +155,22 @@ export const NewContentTreeItem = observer(({ firstNode }: { firstNode?: boolean
                     name: newNodeState.name.trim(),
                     // Add the correct order for the new node; the DFS update will reassign the correct orders for the rest of the tree nodes.
                     order:
-                      contentNodeBefore.treeLevel === formTreeLevel // If inserting as a sibling node
+                      contentNodeBefore.level === formTreeLevel // If inserting as a sibling node
                         ? vm.GetHighestOrder(contentNodeBefore) + 1 // Use the highest order of the parent's descendants + 1
                         : contentNodeBefore.order + 1, // Else, use the parent's order + 1
                     parent: parent,
                     parentId:
-                      contentNodeBefore.treeLevel === formTreeLevel
+                      contentNodeBefore.level === formTreeLevel
                         ? contentNodeBefore.parentId // If inserting at same level, keep the same parentId
                         : contentNodeBefore.id, // Else, set current node as parent
                     referenceID: newNodeState.referenceId?.trim(),
-                    treeLevel: formTreeLevel,
+                    level: formTreeLevel,
                   };
                   // Update the path of the new node based on its parent path
                   vm.UpdateNodePath(newNode, newNode.parent?.path || "");
                   // Determine where to insert the new node: only insert after if it is the same type
                   const insertAfter: Content | undefined =
-                    contentNodeBefore.treeLevel === formTreeLevel ? contentNodeBefore : undefined;
+                    contentNodeBefore.level === formTreeLevel ? contentNodeBefore : undefined;
                   // Add the new node to the content structure
                   await vm.AddContentNode(newNode, insertAfter);
                   // Clear the input fields

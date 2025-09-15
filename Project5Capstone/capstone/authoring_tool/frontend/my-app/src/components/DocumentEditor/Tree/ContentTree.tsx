@@ -17,7 +17,7 @@ export const ContentTree = observer(() => {
 
   // Open a new content form, if the subject has no children
   if (vm.Records[0] && (!vm.Records[0].children || !(vm.Records[0].children.length > 0)))
-    vm.OpenNewContentForm(vm.Records[0], vm.Records[0].treeLevel + 1);
+    vm.OpenNewContentForm(vm.Records[0], vm.Records[0].level + 1);
 
   return (
     <Tree aria-label="Content Tree">

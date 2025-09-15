@@ -45,7 +45,7 @@ export const ContentTreeItemLayout = observer(({ content, aside }: { content: Co
 
   return (
     <TreeItemLayout
-      iconBefore={getIconByTreeLevel(content.treeLevel)}
+      iconBefore={getIconByTreeLevel(content.level)}
       className={vm.SelectedNode?.id === content.id ? styles.selectedTreeItem : ""}
       main={{ as: "div", className: styles.treeItemLayout }}
       {...(aside ? { aside } : {})}

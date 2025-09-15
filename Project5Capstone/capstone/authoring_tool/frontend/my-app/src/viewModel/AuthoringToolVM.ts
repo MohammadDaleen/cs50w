@@ -201,7 +201,7 @@ export default class AuthoringToolVM {
     // set the chapter
     let selectedNodeChapter: Content | undefined = value;
     // Traverse up the tree to find the tree level 1 node
-    while (selectedNodeChapter && selectedNodeChapter.treeLevel !== 1) selectedNodeChapter = selectedNodeChapter.parent;
+    while (selectedNodeChapter && selectedNodeChapter.level !== 1) selectedNodeChapter = selectedNodeChapter.parent;
     if (!selectedNodeChapter) return; // Do not fetch content if the chapter is already selected
     this.SelectedChapter = { ...selectedNodeChapter, attachments: {} };
     this.DrawerSize === "full" && (this.DrawerSize = "large"); // Set size to large if drawer is fully expanded (to show fetched content)
@@ -666,7 +666,7 @@ export default class AuthoringToolVM {
       // Ensure the first tree level 1 node is selected if no node is selected
       if (!this.SelectedNode) {
         let firstTreeLevel1Node =
-          this.Records[0].treeLevel === 0 // Check if the root node is a tree level 0 node
+          this.Records[0].level === 0 // Check if the root node is a tree level 0 node
             ? this.Records[0].children && this.Records[0].children[0]
             : this.Records[0];
         if (firstTreeLevel1Node) this.SelectedNode = { ...firstTreeLevel1Node, attachments: {} };
@@ -983,7 +983,7 @@ export default class AuthoringToolVM {
         // Assign a new order to the node.
         node.order = orderCounter++;
         // Assing the new path to the node with tree level other than 0
-        if (node.treeLevel > 0) this.UpdateNodePath(node, node.parent?.path || "");
+        if (node.level > 0) this.UpdateNodePath(node, node.parent?.path || "");
         if (node.children && node.children.length > 0) {
           assignOrder(node.children);
         }
@@ -1040,12 +1040,12 @@ export default class AuthoringToolVM {
       ? newParentPath.split("\\").slice(0, -1).join("\\") // Remove the last segment that ends with .html
       : newParentPath ?? null; // Keep it as is if it doesn't end with .html
     // Update the node's path
-    const nodeReference = `L${node.treeLevel}O${node.order}`;
+    const nodeReference = `L${node.level}O${node.order}`;
     // Construct the new path based on the cleaned parent path
     node.path = cleanedParentPath
       ? `${cleanedParentPath}\\${nodeReference}\\${nodeReference}.html`
       : node.parent
-      ? `L${node.parent.treeLevel}O${node.parent.order}\\${nodeReference}\\${nodeReference}.html`
+      ? `L${node.parent.level}O${node.parent.order}\\${nodeReference}\\${nodeReference}.html`
       : `${nodeReference}\\${nodeReference}.html`;
     // Recursively update the paths of the children
     if (includeChildren && node.children) node.children.forEach((child) => this.UpdateNodePath(child, node.path || ""));
@@ -1103,6 +1103,9 @@ export default class AuthoringToolVM {
       return;
     }
     try {
+      const token = this.GetToken();
+      // Check for authentication token
+      if (!token) throw new Error("No token found, user is not authenticated");
       // Ensure the order of the Content tree nodes is based on DFS (Depth-First Sequence)
       this.ensureDFSOrder();
       // Ensure the Subject's Guid is valid
@@ -1113,7 +1116,7 @@ export default class AuthoringToolVM {
       }
       // Call the saveContentSequence method from CdsService,
       // passing in the root content nodes (this.Records) and the Subject's Guid.
-      const res = await this.cdsService.SaveContentSequence(this.Records);
+      const res = await this.cdsService.SaveContentSequence(token, this.Records);
       // Ensure no errors
       if (res.error) throw new Error(`Error saving resequenced content: ${res.error.message}`);
       // TODO: Improve using result.data
@@ -1176,7 +1179,10 @@ export default class AuthoringToolVM {
     try {
       this.isContentSaving = true;
       this.isLoading = true;
-      const updateRes = await this.cdsService.UpdateContentNode(updated);
+      const token = this.GetToken();
+      // Check for authentication token
+      if (!token) throw new Error("No token found, user is not authenticated");
+      const updateRes = await this.cdsService.UpdateContentNode(token, updated);
       if (updateRes.error) throw updateRes.error;
       // Find the target node by id
       const target = this.findNodeById(updated.id);
@@ -1189,7 +1195,7 @@ export default class AuthoringToolVM {
         const isFileUpdated = await this.updateContentNodeFile(updated, target.referenceID);
         if (!isFileUpdated) {
           // Revert the changes if the file update faild
-          const revertRes = await this.cdsService.UpdateContentNode(target);
+          const revertRes = await this.cdsService.UpdateContentNode(token, target);
           if (revertRes.error) throw revertRes.error;
         }
       }
@@ -1211,12 +1217,15 @@ export default class AuthoringToolVM {
     try {
       this.isContentSaving = true;
       this.isLoading = true;
+      const token = this.GetToken();
+      // Check for authentication token
+      if (!token) throw new Error("No token found, user is not authenticated");
       // Clear selected node if it matches the one being deleted
       if (this.SelectedNode?.id === nodeToDelete.id) this.SelectedNode = undefined;
       // Clear selected chapter if it matches the one being deleted
       if (this.SelectedChapter?.id === nodeToDelete.id) this.SelectedChapter = undefined;
       // Delete from server
-      const res = await this.cdsService.DeleteContentNode(nodeToDelete);
+      const res = await this.cdsService.DeleteContentNode(token, nodeToDelete);
       if (res.error) {
         const parsedError = this.parseDeleteError(res.error.message);
         this.AddError(parsedError);
@@ -1286,8 +1295,11 @@ export default class AuthoringToolVM {
     try {
       this.isContentSaving = true;
       this.isLoading = true;
-      if (!this.documentId) throw new Error("No Course Category Guid");
-      const resNode = await this.cdsService.CreateContentNode(newNode, this.documentId);
+      const token = this.GetToken();
+      // Check for authentication token
+      if (!token) throw new Error("No token found, user is not authenticated");
+      if (!this.documentId) throw new Error("No Document ID");
+      const resNode = await this.cdsService.CreateContentNode(token, newNode, this.documentId);
       if (resNode.error) throw new Error(resNode.error.message);
       // Assign the real GUID returned from server
       newNode.id = resNode.data.id;
@@ -1501,7 +1513,7 @@ export default class AuthoringToolVM {
     // these values are hardcoded for now, taken from the previous boeing content
     const height = 393;
     const width = 700;
-    const clientPath = this.SelectedNode?.treeLevel ? "../".repeat(this.SelectedNode.treeLevel - 1) || "./" : "";
+    const clientPath = this.SelectedNode?.level ? "../".repeat(this.SelectedNode.level - 1) || "./" : "";
     // Generate content based on attachment type
     let content = "";
     switch (attachment.type) {
@@ -1715,6 +1727,9 @@ export default class AuthoringToolVM {
   }
 
   public async SaveContent() {
+    const token = this.GetToken();
+    // Check for authentication token
+    if (!token) throw new Error("No token found, user is not authenticated");
     if (!this.SelectedNode) throw new Error("No selected node");
     const editor = this.TinyMceEditorRef?.current;
     if (!editor) {
@@ -1746,7 +1761,7 @@ export default class AuthoringToolVM {
       const fileName: string = `content.html`;
       if (this.SelectedNode.parent?.path) this.UpdateNodePath(this.SelectedNode, this.SelectedNode.parent?.path, false);
       // Save content to the Dataverse
-      const res = await this.cdsService.setContentFile(this.SelectedNode, content, fileName);
+      const res = await this.cdsService.setContentFile(token, this.SelectedNode, content, fileName);
       if (res.error) this.AddError(res.error.message);
       else if (this.SelectedChapter?.id) delete this.chapterFiles[this.SelectedChapter.id];
     } catch (error: any) {
@@ -1759,7 +1774,7 @@ export default class AuthoringToolVM {
   public EnsureScript(htmlContent: string, to: Content): string {
     const $ = load(htmlContent);
     // Ensure the script is added only once to the article of the tree level 1 node
-    if (to.treeLevel === 1 && !$("script#pathBase").length) {
+    if (to.level === 1 && !$("script#pathBase").length) {
       const script = `<script data-path-base="../../js" id="pathBase" src="../../js/main.js"></script>`;
       $("article").append(script);
     }
@@ -1836,6 +1851,9 @@ export default class AuthoringToolVM {
   private async createContentNodeFile(node: Content): Promise<boolean> {
     // add headers and basePath script
     try {
+      const token = this.GetToken();
+      // Check for authentication token
+      if (!token) throw new Error("No token found, user is not authenticated");
       let content: string = [
         `<article>`,
         `    <div class="syllabus">${node.referenceID?.slice(0, -3) ?? ""}</div>`,
@@ -1850,7 +1868,7 @@ export default class AuthoringToolVM {
       content = this.EnsureScript(content, node);
       const fileName: string = `content.html`;
       // Save content to the Dataverse
-      const res = await this.cdsService.setContentFile(node, content, fileName);
+      const res = await this.cdsService.setContentFile(token, node, content, fileName);
       if (res.error) throw new Error(res.error.message);
       return true; // File created successfully
     } catch (error: any) {
@@ -1862,6 +1880,9 @@ export default class AuthoringToolVM {
   private async updateContentNodeFile(updated: Content, oldRefId: string): Promise<boolean> {
     // Update the reference IDs in the node's file
     try {
+      const token = this.GetToken();
+      // Check for authentication token
+      if (!token) throw new Error("No token found, user is not authenticated");
       await this.fetchCurrentNodeContent(true); // the entire file
       if (!this.SelectedNode?.htmlContent) throw new Error("Couldn't get the HTML content of the selected node.");
       // Get the HTML of the selected node
@@ -1880,7 +1901,7 @@ export default class AuthoringToolVM {
       // Set the updated file name
       const fileName: string = `content.html`;
       // Save the updated content to the Dataverse
-      const res = await this.cdsService.setContentFile(updated, this.SelectedNode.htmlContent, fileName);
+      const res = await this.cdsService.setContentFile(token, updated, this.SelectedNode.htmlContent, fileName);
       if (res.error) throw new Error(res.error.message);
       return true; // File updated successfully
     } catch (error: any) {
@@ -1920,7 +1941,7 @@ export default class AuthoringToolVM {
     /* ------------------------------------------------------------------ */
     /* 1. Decide the real parent, sibling list, and 0‑based insert index  */
     /* ------------------------------------------------------------------ */
-    const isParent = this.ContentNodeBefore.treeLevel === this.FormTreeLevel - 1;
+    const isParent = this.ContentNodeBefore.level === this.FormTreeLevel - 1;
     let parent: Content | null = null; // logical parent of the new node
     /* beforeNode is the *parent* (e.g. adding Lesson under Chapter) */
     if (isParent) parent = this.ContentNodeBefore;

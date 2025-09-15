@@ -122,16 +122,15 @@ export default class BatchRequest {
    * Executes the batch request.
    * @returns A promise resolving to an array of responses.
    */
-  async execute(): Promise<any[]> {
+  async execute(token: string): Promise<any[]> {
     const batchBody = this.buildBatchBody();
     const headers = {
       "Content-Type": `multipart/mixed; boundary=batch_${this.batchBoundary}`,
-      "OData-Version": "4.0",
-      "OData-MaxVersion": "4.0",
       Accept: "application/json",
+      Authorization: `Token ${token}`,
     };
 
-    const response = await fetch(`${this.orgUrl}/api/data/v9.0/$batch`, {
+    const response = await fetch(`${this.orgUrl}/api/$batch`, {
       method: "POST",
       headers: headers,
       body: batchBody,

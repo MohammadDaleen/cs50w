@@ -80,7 +80,7 @@ export const ContentTreeItemMenu = observer(
                 onClick={(e) => {
                   e.stopPropagation();
                   if (subtreeLevel >= 8) vm.DrawerSize = "full";
-                  vm.OpenNewContentForm(record, record.treeLevel);
+                  vm.OpenNewContentForm(record, record.level);
                   vm.UpdateOpenBranch(level, record.id, true);
                 }}
               >
@@ -93,8 +93,8 @@ export const ContentTreeItemMenu = observer(
                     e.stopPropagation();
                     if (subtreeLevel + 1 >= 8) vm.DrawerSize = "full";
                     // Ensure a child node form doesn't exist under current record
-                    if (!(vm.ContentNodeBefore === record && vm.FormTreeLevel === record.treeLevel + 1)) {
-                      vm.OpenNewContentForm(record, record.treeLevel + 1); // Open a new child form
+                    if (!(vm.ContentNodeBefore === record && vm.FormTreeLevel === record.level + 1)) {
+                      vm.OpenNewContentForm(record, record.level + 1); // Open a new child form
                       vm.UpdateOpenBranch(level, record.id); // Open this branch to show new child form
                     } else {
                       vm.CloseNewContentForm(); // Close the child form

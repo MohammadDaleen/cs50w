@@ -94,7 +94,7 @@ export const ContentTreeItem = observer(({ record, level }: { record: Content; l
 
   const shouldShowBranch = () => {
     const hasChildren = record.children && record.children.length > 0;
-    const hasChildForm = vm.ContentNodeBefore === record && vm.FormTreeLevel === record.treeLevel + 1;
+    const hasChildForm = vm.ContentNodeBefore === record && vm.FormTreeLevel === record.level + 1;
     return hasChildren || hasChildForm;
   };
 
@@ -120,7 +120,7 @@ export const ContentTreeItem = observer(({ record, level }: { record: Content; l
               <ContentTreeItemChildren content={record} level={level + 1} />
             )}
             {/* Render the new child form, if the record is the parent of the form, and the form of type record.child */}
-            {vm.ContentNodeBefore === record && vm.FormTreeLevel === record.treeLevel + 1 && <NewContentTreeItem />}
+            {vm.ContentNodeBefore === record && vm.FormTreeLevel === record.level + 1 && <NewContentTreeItem />}
           </Tree>
         )}
       </TreeItem>
@@ -171,7 +171,7 @@ export const ContentTreeItem = observer(({ record, level }: { record: Content; l
         </Dialog>
       )}
       {/* Render the new same level node form, if the record is before the form, and both are of same type */}
-      {vm.ContentNodeBefore === record && vm.FormTreeLevel === record.treeLevel && <NewContentTreeItem />}
+      {vm.ContentNodeBefore === record && vm.FormTreeLevel === record.level && <NewContentTreeItem />}
     </>
   );
 });
