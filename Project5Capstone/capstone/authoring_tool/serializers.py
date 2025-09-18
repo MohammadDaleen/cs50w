@@ -132,6 +132,7 @@ class ResourceSerializer(serializers.ModelSerializer):
             "file_url",
             "type",
             "description",
+            "order",
             "is_active",
             "created_at",
         ]

@@ -3,7 +3,7 @@ import type { Guid } from "./index";
 
 export type Resource = {
   guid: Guid;
-  subjectGuid: Guid;
+  documentId: Guid;
   fileName: string;
   type: resourcetype;
   title: string;

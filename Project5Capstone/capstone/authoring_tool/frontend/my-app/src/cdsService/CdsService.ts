@@ -236,32 +236,52 @@ export default class CdsService {
     }
   }
 
-  public async fetchDocumentResources(token: string): Promise<CdsResponse<Record<string, Resource>>> {
+  public async fetchDocumentResources(
+    token: string,
+    documentId: string
+  ): Promise<CdsResponse<Record<string, Resource>>> {
     try {
-      const response = await fetch(`${this.apiUrl}/resources`, {
+      // Step 1: Fetch the initial list of resource metadata (name, type, file_url, etc.)
+      const metadataResponse = await fetch(`${this.apiUrl}/resources`, {
         method: "GET",
         headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
       });
-      if (!response.ok) throw new Error(`Failed to fetch resources: ${response.statusText}`);
-      const resourcesData = await response.json();
-      // Transform the response to match the expected format
+      if (!metadataResponse.ok) throw new Error(metadataResponse.statusText);
+      const resourcesData: any[] = await metadataResponse.json();
+      if (resourcesData.length === 0) return { data: {} };
+      // Step 2: Create a promise to fetch the actual content (as a blob) for each resource.
+      const contentPromises = resourcesData.map((res) =>
+        fetch(res.file_url, { headers: { Authorization: `Token ${token}` } }).then((response) => {
+          if (!response.ok) {
+            // If a single resource fails, we still want to continue with the others.
+            console.error(`Failed to fetch content for ${res.name}`);
+            return null; // Return null for failed fetches
+          }
+          return response.blob();
+        })
+      );
+      // Step 3: Wait for all the content fetch promises to complete.
+      const contentBlobs = await Promise.all(contentPromises);
+      // Step 4: Build the final record, creating a blobUrl for each successfully fetched resource.
       const resources: Record<string, Resource> = {};
-      for (const res of resourcesData) {
+      for (let i = 0; i < resourcesData.length; i++) {
+        const res = resourcesData[i];
+        const blob = contentBlobs[i];
         resources[res.name] = {
           guid: res.id,
-          subjectGuid: "", //TODO Not used in new implementation
+          documentId: documentId,
           fileName: res.name,
-          type: res.type, //TODO this.mapResourceType(res.type), // Map to numeric value if needed
+          type: res.type,
           title: res.name,
-          blobUrl: res.file_url, //TODO Use the direct URL from Django
           url: res.file_url,
-          order: 0, //TODO Not used in new implementation
+          // Create the local blob URL if the fetch was successful
+          blobUrl: blob ? URL.createObjectURL(blob) : undefined,
+          order: res.order,
         };
       }
-
       return { data: resources };
     } catch (error: any) {
-      console.error("Error in fetchSubjectResources:", error);
+      console.error("Error while fetching resources:", error);
       return { error: new Error("An unexpected error occurred.") };
     }
   }

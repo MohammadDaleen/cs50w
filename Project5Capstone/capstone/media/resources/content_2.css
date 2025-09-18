@@ -1,0 +1,133 @@
+html {
+  line-height: 22px;
+  font-family: georgia, palatino, "palatino linotype", freeserif, serif;
+}
+body {
+  font-family: arial, helvetica, freesans, sans-serif;
+  margin: auto;
+  padding-right: 40px;
+  padding-left: 40px;
+}
+p {
+  margin: 0 0 12px;
+}
+/*article {
+  text-align: left;
+  padding-bottom: 0px;
+  margin: 25px;
+  padding-left: 4px;
+  max-width: 758px;
+  padding-right: 4px;
+  padding-top: 0px;
+}*/
+.syllabus {
+  padding-left: 0px;
+  padding-top: 10px;
+  margin-top: 10px;
+  color: #2255aa;
+  font-size: 16px;
+  font-weight: bold;
+}
+.extsyllabus {
+  visibility: hidden;
+  width: 0px;
+  height: 0px;
+}
+
+th {
+  color: white;
+  text-align: center;
+  vertical-align: middle;
+  width: 100px;
+  background-color: #2255aa;
+  border: #2255aa 1px solid;
+}
+
+td {
+  border: #cdcdcd 1px solid;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+h1 {
+  line-height: 26px;
+  margin: 0px 0px 18px;
+  font-size: 25px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  padding-top: 0px;
+  font-weight: bold;
+}
+h2 {
+  line-height: 24px;
+  margin: 0px 0px 16px;
+  font-size: 22px;
+  font-weight: bold;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  padding-top: 0px;
+}
+
+h3 {
+  line-height: 20px;
+  margin: 0px 0px 12px;
+  font-size: 17px;
+  font-weight: bold;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  padding-top: 0px;
+  color: #41383c;
+}
+
+h4 {
+  line-height: 22px;
+  margin: 0px 0px 14px;
+  font-size: 18px;
+  font-weight: normal;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  padding-top: 0px;
+  color: #41383c;
+}
+
+h5 {
+  line-height: 22px;
+  margin: 0px 0px 0px;
+  font-size: 16px;
+  font-weight: normal;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  padding-top: 0px;
+  color: #41383c;
+}
+figcaption {
+  text-align: left;
+  margin: 8px 0px 0px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  color: #000;
+  font-size: 0.8em;
+  overflow: visible;
+  margin: 0px;
+  font-weight: normal;
+}
+
+ul {
+  text-align: left;
+  padding: 0px;
+  margin: 0px 0px 10px 10px;
+}
+li {
+  text-align: left;
+  margin: 5px 0px 0px 25px;
+}

@@ -255,7 +255,7 @@ def content_batch_update(request: Request) -> Response:
 @permission_classes([IsAuthenticated])
 def get_resources(request):
     """Get all active resources"""
-    resources = Resource.objects.filter(is_active=True).order_by("type", "name")
+    resources = Resource.objects.filter(is_active=True).order_by("order", "name")
     serializer = ResourceSerializer(resources, many=True, context={"request": request})
     return Response(serializer.data)
 

@@ -653,7 +653,7 @@ export default class AuthoringToolVM {
       if (!token) throw new Error("No token found, user is not authenticated");
       const [treeRes, resourceRes] = await Promise.all([
         this.cdsService.fetchTree(token, this.documentId),
-        this.cdsService.fetchDocumentResources(token),
+        this.cdsService.fetchDocumentResources(token, this.documentId),
       ]);
       if (treeRes.error) throw new Error(`Error fetching content tree: ${treeRes.error.message}`);
       if (resourceRes.error) throw new Error(`Error fetching resources: ${resourceRes.error.message}`);

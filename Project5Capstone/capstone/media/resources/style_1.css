@@ -1,0 +1,1273 @@
+/* CSS Normalize */
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+nav,
+section,
+summary {
+  display: block;
+}
+
+audio,
+canvas,
+video {
+  display: inline-block;
+}
+
+audio:not([controls]) {
+  display: none;
+  height: 0;
+}
+
+[hidden] {
+  display: none;
+}
+
+html {
+  font-family: sans-serif;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:focus {
+  outline: thin dotted;
+}
+
+a:active,
+a:hover {
+  outline: 0;
+}
+
+h1 {
+  font-size: 2em;
+}
+
+abbr[title] {
+  border-bottom: 1px dotted;
+}
+
+b,
+strong {
+  font-weight: 700;
+}
+
+dfn {
+  font-style: italic;
+}
+
+mark {
+  background: yellow;
+  color: black;
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: monospace, serif;
+  font-size: 1em;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+q {
+  quotes: \201C \201D \2018 \2019;
+}
+
+small {
+  font-size: 80%;
+}
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sup {
+  top: -0.5em;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+img {
+  border: 0;
+}
+
+svg:not(:root) {
+  overflow: hidden;
+}
+
+fieldset {
+  border: 1px solid silver;
+  margin: 0 2px;
+  padding: 0.35em 0.625em 0.75em;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  margin: 0;
+}
+
+button,
+input {
+  line-height: normal;
+}
+
+button,
+html input[type=button],
+input[type=reset],
+input[type=submit] {
+  -webkit-appearance: button;
+  appearance: button;
+  cursor: pointer;
+}
+
+button[disabled],
+input[disabled] {
+  cursor: default;
+}
+
+input[type=checkbox],
+input[type=radio] {
+  box-sizing: border-box;
+  padding: 0;
+}
+
+input[type=search] {
+  -webkit-appearance: textfield;
+  appearance: textfield;
+  -moz-box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+input[type=search]::-webkit-search-cancel-button,
+input[type=search]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+textarea {
+  overflow: auto;
+  vertical-align: top;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+body,
+figure {
+  margin: 0;
+}
+
+legend,
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+* {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+@media (max-width: 520px) {
+  .non-essential {
+    display: none;
+  }
+}
+
+html {
+  line-height: 22px;
+  font-family: georgia, palatino, "palatino linotype", freeserif, serif;
+  font-size: 16px;
+  background: #fcfcfc;
+  display: flex;
+}
+
+body {
+  text-align: left;
+  background-color: #ffffff;
+  margin: auto;
+  color: #222;
+  overflow: auto;
+  width: 100%;
+  min-width: 400px;
+  max-width: 758px;
+  border-left: 1px solid #E9E9E9;
+  border-right: 1px solid #E9E9E9;
+  display: block;
+  box-sizing: content-box;
+}
+
+form {
+  margin: 0;
+  padding: 0;
+}
+
+p {
+  margin: 0 0 12px;
+}
+
+b {
+  font-weight: bold;
+}
+
+i {
+  font-style: italic;
+}
+
+/**class used for  tag "Headline" in xml **/
+.headline {
+  text-align: left;
+  line-height: 20px;
+  margin: 15px 0px 10px;
+  font-family: arial, helvetica, freesans, sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/*
+   class used for  tag "formula" in xml  usually a img that represent a math formula
+   also KaTeX HTML formulas are rendered in this class
+
+*/
+.formula {
+  text-align: center;
+  margin: 12px 0 15px;
+  font-size: 16px;
+  display: block;
+}
+
+p .formula {
+  display: inline;
+}
+
+.formula p {
+  text-align: center;
+}
+
+.center {
+  display: block;
+  text-align: center;
+  margin: 0px 0px 12px;
+}
+
+/** overwrite some stuff in katex.css for inline formulas **/
+span.formula .katex-html {
+  font-size: 16px !important;
+  display: inline !important;
+}
+
+span.formula .katex-display,
+span.formula .katex-display>.katex {
+  display: inline !important;
+}
+
+/**type of text that have a line thru all text**/
+.strike {
+  text-decoration: line-through;
+}
+
+/**type of text that have a underline thru all text**/
+.underline {
+  text-decoration: underline;
+}
+
+/**class used for  tag "tt" in xml**/
+.tt {
+  text-transform: uppercase;
+  font-family: monospace;
+  color: #000;
+}
+
+/**class used for  tag "subscript" in xml**/
+.subscript {
+  position: relative;
+  line-height: 1.2;
+  height: 0px;
+  font-size: 0.7em;
+  vertical-align: bottom;
+  top: 0.4ex;
+}
+
+/**class used for  tag "superscript" in xml**/
+.superscript {
+  position: relative;
+  line-height: 1.2;
+  height: 0px;
+  font-size: 0.7em;
+  vertical-align: bottom;
+  bottom: 1.1ex;
+}
+
+/**class used for  tag "nobr" in xml**/
+.nobr {
+  white-space: nowrap;
+}
+
+/**class used for  tag "Highlight" in xml**/
+.highlight {
+  background-color: #ffcc00;
+}
+
+/*List styles  */
+ol {
+  text-align: left;
+  padding: 0px;
+  margin: 0px 0px 10px 10px;
+}
+
+ol.alpha.lower {
+  list-style-type: lower-alpha;
+}
+
+ol.alpha.upper {
+  list-style-type: upper-alpha;
+}
+
+ol.alpha.lower.bold {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.alpha.lower.bold>li {
+  counter-increment: list;
+}
+
+ol.alpha.lower.bold>li::before {
+  content: counter(list, lower-alpha) ".";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+  font-weight: bold;
+}
+
+ol.alpha.upper.bold {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.alpha.upper.bold>li {
+  counter-increment: list;
+}
+
+ol.alpha.upper.bold>li::before {
+  content: counter(list, upper-alpha) ".";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+  font-weight: bold;
+}
+
+ol.alpha.lower.bracket {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.alpha.lower.bracket>li {
+  counter-increment: list;
+}
+
+ol.alpha.lower.bracket>li::before {
+  content: counter(list, lower-alpha) ")";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+}
+
+ol.alpha.upper.bracket {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.alpha.upper.bracket>li {
+  counter-increment: list;
+}
+
+ol.alpha.upper.bracket>li::before {
+  content: counter(list, upper-alpha) ")";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+}
+
+ol.alpha.lower.double-bracket {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.alpha.lower.double-bracket>li {
+  counter-increment: list;
+}
+
+ol.alpha.lower.double-bracket>li::before {
+  content: "(" counter(list, lower-alpha) ")";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+}
+
+ol.alpha.upper.double-bracket {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.alpha.upper.double-bracket>li {
+  counter-increment: list;
+}
+
+ol.alpha.upper.double-bracket>li::before {
+  content: "(" counter(list, upper-alpha) ")";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+}
+
+ol.arabic {
+  list-style-type: decimal;
+}
+
+ol.arabic.bold {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.arabic.bold>li {
+  counter-increment: list;
+}
+
+ol.arabic.bold>li::before {
+  content: counter(list, decimal) ".";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+  font-weight: bold;
+}
+
+ol.arabic.bracket {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.arabic.bracket>li {
+  counter-increment: list;
+}
+
+ol.arabic.bracket>li::before {
+  content: counter(list, decimal) ")";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+}
+
+ol.arabic.double-bracket {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.arabic.double-bracket>li {
+  counter-increment: list;
+}
+
+ol.arabic.double-bracket>li::before {
+  content: "(" counter(list, decimal) ")";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+}
+
+ol.roman.lower {
+  list-style-type: lower-roman;
+}
+
+ol.roman.upper {
+  list-style-type: upper-roman;
+}
+
+ol.roman.lower.bold {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.roman.lower.bold>li {
+  counter-increment: list;
+}
+
+ol.roman.lower.bold>li::before {
+  content: counter(list, lower-roman) ".";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+  font-weight: bold;
+}
+
+ol.roman.upper.bold {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.roman.upper.bold>li {
+  counter-increment: list;
+}
+
+ol.roman.upper.bold>li::before {
+  content: counter(list, upper-roman) ".";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+  font-weight: bold;
+}
+
+ol.roman.lower.bracket {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.roman.lower.bracket>li {
+  counter-increment: list;
+}
+
+ol.roman.lower.bracket>li::before {
+  content: counter(list, lower-roman) ")";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+}
+
+ol.roman.upper.bracket {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.roman.upper.bracket>li {
+  counter-increment: list;
+}
+
+ol.roman.upper.bracket>li::before {
+  content: counter(list, upper-roman) ")";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+}
+
+ol.roman.lower.double-bracket {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.roman.lower.double-bracket>li {
+  counter-increment: list;
+}
+
+ol.roman.lower.double-bracket>li::before {
+  content: "(" counter(list, lower-roman) ")";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+}
+
+ol.roman.upper.double-bracket {
+  list-style-type: none;
+  counter-reset: list;
+}
+
+ol.roman.upper.double-bracket>li {
+  counter-increment: list;
+}
+
+ol.roman.upper.double-bracket>li::before {
+  content: "(" counter(list, upper-roman) ")";
+  float: left;
+  width: 26px;
+  margin: 0 4px 0 -30px;
+  text-align: right;
+}
+
+ul {
+  text-align: left;
+  padding: 0px;
+  margin: 0px 0px 10px 10px;
+}
+
+ul.dash {
+  list-style-type: square;
+}
+
+ul.square {
+  list-style-type: square;
+}
+
+ul.simple {
+  list-style-type: disc;
+}
+
+ul.bullet {
+  list-style-type: disc;
+}
+
+ul.circle {
+  list-style-type: circle;
+}
+
+li {
+  text-align: left;
+  margin: 5px 0px 0px 25px;
+}
+
+/*Link styles  */
+a {
+  text-decoration: none;
+}
+
+a.rlink:link {
+  border-bottom: #2255aa 1px dashed;
+  border-left: #2255aa 0px dashed;
+  padding-bottom: 0px;
+  padding-left: 1px;
+  padding-right: 1px;
+  color: #222;
+  border-top: #2255aa 0px dashed;
+  border-right: #2255aa 0px dashed;
+  text-decoration: none;
+  padding-top: 0px;
+}
+
+a.rlink:visited {
+  border-bottom: #2255aa 1px dashed;
+  border-left: #2255aa 0px dashed;
+  padding-bottom: 0px;
+  padding-left: 1px;
+  padding-right: 1px;
+  color: #222;
+  border-top: #2255aa 0px dashed;
+  border-right: #2255aa 0px dashed;
+  text-decoration: none;
+  padding-top: 0px;
+}
+
+a.rlink:hover {
+  color: #2255aa;
+}
+
+a.rlink:active {
+  color: #2255aa;
+}
+
+.link {
+  text-align: left;
+  color: #2255aa;
+  text-decoration: underline;
+}
+
+/*Tables styles  */
+@media (max-width: 475px) {
+  table {
+    word-wrap: break-word;
+    table-layout: fixed;
+  }
+
+  .nowrap {
+    white-space: normal;
+  }
+
+  .nobr {
+    white-space: normal;
+  }
+}
+
+table {
+  background-color: white;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin-left: auto;
+  padding: 2px;
+  margin-right: auto;
+}
+
+td {
+  font-family: georgia, palatino, "palatino linotype", freeserif, serif;
+  border: #cdcdcd 1px solid;
+  padding: 2px;
+  padding-left: 3px;
+}
+
+td:not([valign]) {
+  vertical-align: middle;
+}
+
+th {
+  border-bottom: white 1px solid;
+  border-left: white 1px solid;
+  background-color: #2255aa;
+  border-top: #2255aa 1px solid;
+  border-right: white 1px solid;
+  color: white;
+  padding: 2px;
+  font-weight: bold;
+  font-family: georgia, palatino, "palatino linotype", freeserif, serif;
+  padding-left: 3px;
+}
+
+th[rotate-text] {
+  max-height: 10px;
+}
+
+th[rotate-text] span {
+  text-align: center;
+  writing-mode: vertical-rl;
+}
+
+th[rotate-text="left"] span {
+  transform: rotate(180deg);
+}
+
+tr th:last-child {
+  border-right: #2255aa 1px solid;
+}
+
+tr th:first-child {
+  border-left: #2255aa 1px solid;
+}
+
+tr:first-child th:nth-child(2) {
+  border-left: white 1px solid;
+}
+
+tr:last-child th {
+  border-bottom: #2255aa 1px solid;
+}
+
+table.verticalHeader th {
+  border-bottom: white 1px solid;
+  border-right: #2255aa 1px solid;
+}
+
+table.verticalHeader tr:last-child th,
+table.infoBox tr:last-child th {
+  border-bottom: #2255aa 1px solid;
+  border-right: #2255aa 1px solid;
+}
+
+table.infoBox tr th {
+  text-align: center;
+  vertical-align: middle;
+  width: 100px;
+}
+
+table.infoBox tr td {
+  padding: 5px;
+}
+
+table.infoBox {
+  margin: 20px 0px 10px;
+  width: 100%;
+}
+
+td p {
+  text-align: left;
+  margin: 4px 0px;
+}
+
+td p.incborder {
+  margin: 4px;
+}
+
+th p {
+  text-align: center;
+  font-style: italic;
+  margin: 4px 0px;
+  font-weight: bold;
+}
+
+table.variablefontsize {
+  font-size: 16px !important;
+}
+
+.tableMargins {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+table.noBorders tr,
+table.noBorders,
+table.noBorders td {
+  border: none;
+}
+
+/**Styles for figure/img containers**/
+.graphic {
+  text-align: left;
+  margin: auto;
+}
+
+.graphic_noborder img {
+  max-width: 100%;
+}
+
+.graphic_border img {
+  max-width: 100%;
+}
+
+.graphic_border {
+  border-bottom: #000000 1px solid;
+  text-align: center;
+  border-left: #000000 1px solid;
+  margin: 8px 0px;
+  padding-left: 0px;
+  width: 100%;
+  padding-right: 0px;
+  border-top: #000000 1px solid;
+  border-right: #000000 1px solid;
+  margin: auto;
+}
+
+.graphic_noborder {
+  border-bottom: black 0px solid;
+  text-align: center;
+  border-left: black 0px solid;
+  padding-bottom: 5px;
+  padding-left: 0px;
+  width: 100%;
+  padding-right: 0px;
+  border-top: black 0px solid;
+  border-right: black 0px solid;
+  padding-top: 15px;
+  margin: auto;
+}
+
+.graphic_scale {
+  border-bottom: #cc0000 1px solid;
+  text-align: center;
+  border-left: #cc0000 1px solid;
+  padding-bottom: 15px;
+  margin: 8px 0px;
+  padding-left: 0px;
+  width: 100%;
+  width: 1px;
+  min-width: 100%;
+  padding-right: 0px;
+  border-top: #cc0000 1px solid;
+  border-right: #cc0000 1px solid;
+  padding-top: 15px;
+}
+
+/**class used for  zoomer**/
+.pszoomer {
+  border-bottom: #000 1px solid;
+  border-left: #000 1px solid;
+  width: 100%;
+  width: 1px;
+  min-width: 100%;
+  margin-bottom: 8px;
+  border-top: #000 1px solid;
+  border-right: #000 1px solid;
+  background-color: #fff;
+}
+
+/**class used for  video presentation**/
+.psvideo {
+  border-bottom: 0px;
+  border-left: 0px;
+  width: 100%;
+  margin-bottom: 8px;
+  border-top: 0px;
+  border-right: 0px;
+}
+
+.mainvideo {
+  width: 100%;
+  width: 1px !important;
+  min-width: 100%;
+  max-width: 100% !important;
+}
+
+/**class used for audio presentation**/
+.psaudio {
+  border-bottom: 0px;
+  border-left: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  width: 100%;
+  padding-right: 0px;
+  margin-bottom: 0px;
+  border-top: 0px;
+  border-right: 0px;
+  padding-top: 0px;
+}
+
+audio {
+  width: 100%;
+}
+
+/**class used for  attribute "showid" in xml**/
+.showid {
+  font-style: normal;
+  font-family: arial, helvetica, freesans, sans-serif;
+  float: right;
+  color: #c00;
+  font-size: 11px;
+  font-weight: normal;
+}
+
+/**class used for  tag "syllabus" in xml**/
+.syllabus {
+  padding-bottom: 5px;
+  line-height: 11px;
+  padding-left: 0px;
+  padding-right: 0px;
+  font-family: arial, helvetica, freesans, sans-serif;
+  color: #2255aa;
+  font-size: 12px;
+  font-weight: bold;
+  padding-top: 5px;
+}
+
+/**class used for  tag "extsyllabus" in xml**/
+.extsyllabus {
+  visibility: hidden;
+  width: 0px;
+  height: 0px;
+}
+
+/** used for  tag "chapter" in xml**/
+article {
+  text-align: left;
+  padding-bottom: 0px;
+   margin: 25px;
+  padding-left: 4px;
+  max-width: 758px;
+  padding-right: 4px;
+  padding-top: 0px;
+}
+
+/** used for content files with no article wrapper**/
+body > *, 
+body > p, 
+body > section {
+  margin-left: 25px;
+  margin-right: 25px;
+}
+body > ul {
+  margin-left: 35px;
+  margin-right: 25px;
+}
+
+/**used for all type of tag "section" in xml**/
+section {
+  margin: 25px auto 0px;
+}
+
+/** representing titles for chapters and sections**/
+article h1 {
+  line-height: 30px;
+  margin: 0px 0px 20px;
+  font-size: 28px;
+  padding: 0px;
+  font-family: arial, helvetica, freesans, sans-serif;
+  font-weight: bold;
+}
+
+section h1 {
+  line-height: 26px;
+  margin: 0px 0px 18px;
+  font-size: 25px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  padding-top: 0px;
+  font-weight: bold;
+  font-family: arial, helvetica, freesans, sans-serif;
+}
+
+section h2 {
+  line-height: 24px;
+  margin: 0px 0px 16px;
+  font-size: 22px;
+  font-weight: bold;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  padding-top: 0px;
+  font-family: arial, helvetica, freesans, sans-serif;
+}
+
+section h3 {
+  line-height: 20px;
+  margin: 0px 0px 12px;
+  font-size: 17px;
+  font-weight: bold;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  padding-top: 0px;
+  font-family: arial, helvetica, freesans, sans-serif;
+}
+
+section h4 {
+  line-height: 22px;
+  margin: 0px 0px 14px;
+  font-size: 18px;
+  font-weight: normal;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  padding-top: 0px;
+  font-family: arial, helvetica, freesans, sans-serif;
+  color: #41383c;
+}
+
+section h5 {
+  line-height: 22px;
+  margin: 0px 0px 0px;
+  font-size: 16px;
+  font-weight: normal;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  padding-top: 0px;
+  font-family: arial, helvetica, freesans, sans-serif;
+  color: #41383c;
+}
+
+section h6 {
+  line-height: 22px;
+  margin: 0px 0px 0px;
+  font-size: 14px;
+  font-weight: normal;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  padding-top: 0px;
+  font-family: arial, helvetica, freesans, sans-serif;
+  color: #595454;
+}
+
+/** used for  all type of media presentations in xml**/
+figure {
+  padding-bottom: 0px;
+  margin: 10px 0px 15px;
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-top: 0px;
+}
+
+/** used for  for titles of all type of media presentations in xml**/
+figcaption {
+  text-align: left;
+  margin: 8px 0px 0px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 8px;
+  font-family: arial, helvetica, freesans, sans-serif;
+  color: #000;
+  font-size: 0.8em;
+  overflow: visible;
+  margin: 0px;
+  font-weight: normal;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+/**for images in fullsceen mode **/
+.imgFullScreen {
+  width: 100%;
+  height: 50%;
+}
+
+img:-webkit-full-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+img:-mozilla-full-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+img:full-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+/**class used image positioning usually a formula **/
+figure img {
+  max-width: 100%;
+}
+
+img.baseline {
+  vertical-align: baseline;
+}
+
+img.middle {
+  vertical-align: middle;
+}
+
+img.text-top {
+  vertical-align: text-top;
+}
+
+img.text-bottom {
+  vertical-align: text-bottom;
+}
+
+img.baseline-formula {
+  vertical-align: -12%;
+}
+
+img.baseline-formula-subscript {
+  vertical-align: -25%;
+}
+
+img.middle-simplefraction {
+  vertical-align: -43%;
+}
+
+.clearfix:after {
+  display: block;
+  height: 0px;
+  visibility: hidden;
+  clear: both;
+  font-size: 0px;
+}
+
+*:first-child+html .clearfix {
+  min-height: 0px;
+}
+
+* html .clearfix {
+  height: 1%;
+}
+
+iframe {
+  border: 0;
+  width: 100%;
+  width: 1px !important;
+  min-width: 100%;
+  max-width: 100% !important;
+  max-height: 100%;
+}
+
+iframe.zoom {
+  max-height: 70vw;
+  width: 100%;
+  width: 1px;
+  min-width: 100%;
+}
+
+/**Classe used for javascript animations **/
+.animationIframe {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  width: 1px !important;
+  min-width: 100%;
+  max-width: 100% !important;
+  max-height: 70vw;
+}
+
+.redText {
+  color: #CC0000;
+}
+
+.invisible {
+  display: none;
+}
+
+[diff] mark {
+  background: none;
+}
+
+[diff].visiblemark {
+  background: yellow;
+}
+
+[diff="added"].visible {
+  border-right: thick solid green;
+}
+
+[diff="changed"].visible {
+  border-right: thick solid yellow;
+}
+
+[diff="deleted"] {
+  display: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  cursor: default;
+}
+
+[diff="deleted"].visible {
+  display: block;
+  border-right: thick solid red;
+  color: red;
+  text-decoration: line-through;
+}
+
+.imagecopyright {
+  white-space: nowrap;
+}
+
+.camas {
+  color: #2255aa;
+  font-style: italic;
+  text-align: right;
+}
+
+.search-term {
+  background: yellow !important;
+}

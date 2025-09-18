@@ -1,0 +1,39 @@
+<svg width="0" height="0" version="1.1" id="sprites" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+      x="0px" y="0px">
+      <symbol id="svg-zoomin" viewBox="0 0 26 26" stroke="none">
+        <path d="M13 14v8h1v-8h8v-1h-8V5h-1v8H5v1z" />
+      </symbol>
+      <symbol id="svg-zoomout" viewBox="0 0 26 26" stroke="none">
+        <path d="M22 14v-1H5v1z" />
+      </symbol>
+      <symbol id="svg-rotate" viewBox="0 0 26 26" stroke="none">
+        <path d="M2 8v16h16V8H2zm12.56-4.28L15.86 5a.5.5 0 0 1-.71.7l-2.18-2.17a.5.5 0 0 1 0-.71L15.15.65a.5.5 0 0 1 .7.7L14.5 2.71a13.2 13.2 0 0 1 4.46 1.07 9.49 9.49 0 0 1 2.93 1.96 9.49 9.49 0 0 1 1.96 2.92 13.2 13.2 0 0 1 1.1 5.4v.05a.5.5 0 0 1-.53.48c-.27-.01-.49-.24-.48-.55a12.21 12.21 0 0 0-1.01-4.98 8.5 8.5 0 0 0-1.75-2.62 8.5 8.5 0 0 0-2.62-1.75 12.21 12.21 0 0 0-4-.97zM1 7h18v18H1V7z"
+        />
+      </symbol>
+      <symbol id="svg-fullscreen-on" viewBox="0 0 26 26" stroke="none">
+        <path d="M24 24v-6h1v7h-7v-1h6zM2 24h6v1H1v-7h1v6zM18 1h7v7h-1V2h-6V1zM2 2v6H1V1h7v1H2z" />
+      </symbol>
+      <symbol id="svg-fullscreen-off" viewBox="0 0 26 26" stroke="none">
+        <path d="M19 19v6h-1v-7h7v1h-6zM1 18h7v7H7v-6H1v-1zM19 7h6v1h-7V1h1v6zM7 7V1h1v7H1V7h6z" />
+      </symbol>
+      <symbol id="svg-popout" viewBox="0 0 26 26" stroke="none">
+        <path id="a" d="M21.02 4.76h-4.95v-1h6.66v6.65h-1V5.46L10.9 16.28l-.7-.71L21 4.76zM25 25H1V1h14v1H2v22h22V11h1v14z" />
+      </symbol>
+      <symbol id="svg-copyright" viewBox="0 0 26 26" stroke="none" fill-rule="evenodd">
+        <path d="M6 13c0-3.95 2.97-7 6.96-7a6.85 6.85 0 0 1 6.97 7c0 3.96-2.98 7-6.97 7A6.82 6.82 0 0 1 6 13zm6.96 6.22c3.46 0 6.03-2.7 6.03-6.21s-2.57-6.23-6.03-6.23C9.5 6.78 6.94 9.5 6.94 13c0 3.51 2.56 6.21 6.02 6.21zm2.93-4.92c-.18 1.53-1.3 2.33-2.86 2.33-2.14 0-3.23-1.41-3.23-3.6 0-2.14 1.2-3.75 3.28-3.75 1.41 0 2.68.66 2.8 2.18h-1.02c-.09-.73-.62-1.38-1.78-1.38-1.41 0-2.24 1.08-2.24 2.88 0 1.8.6 2.87 2.22 2.87 1.36 0 1.78-.84 1.86-1.53h.97z"
+        />
+      </symbol>
+      <symbol id="svg-play-play" viewBox="0 0 26 26" stroke="none">
+        <path d="M9 4.27v17.46L18.52 13 9 4.27zM8 2l12 11L8 24V2z" />
+      </symbol>
+      <symbol id="svg-play-pause" viewBox="0 0 26 26" stroke="none">
+        <path d="M8 3v20h2V3H8zM7 2h4v22H7V2zm9 1v20h2V3h-2zm-1-1h4v22h-4V2z" />
+      </symbol>
+      <symbol id="svg-volume-mute" viewBox="0 0 26 26" stroke="none">
+        <path d="M5 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
+      </symbol>
+      <symbol id="svg-volume-unmute" viewBox="0 0 26 26" stroke="none">
+        <path d="M17 23.25a11 11 0 0 0 0-20.5V1.68a12 12 0 0 1 0 22.64v-1.07zM9 20A7 7 0 0 0 9 6V5a8 8 0 1 1 0 16v-1z" />
+        <path d="M5 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
+      </symbol>
+    </svg>
