@@ -10,6 +10,7 @@ class User(AbstractUser):
 
 
 class Doc(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=1024)
     description = models.CharField(
         max_length=1024,
@@ -29,6 +30,7 @@ class Doc(models.Model):
 
 
 class Content(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=1024)
     file = models.FileField(
         upload_to="content_files/", blank=True, null=True

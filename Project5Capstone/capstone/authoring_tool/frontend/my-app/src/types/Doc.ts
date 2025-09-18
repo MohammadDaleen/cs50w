@@ -1,5 +1,7 @@
+import type { Guid } from "./Guid";
+
 export type Doc = {
-  id: string;
+  id: Guid;
   name: string;
   description: string;
   author: string;

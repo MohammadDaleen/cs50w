@@ -12,22 +12,22 @@ urlpatterns = [
     path("api/document", views.document, name="api_document"),
     path("api/documents", views.user_documents, name="api_user_documents"),
     path(
-        "api/document/<int:doc_id>", views.document_detail, name="api_document_detail"
+        "api/document/<uuid:doc_id>", views.document_detail, name="api_document_detail"
     ),
     path(
-        "api/document/<int:doc_id>/content",
+        "api/document/<uuid:doc_id>/content",
         views.document_content_tree,
         name="api_document_content_tree",
     ),
     # Content URLs
     path("api/content", views.content_node, name="api_content"),
     path(
-        "api/content/<int:content_id>",
+        "api/content/<uuid:content_id>",
         views.content_node_detail,
         name="api_content_detail",
     ),
     path(
-        "api/content/<int:content_id>/file",
+        "api/content/<uuid:content_id>/file",
         views.content_file,
         name="api_content_file",
     ),
@@ -38,7 +38,7 @@ urlpatterns = [
     path("api/$batch", views.batch, name="api_batch"),
     # Attachments URLs
     path(
-        "api/content/<int:content_id>/attachments",
+        "api/content/<uuid:content_id>/attachments",
         views.content_attachments,
         name="api_content_attachments",
     ),

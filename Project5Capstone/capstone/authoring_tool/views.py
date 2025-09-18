@@ -149,7 +149,7 @@ def user_documents(request: Request) -> Response:
 
 @api_view(["PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
-def document_detail(request: Request, doc_id: int) -> Response:
+def document_detail(request: Request, doc_id: uuid.UUID) -> Response:
     """Update or delete a specific document"""
 
     # Initialize data dictionary for response
@@ -172,7 +172,7 @@ def document_detail(request: Request, doc_id: int) -> Response:
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def document_content_tree(request: Request, doc_id: int) -> Response:
+def document_content_tree(request: Request, doc_id: uuid.UUID) -> Response:
     """Get all content nodes for a document as a tree"""
     document = get_object_or_404(Doc, id=doc_id, author=request.user)
 
@@ -204,7 +204,7 @@ def content_node(request: Request) -> Response:
 
 @api_view(["PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
-def content_node_detail(request: Request, content_id: int) -> Response:
+def content_node_detail(request: Request, content_id: uuid.UUID) -> Response:
     """Update or delete a specific content node"""
     content_node = get_object_or_404(Content, id=content_id, author=request.user)
 
@@ -455,7 +455,7 @@ def batch(request: Request) -> HttpResponse:
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def content_file(request: Request, content_id: int) -> Response:
+def content_file(request: Request, content_id: uuid.UUID) -> Response:
     """
     Retrieves the aggregated file content for a given content node.
     Accepts an 'include_children' query parameter (true/false).
@@ -493,7 +493,7 @@ def get_attachment_type(mime_type):
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
-def content_attachments(request: Request, content_id: int) -> Response:
+def content_attachments(request: Request, content_id: uuid.UUID) -> Response:
     """
     GET: List all attachments for a content node.
     POST: Upload a new attachment for a content node.
@@ -555,8 +555,6 @@ def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
     return Response({"id": deleted_attachment_id}, status=status.HTTP_200_OK)
 
 
-# TODO: upload resources to server (and finalize them)
-# TODO: add now models to admin
 # TODO: fix: accessing ref variables in VM
 # TODO: remove batch content update endpoint
 # TODO: remove unused parts of code
