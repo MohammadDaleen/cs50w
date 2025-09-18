@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Content, Doc, Resource, User
+from .models import Attachment, Content, Doc, Resource, User
 
 admin.site.register(User, UserAdmin)
 
@@ -34,3 +34,13 @@ class ResourceAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "type", "is_active", "created_at", "updated_at")
     search_fields = ("name", "type")
     list_filter = ("type", "is_active", "created_at")
+
+
+@admin.register(Attachment)
+class AttachmentAdmin(admin.ModelAdmin):
+    # Fields to display in the admin list view
+    list_display = ("id", "name", "content", "type", "uploaded_at")
+    # Fields to search by
+    search_fields = ("name", "content__name")
+    # Filters in the sidebar
+    list_filter = ("type", "uploaded_at")
