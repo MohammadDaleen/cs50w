@@ -40,6 +40,14 @@ export const TinyMCE = observer(() => {
       // if anything fails, fall back to an empty string
       e.content = vm.SanitizeEditorHtml(e.content ?? "") ?? "";
     });
+    // Allow iframes to work correctly by adding necessary sandbox attributes
+    editor.on("PreInit", () => {
+      editor.parser.addNodeFilter("iframe", (nodes) => {
+        nodes.forEach((node) => {
+          node.attr("sandbox", "allow-scripts allow-same-origin");
+        });
+      });
+    });
 
     // install the image overlay
     installImageOverlay(editor, vm);
