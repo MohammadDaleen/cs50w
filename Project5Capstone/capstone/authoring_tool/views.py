@@ -225,33 +225,6 @@ def content_node_detail(request: Request, content_id: uuid.UUID) -> Response:
         )
 
 
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def content_batch_update(request: Request) -> Response:
-    """Batch update content nodes (for reordering trees)"""
-    updates = request.data.get("updates", [])
-
-    try:
-        with transaction.atomic():
-            for update in updates:
-                content_id = update.get("id")
-                content_node = get_object_or_404(
-                    Content, id=content_id, author=request.user
-                )
-
-                # Update allowed fields
-                for field in ["name", "file", "parent", "order", "level"]:
-                    if field in update:
-                        setattr(content_node, field, update[field])
-
-                content_node.save()
-
-            return Response({"message": "Batch update successful"})
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_resources(request):
