@@ -90,9 +90,9 @@ export const App = observer(({ serviceProvider }: props) => {
 
   return (
     <FluentProvider
-      theme={vm.IsLightMode ? teamsLightTheme : teamsDarkTheme}
+      theme={vm.IsDarkMode ? teamsDarkTheme : teamsLightTheme}
       className={styles.root}
-      data-bs-theme={vm.IsLightMode ? "light" : "dark"}
+      data-bs-theme={vm.IsDarkMode ? "dark" : "light"}
     >
       <div className={styles.warpper}>
         {vm.PcfError ? (

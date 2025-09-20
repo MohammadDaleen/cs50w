@@ -4,8 +4,8 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import { useVM } from "../viewModel/context";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { WeatherMoonFilled, WeatherSunnyFilled } from "@fluentui/react-icons";
+// import { useEffect } from "react";
+// import { WeatherMoonFilled, WeatherSunnyFilled } from "@fluentui/react-icons";
 import { Image } from "@fluentui/react-components";
 
 export const Layout = observer(() => {
@@ -32,9 +32,9 @@ export const Layout = observer(() => {
     navigate(`/${vm.User.username}`);
   };
 
-  const handleToggleMode = () => {
-    vm.ToggleIsLightMode();
-  };
+  // const handleToggleMode = () => {
+  //   vm.ToggleIsDarkMode();
+  // };
 
   return (
     <>
@@ -61,13 +61,13 @@ export const Layout = observer(() => {
                 </Nav>
                 <Nav className="ms-auto">
                   <Nav.Link onClick={handleLogout}>Log Out</Nav.Link>
-                  <Nav.Link onClick={handleToggleMode}>
-                    {vm.IsLightMode ? (
+                  {/* <Nav.Link onClick={handleToggleMode}>
+                    {vm.IsDarkMode ? (
                       <WeatherMoonFilled fontSize={"1.5rem"} />
                     ) : (
                       <WeatherSunnyFilled fontSize={"1.5rem"} />
                     )}
-                  </Nav.Link>
+                  </Nav.Link> */}
                 </Nav>
               </>
             ) : (
@@ -84,13 +84,13 @@ export const Layout = observer(() => {
                   <Nav.Link as={Link} to="/register">
                     Register
                   </Nav.Link>
-                  <Nav.Link onClick={handleToggleMode}>
-                    {vm.IsLightMode ? (
+                  {/* <Nav.Link onClick={handleToggleMode}>
+                    {vm.IsDarkMode ? (
                       <WeatherMoonFilled fontSize={"1.5rem"} />
                     ) : (
                       <WeatherSunnyFilled fontSize={"1.5rem"} />
                     )}
-                  </Nav.Link>
+                  </Nav.Link> */}
                 </Nav>
               </>
             )}

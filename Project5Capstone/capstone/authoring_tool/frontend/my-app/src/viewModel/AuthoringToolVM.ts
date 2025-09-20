@@ -96,22 +96,22 @@ export default class AuthoringToolVM {
   }
 
   /* ----- General Status ----- */
-  private isLightMode: boolean = false;
-  public get IsLightMode() {
-    this.isLightMode = localStorage.getItem("isLightMode") === "true" ? true : false;
-    return this.isLightMode;
+  private isDarkMode: boolean = true;
+  public get IsDarkMode() {
+    this.isDarkMode = localStorage.getItem("isDarkMode") === "true" ? true : false;
+    return this.isDarkMode;
   }
-  private set IsLightMode(mode: boolean) {
+  private set IsDarkMode(mode: boolean) {
     if (mode) {
-      localStorage.setItem("isLightMode", "true");
-      this.isLightMode = true;
+      localStorage.setItem("isDarkMode", "true");
+      this.isDarkMode = true;
     } else {
-      localStorage.removeItem("isLightMode");
-      this.isLightMode = false;
+      localStorage.removeItem("isDarkMode");
+      this.isDarkMode = false;
     }
   }
-  public ToggleIsLightMode() {
-    this.IsLightMode = !this.IsLightMode;
+  public ToggleIsDarkMode() {
+    this.IsDarkMode = !this.IsDarkMode;
   }
 
   // TODO: Do you really need a User and a Token ?*

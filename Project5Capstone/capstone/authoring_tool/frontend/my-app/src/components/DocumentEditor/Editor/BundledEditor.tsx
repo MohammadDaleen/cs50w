@@ -34,7 +34,8 @@ import "tinymce/plugins/visualchars";
 import "tinymce/plugins/wordcount";
 
 // Content styles, including inline UI like fake cursors
-import "tinymce/skins/content/default/content";
+// TODO: content_css is loaded from resources, so we may not need this.
+// import "tinymce/skins/content/default/content";
 import "tinymce/skins/ui/oxide/content";
 
 import React from "react";

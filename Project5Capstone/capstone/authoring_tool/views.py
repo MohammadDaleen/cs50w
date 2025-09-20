@@ -529,8 +529,7 @@ def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
     return Response({"id": deleted_attachment_id}, status=status.HTTP_200_OK)
 
 
-# TODO: remove batch content update endpoint
 # TODO: remove unused parts of code
-# TODO: support dark mode in Tinymce editor (or remove dark mode completely)
+# TODO: build a custom dark mode skin for Tinymce editor
 # TODO: support IMs in browser
 # TODO: support fullscreen mode properly
