@@ -459,8 +459,6 @@ def get_attachment_type(mime_type):
         return AttachmentType.VIDEO
     if mime_type.startswith("audio/"):
         return AttachmentType.AUDIO
-    if mime_type in ["application/zip", "application/x-zip-compressed"]:
-        return AttachmentType.MODEL
     # Add other specific types as needed
     return AttachmentType.OTHER
 
@@ -531,4 +529,3 @@ def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
 
 # TODO: remove unused parts of code
 # TODO: build a custom dark mode skin for Tinymce editor
-# TODO: support IMs in browser (or remove IMs completely)

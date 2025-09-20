@@ -1397,8 +1397,7 @@ export default class AuthoringToolVM {
     return new Promise((resolve) => {
       const input = document.createElement("input");
       input.type = "file";
-      input.accept =
-        "image/png, image/jpg, image/jpeg, image/webp, video/mp4, audio/mp3, audio/mpeg, application/zip, application/x-zip-compressed";
+      input.accept = "image/png, image/jpg, image/jpeg, image/webp, video/mp4, audio/mp3, audio/mpeg";
       input.onchange = () => {
         const file = input.files?.[0];
         resolve(file);
@@ -1563,28 +1562,6 @@ export default class AuthoringToolVM {
           `      <source src="${attachment.url}" data-client-src="${clientPath}sounds/${attachment.fileName}" t type="audio/mpeg" />`,
           `      Your browser does not support the audio element.`,
           `    </audio>`,
-          `  </div>`,
-          `  <figcaption>${attachment.fileName}</figcaption>`,
-          `</figure>`,
-        ].join("");
-        break;
-      case filetype.InteractiveModel:
-        content = [
-          `<figure>`,
-          `  <div class="pszoomer">`,
-          `    <iframe`,
-          `      width="${width}"`,
-          `      height="${height}"`,
-          `      frameborder="0"`,
-          `      scrolling="no"`,
-          `      allowfullscreen="true"`,
-          `      webkitallowfullscreen="true"`,
-          `      data-interactive="true"`,
-          `      data-media="animation"`,
-          `      data-src="${attachment.url}"`,
-          `      data-client-src="${clientPath}attachments/${attachment.fileName}"`,
-          `    >`,
-          `    </iframe>`,
           `  </div>`,
           `  <figcaption>${attachment.fileName}</figcaption>`,
           `</figure>`,

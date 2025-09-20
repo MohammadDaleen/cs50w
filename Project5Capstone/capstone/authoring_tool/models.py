@@ -138,7 +138,6 @@ class AttachmentType(models.TextChoices):
     IMAGE = "IMAGE", "Image"
     VIDEO = "VIDEO", "Video"
     AUDIO = "AUDIO", "Audio"
-    MODEL = "MODEL", "Interactive Model"
     OTHER = "OTHER", "Other"
 
 
