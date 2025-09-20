@@ -48,6 +48,22 @@ class Content(models.Model):
     )
     timestamp = models.DateTimeField(auto_now_add=True)  # Auto-set on creation
 
+    def save(self, *args, **kwargs):
+        # Check if this is an update to an existing instance
+        if self.pk:
+            try:
+                # Get the old instance from the database
+                old_instance = Content.objects.get(pk=self.pk)
+                # Check if the file has been changed and an old file exists
+                if old_instance.file and old_instance.file != self.file:
+                    # Delete the old file from storage
+                    old_instance.file.delete(save=False)
+            except Content.DoesNotExist:
+                # This can happen in rare edge cases; safe to ignore
+                pass
+        # Call the original save method
+        super().save(*args, **kwargs)
+
     def delete(self, *args, **kwargs):
         # Check if there is a file associated with this object
         if self.file:
