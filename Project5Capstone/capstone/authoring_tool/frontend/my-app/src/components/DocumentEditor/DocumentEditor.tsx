@@ -38,7 +38,7 @@ export const DocumentEditor = observer(() => {
       return;
     }
     // Retrieve the document data from the VM using the documentId.
-    const id = Number.parseInt(params.documentId);
+    const id = params.documentId;
     vm.LoadDocumentEditor(id).then((errorIds: number[]) => {
       setErrorIndices((prev) => {
         return [...prev, ...errorIds];

@@ -641,7 +641,7 @@ export default class AuthoringToolVM {
       return errorIds;
     }
   }
-  public async LoadDocumentEditor(docId: number): Promise<number[]> {
+  public async LoadDocumentEditor(docId: string): Promise<number[]> {
     const errorIds: number[] = [];
     //TODO remove these (planned to not use)
     // this.SubjectCode = subjectCode;

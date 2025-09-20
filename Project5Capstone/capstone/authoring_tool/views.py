@@ -24,6 +24,7 @@ from .serializers import (
     ContentSerializer,
     ContentTreeSerializer,
     DocSerializer,
+    RegisterSerializer,
     ResourceSerializer,
     UserSerializer,
 )
@@ -32,7 +33,7 @@ from .serializers import (
 @api_view(["POST"])
 def register(request: Request) -> Response:
     if request.method == "POST":
-        serializer = UserSerializer(data=request.data)
+        serializer = RegisterSerializer(data=request.data)
         data: Dict[str, str | Dict] = {}
         if serializer.is_valid():
             user: User
@@ -560,3 +561,4 @@ def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
 # TODO: remove unused parts of code
 # TODO: support dark mode in Tinymce editor (or remove dark mode completely)
 # TODO: support IMs in browser
+# TODO: support fullscreen mode properly

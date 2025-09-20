@@ -31,7 +31,15 @@ class ContentAdmin(admin.ModelAdmin):
 
 @admin.register(Resource)
 class ResourceAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "type", "is_active", "created_at", "updated_at")
+    list_display = (
+        "id",
+        "name",
+        "type",
+        "order",
+        "is_active",
+        "created_at",
+        "updated_at",
+    )
     search_fields = ("name", "type")
     list_filter = ("type", "is_active", "created_at")
 
