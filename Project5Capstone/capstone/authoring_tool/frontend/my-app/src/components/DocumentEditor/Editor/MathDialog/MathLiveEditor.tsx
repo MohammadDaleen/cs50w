@@ -1,5 +1,5 @@
 import { Field, makeStyles, Textarea, tokens } from "@fluentui/react-components";
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useCallback } from "react";
 import { useVM } from "../../../../viewModel/context";
 import { observer } from "mobx-react-lite";
 import "mathlive";
@@ -38,11 +38,6 @@ export const MathLiveEditor = observer(() => {
   // it is replaced whenever listeners are re-attached to avoid leaks.
   const cleanupRef = useRef<(() => void) | null>(null);
 
-  // Sync VM ref
-  useEffect(() => {
-    vm.MathfieldRef = mfRef;
-  }, [mfRef]);
-
   /**
    * A callback ref to configure the math-field element when it is attached
    *
@@ -62,16 +57,18 @@ export const MathLiveEditor = observer(() => {
     // If el is null, clear mfRef and return.
     if (!el) {
       mfRef.current = null;
+      vm.MathfieldRef = mfRef; // sync VM ref
       return;
     }
     mfRef.current = el; // Store current math-field element
+    vm.MathfieldRef = mfRef; // sync VM ref
     // safe guards and initialization
     try {
       el.smartFence = true; // automatically convert parentheses to \left...\right markup.
       el.mathVirtualKeyboardPolicy = "manual"; // Do not show the virtual keyboard panel automatically.
       document.body.style.setProperty("--keyboard-zindex", "1000002"); // Set CSS variable for keyboard overlay z-index control.
       document.body.style.setProperty("--suggestion-zindex", "1000002"); // Set CSS variable for suggestion popover overlay z-index control.
-      document.body.setAttribute("theme", "light"); // Set theme
+      // document.body.setAttribute("theme", "light"); // Set theme
       const mvk = window.mathVirtualKeyboard; // Get the virtual keyboard
       mvk.layouts = ["numeric", "symbols", "greek"]; // Set available keyboard layouts (tabs)
       MathfieldElement.soundsDirectory = null; // Disable the sounds
@@ -105,29 +102,12 @@ export const MathLiveEditor = observer(() => {
     // store cleanup function
     cleanupRef.current = () => {
       try {
+        const mvk = window.mathVirtualKeyboard;
+        mvk.hide(); // ensure kyboard is hidden
         el.removeEventListener("input", onInput);
       } catch (err) {
         vm.AddError(`Error during cleanup removal`);
         console.error(`Error during cleanup removal`, err);
-      }
-    };
-  }, []);
-
-  // cleanup on unmount
-  useEffect(() => {
-    return () => {
-      try {
-        const mvk = window.mathVirtualKeyboard;
-        mvk.hide(); // ensure kyboard is hidden
-        // execute and clear cleanupRef on unmount
-        if (cleanupRef.current) {
-          cleanupRef.current();
-          cleanupRef.current = null;
-        }
-        mfRef.current = null; // clear mfRef when component unmount
-      } catch (err) {
-        vm.AddError(`Error during unmount cleanup`);
-        console.error(`Error during unmount cleanup`, err);
       }
     };
   }, []);

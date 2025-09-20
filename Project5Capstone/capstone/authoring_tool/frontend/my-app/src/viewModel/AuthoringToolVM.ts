@@ -19,6 +19,7 @@ import { load } from "cheerio";
 import { resourcetype } from "../enums";
 // import { axa_status } from "../cds-generated/enums/axa_status";
 import { MathfieldElement } from "mathlive";
+import { createRef } from "react";
 
 export default class AuthoringToolVM {
   // Static service name for registration purposes
@@ -247,19 +248,19 @@ export default class AuthoringToolVM {
     return URL.createObjectURL(blob);
   }
 
-  private tinyMceEditorRef: React.RefObject<TinyMCEEditor | null> | undefined = undefined;
+  private tinyMceEditorRef: React.RefObject<TinyMCEEditor | null> = createRef<null>();
   get TinyMceEditorRef() {
     return this.tinyMceEditorRef;
   }
-  set TinyMceEditorRef(value: React.MutableRefObject<TinyMCEEditor | null> | undefined) {
+  set TinyMceEditorRef(value: React.MutableRefObject<TinyMCEEditor | null>) {
     this.tinyMceEditorRef = value;
   }
 
-  private tinyMceInitialContentRef: React.RefObject<string | null> | undefined = undefined;
+  private tinyMceInitialContentRef: React.RefObject<string | null> = createRef<null>();
   get TinyMceInitialContentRef() {
     return this.tinyMceInitialContentRef;
   }
-  set TinyMceInitialContentRef(value: React.MutableRefObject<string | null> | undefined) {
+  set TinyMceInitialContentRef(value: React.MutableRefObject<string | null>) {
     this.tinyMceInitialContentRef = value;
   }
 
@@ -1606,11 +1607,11 @@ export default class AuthoringToolVM {
     this.latex = latex;
   }
 
-  private mathfieldRef: React.RefObject<MathfieldElement | null> | undefined = undefined;
+  private mathfieldRef: React.RefObject<MathfieldElement | null> = createRef<null>();
   get MathfieldRef() {
     return this.mathfieldRef;
   }
-  set MathfieldRef(value: React.MutableRefObject<MathfieldElement | null> | undefined) {
+  set MathfieldRef(value: React.MutableRefObject<MathfieldElement | null>) {
     this.mathfieldRef = value;
   }
 

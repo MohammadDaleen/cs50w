@@ -556,7 +556,7 @@ def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
     return Response({"id": deleted_attachment_id}, status=status.HTTP_200_OK)
 
 
-# TODO: fix: accessing ref variables in VM
+# TODO: fix: updating a content file keeps the old file in storage
 # TODO: remove batch content update endpoint
 # TODO: remove unused parts of code
 # TODO: support dark mode in Tinymce editor (or remove dark mode completely)
