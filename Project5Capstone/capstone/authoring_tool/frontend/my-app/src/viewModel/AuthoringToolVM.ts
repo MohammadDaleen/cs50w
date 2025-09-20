@@ -205,7 +205,7 @@ export default class AuthoringToolVM {
     while (selectedNodeChapter && selectedNodeChapter.level !== 1) selectedNodeChapter = selectedNodeChapter.parent;
     if (!selectedNodeChapter) return; // Do not fetch content if the chapter is already selected
     this.SelectedChapter = { ...selectedNodeChapter, attachments: {} };
-    this.DrawerSize === "full" && (this.DrawerSize = "large"); // Set size to large if drawer is fully expanded (to show fetched content)
+    this.DrawerSize === "full" && (this.DrawerSize = "medium"); // Set size to medium if drawer is fully expanded (to show fetched content)
   }
 
   private selectedChapter: SelectedContent | undefined = undefined;
@@ -299,7 +299,7 @@ export default class AuthoringToolVM {
   }
 
   // Tree's Drawer size management (open/close)
-  private drawerSize: DrawerSize = "large";
+  private drawerSize: DrawerSize = "medium";
   public get DrawerSize() {
     return this.drawerSize;
   }
@@ -333,7 +333,7 @@ export default class AuthoringToolVM {
     this.CloseNewContentForm();
     this.CloseEditContentForm();
     // Set size to large if drawer is fully expanded (to show fetched content)
-    this.DrawerSize === "full" && (this.DrawerSize = "large");
+    this.DrawerSize === "full" && (this.DrawerSize = "medium");
     if (value) this.fetchCurrentNodeContent();
     else {
       this.FetchChapterContents(true);

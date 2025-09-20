@@ -85,10 +85,6 @@ const useStyles = makeStyles({
   hide: {
     display: "none",
   },
-  view: {
-    height: "100%",
-    width: "100%",
-  },
   dialogButton: {
     backgroundColor: tokens.colorPaletteRedForeground3,
     ":hover": {
@@ -270,7 +266,7 @@ export const ContentDrawer = observer(() => {
                   {/* Button to toggle between large and full sizes */}
                   <Tooltip
                     withArrow
-                    content={(vm.DrawerSize === "large" ? "Expand Content Tree" : "Shrink Content Tree").concat(
+                    content={(vm.DrawerSize === "medium" ? "Expand Content Tree" : "Shrink Content Tree").concat(
                       vm.IsDirty
                         ? " (Unsaved Changes)"
                         : ((vm.FormTreeLevel !== undefined && vm.ContentNodeBefore !== undefined) ||
@@ -285,12 +281,12 @@ export const ContentDrawer = observer(() => {
                     <ToolbarButton
                       aria-label="Expand"
                       appearance="subtle"
-                      icon={vm.DrawerSize === "large" ? <PanelLeftExpandFilled /> : <PanelRightExpandFilled />}
+                      icon={vm.DrawerSize === "medium" ? <PanelLeftExpandFilled /> : <PanelRightExpandFilled />}
                       disabled={
                         vm.IsDirty || (vm.CurrentFormSubTreeLevel !== undefined && vm.CurrentFormSubTreeLevel >= 8)
                       }
                       onClick={() => {
-                        vm.DrawerSize = vm.DrawerSize === "large" ? "full" : "large";
+                        vm.DrawerSize = vm.DrawerSize === "medium" ? "full" : "medium";
                       }}
                     />
                   </Tooltip>
@@ -320,7 +316,7 @@ export const ContentDrawer = observer(() => {
                       icon={<TextAlignJustifyFilled />}
                       onClick={() => {
                         setIsDrawerOpen(false);
-                        vm.DrawerSize = "large"; // Reset size when closing
+                        vm.DrawerSize = "medium"; // Reset size when closing
                       }}
                     />
                   </Tooltip>
@@ -341,7 +337,7 @@ export const ContentDrawer = observer(() => {
         </LoadingCover>
       </Drawer>
       {/* Show the content section if the drawer is not in full size */}
-      <div className={vm.DrawerSize === "large" ? styles.content : styles.hide}>
+      <div className={vm.DrawerSize === "medium" ? styles.content : styles.hide}>
         {/* Render the hamburger icon if the drawer is closed */}
         {!isDrawerOpen && <TreeMenuButton isDrawerOpen={isDrawerOpen} setIsDrawerOpen={setIsDrawerOpen} />}
         <Divider vertical style={{ height: "100%" }} />

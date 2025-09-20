@@ -4,7 +4,7 @@ import { useVM } from "../../viewModel/context";
 import { Loading } from "../Loading";
 import { ContentDrawer } from "./ContentDrawer";
 import { Container } from "react-bootstrap";
-import { makeStyles } from "@fluentui/react-components";
+import { Drawer, makeStyles, useRestoreFocusSource } from "@fluentui/react-components";
 import { useNavigate, useParams } from "react-router-dom";
 
 const useStyles = makeStyles({
@@ -15,6 +15,15 @@ const useStyles = makeStyles({
     border: "1px solid #e0e0e0",
     borderTopWidth: "0",
     borderBottomWidth: "0",
+  },
+  drawer: {
+    flex: 1, // Take all available space
+    display: "flex",
+    flexDirection: "column",
+  },
+  wrapper: {
+    flex: 1, // Take all available space
+    display: "flex",
   },
 });
 
@@ -47,12 +56,26 @@ export const DocumentEditor = observer(() => {
     });
   }, []);
 
+  // all overlay & inline* Drawers need manual focus restoration attributes
+  const restoreFocusSourceAttributes = useRestoreFocusSource();
+
   if (isLoading) return <Loading message={"Loading Authoring Tool..."} />;
 
   return (
     <Container className={styles.container}>
       {/* //TODO: Add navigation to previous page */}
-      <ContentDrawer />
+      <Drawer
+        {...restoreFocusSourceAttributes}
+        className={styles.drawer}
+        type={vm.DrawerType}
+        open
+        position="bottom"
+        size="full"
+        backdropMotion={null}
+        surfaceMotion={null}
+      >
+        <ContentDrawer />
+      </Drawer>
     </Container>
   );
 });

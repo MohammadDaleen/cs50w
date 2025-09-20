@@ -30,7 +30,7 @@ export const TreeMenuButton = observer(({ isDrawerOpen, setIsDrawerOpen }: props
           {...restoreFocusTargetAttributes}
           onClick={() => {
             setIsDrawerOpen(!isDrawerOpen); // Toggle drawer open/close state
-            vm.DrawerSize = "large"; // Set the drawer size to large by default
+            vm.DrawerSize = "medium"; // Set the drawer size to medium by default
           }}
         />
       </Tooltip>

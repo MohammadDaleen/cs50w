@@ -531,5 +531,4 @@ def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
 
 # TODO: remove unused parts of code
 # TODO: build a custom dark mode skin for Tinymce editor
-# TODO: support IMs in browser
-# TODO: support fullscreen mode properly
+# TODO: support IMs in browser (or remove IMs completely)
