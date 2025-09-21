@@ -114,6 +114,25 @@ export default class AuthoringToolVM {
     this.IsDarkMode = !this.IsDarkMode;
   }
 
+  /**
+   * Defines which primary view is visible on mobile within the document editor.
+   * 'tree' shows the content tree, 'content' shows the editor/viewer.
+   * @type {'tree' | 'content'}
+   */
+  private mobileView: "tree" | "content" = "tree";
+  public get MobileView() {
+    return this.mobileView;
+  }
+  public set MobileView(view: "tree" | "content") {
+    this.mobileView = view;
+  }
+  /**
+   * Toggles the active view on mobile between the content tree and the main content editor/viewer.
+   */
+  public ToggleMobileView() {
+    this.MobileView = this.mobileView === "tree" ? "content" : "tree";
+  }
+
   // TODO: Do you really need a User and a Token ?*
   private user?: User = undefined;
   get User() {

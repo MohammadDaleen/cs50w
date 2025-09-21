@@ -29,7 +29,8 @@ import { useVM } from "../../viewModel/context";
 const useStyles = makeStyles({
   card: {
     border: "1px solid grey",
-    // borderRadius: tokens.borderRadiusLarge,
+    // Ensure the card takes the full height of its grid cell.
+    height: "100%",
   },
 });
 

@@ -529,4 +529,6 @@ def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
 
 # TODO: remove unused parts of code
 # TODO: build a custom dark mode skin for Tinymce editor
-# TODO: Make the webapp mobile responsive
+# TODO: polish document manager UI
+# TODO: polish navigation bar
+# TODO: implement guests landing page

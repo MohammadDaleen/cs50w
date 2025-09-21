@@ -7,18 +7,20 @@ import { useVM } from "../../viewModel/context";
 import { DocumentCreator } from ".";
 import { NoData } from "..";
 import type { Doc } from "../../types";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 /** DocumentList component */
 export const Documents = observer(() => {
   const vm = useVM();
   const [query, setQuery] = useState<string>("");
+  const isMobile = useMediaQuery();
 
   const filteredDocs = useMemo<Doc[]>(() => {
     return vm.GetFilteredDocuments(query);
   }, [query]);
 
   return (
-    <Container>
+    <Container style={isMobile ? { maxWidth: "100%" } : {}}>
       <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, paddingTop: 12 }}>
         <Text weight="semibold">Documents</Text>
         <Input

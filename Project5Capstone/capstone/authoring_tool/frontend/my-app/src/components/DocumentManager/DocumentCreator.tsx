@@ -25,8 +25,11 @@ const useStyles = makeStyles({
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
+    alignItems: "center",
     width: "100%",
-    height: "130px",
+    // Ensure the card takes the full height of its grid cell.
+    height: "100%",
+    minHeight: "130px", // Maintain a minimum height for consistency.
   },
 });
 

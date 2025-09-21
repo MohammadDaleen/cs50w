@@ -42,6 +42,7 @@ import { ContentEditor } from "./Editor";
 import { LoadingCover, NoData } from "..";
 import { ContentTree, ExpandableText, TreeMenuButton } from "./Tree";
 import { ContentViewer } from "./Viewer";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 // Define styles using Fluent UI's makeStyles
 const useStyles = makeStyles({
@@ -55,16 +56,13 @@ const useStyles = makeStyles({
     height: "100%",
     backgroundColor: tokens.colorNeutralBackground1,
   },
-  drawer: {
+  // Inner drawer for the content tree.
+  treeDrawer: {
     position: "relative", // this is needed so we can use the loading cover
-    // TODO: Remove if not needed for mobile responsiveness
-    // display: "flex",
-    // flex: 1,
-    // minWidth: 0,
   },
   header: {
     display: "flex",
-    justifyContent: "end",
+    justifyContent: "flex-end", // Align buttons to the right.
   },
   drawerHeader: {
     ...shorthands.padding("4px", "12px", "8px", "10px"),
@@ -78,14 +76,14 @@ const useStyles = makeStyles({
   referenceID: {
     color: tokens.colorNeutralForeground3,
   },
+  // Main content area (editor/viewer).
   content: {
     width: "100%",
-    //height: "100%",
     display: "flex",
-    // flexDirection: "row",
     justifyContent: "start",
     alignItems: "start",
   },
+  // Utility to hide elements.
   hide: {
     display: "none",
   },
@@ -105,24 +103,29 @@ const useStyles = makeStyles({
 export const ContentDrawer = observer(() => {
   const vm = useVM(); // Access the ViewModel from context
   const styles = useStyles(); // Get the defined styles
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(true); // For desktop view only
   const [isToggleEditModeDialogOpened, setIsToggleEditModeDialogOpened] = useState(false);
   const restoreFocusSourceAttributes = useRestoreFocusSource();
+  const isMobile = useMediaQuery();
 
   if (!vm.Records.length) return <NoData />;
 
+  // On mobile, show the tree view. Otherwise, show the desktop layout.
+  const showTreeView = isMobile ? vm.MobileView === "tree" : isDrawerOpen;
+  // On mobile, show the content view. Otherwise, show it based on desktop layout rules.
+  const showContentView = isMobile ? vm.MobileView === "content" : vm.DrawerSize === "medium";
+
   return (
     <div className={styles.root}>
+      {/* This Drawer is for the content tree. Its visibility is controlled differently on mobile vs. desktop. */}
       <Drawer
         {...restoreFocusSourceAttributes}
-        className={styles.drawer}
+        className={showTreeView ? styles.treeDrawer : styles.hide}
         type="inline"
         separator
-        size={vm.DrawerSize}
-        open={isDrawerOpen}
-        onOpenChange={(_, { open }) => {
-          setIsDrawerOpen(open);
-        }}
+        size={isMobile ? "full" : vm.DrawerSize} // Always full screen on mobile when visible
+        open={showTreeView} // Controlled by responsive state
+        onOpenChange={(_, { open }) => !isMobile && setIsDrawerOpen(open)}
       >
         <LoadingCover loading={vm.AreChapterContentFilesLoading || vm.IsNodeContentFileLoading || vm.IsContentSaving}>
           <DrawerHeader className={styles.drawerHeader}>
@@ -141,7 +144,7 @@ export const ContentDrawer = observer(() => {
                     }
                   >
                     <ToolbarButton
-                      aria-label="Expand"
+                      aria-label="Expand/Collapse All"
                       appearance="subtle"
                       icon={
                         vm.HasOpenBranchesExceptSelected ? <ArrowMinimizeVerticalFilled /> : <AutoFitHeightFilled />
@@ -267,65 +270,69 @@ export const ContentDrawer = observer(() => {
                       </DialogSurface>
                     </Dialog>
                   )}
-                  {/* Button to toggle between large and full sizes */}
-                  <Tooltip
-                    withArrow
-                    content={(vm.DrawerSize === "medium" ? "Expand Content Tree" : "Shrink Content Tree").concat(
-                      vm.IsDirty
-                        ? " (Unsaved Changes)"
-                        : ((vm.FormTreeLevel !== undefined && vm.ContentNodeBefore !== undefined) ||
-                            vm.EditNode !== undefined) &&
-                          vm.CurrentFormSubTreeLevel !== undefined &&
-                          vm.CurrentFormSubTreeLevel >= 8
-                        ? " (Add/Edit Form Opened)"
-                        : ""
-                    )}
-                    relationship="label"
-                  >
-                    <ToolbarButton
-                      aria-label="Toggle Tree Size"
-                      appearance="subtle"
-                      icon={vm.DrawerSize === "medium" ? <PanelLeftExpandFilled /> : <PanelRightExpandFilled />}
-                      disabled={
-                        vm.IsDirty || (vm.CurrentFormSubTreeLevel !== undefined && vm.CurrentFormSubTreeLevel >= 8)
-                      }
-                      onClick={() => {
-                        vm.DrawerSize = vm.DrawerSize === "medium" ? "full" : "medium";
-                      }}
-                    />
-                  </Tooltip>
-                  {/* Button to toggle full screen mode */}
-                  <Tooltip
-                    withArrow
-                    content={(vm.MainDrawerType === "inline" ? "Full Screen" : "Minimize").concat(
-                      vm.IsDirty ? " (Unsaved Changes)" : ""
-                    )}
-                    relationship="label"
-                  >
-                    <ToolbarButton
-                      aria-label="Full Screen Toggle"
-                      appearance="subtle"
-                      icon={
-                        vm.MainDrawerType === "inline" ? <FullScreenMaximizeFilled /> : <FullScreenMinimizeFilled />
-                      }
-                      disabled={vm.IsDirty}
-                      onClick={() => {
-                        vm.MainDrawerType = vm.MainDrawerType === "inline" ? "overlay" : "inline";
-                      }}
-                    />
-                  </Tooltip>
-                  {/* Button to close the drawer */}
-                  <Tooltip withArrow content="Close Content Tree" relationship="label">
-                    <ToolbarButton
-                      aria-label="Toggle View"
-                      appearance="subtle"
-                      icon={<TextAlignJustifyFilled />}
-                      onClick={() => {
-                        setIsDrawerOpen(false);
-                        vm.DrawerSize = "medium"; // Reset size when closing
-                      }}
-                    />
-                  </Tooltip>
+                  {!isMobile && (
+                    <>
+                      {/* Button to toggle between large and full sizes */}
+                      <Tooltip
+                        withArrow
+                        content={(vm.DrawerSize === "medium" ? "Expand Content Tree" : "Shrink Content Tree").concat(
+                          vm.IsDirty
+                            ? " (Unsaved Changes)"
+                            : ((vm.FormTreeLevel !== undefined && vm.ContentNodeBefore !== undefined) ||
+                                vm.EditNode !== undefined) &&
+                              vm.CurrentFormSubTreeLevel !== undefined &&
+                              vm.CurrentFormSubTreeLevel >= 8
+                            ? " (Add/Edit Form Opened)"
+                            : ""
+                        )}
+                        relationship="label"
+                      >
+                        <ToolbarButton
+                          aria-label="Toggle Tree Size"
+                          appearance="subtle"
+                          icon={vm.DrawerSize === "medium" ? <PanelLeftExpandFilled /> : <PanelRightExpandFilled />}
+                          disabled={
+                            vm.IsDirty || (vm.CurrentFormSubTreeLevel !== undefined && vm.CurrentFormSubTreeLevel >= 8)
+                          }
+                          onClick={() => {
+                            vm.DrawerSize = vm.DrawerSize === "medium" ? "full" : "medium";
+                          }}
+                        />
+                      </Tooltip>
+                      {/* Button to toggle full screen mode */}
+                      <Tooltip
+                        withArrow
+                        content={(vm.MainDrawerType === "inline" ? "Full Screen" : "Minimize").concat(
+                          vm.IsDirty ? " (Unsaved Changes)" : ""
+                        )}
+                        relationship="label"
+                      >
+                        <ToolbarButton
+                          aria-label="Full Screen Toggle"
+                          appearance="subtle"
+                          icon={
+                            vm.MainDrawerType === "inline" ? <FullScreenMaximizeFilled /> : <FullScreenMinimizeFilled />
+                          }
+                          disabled={vm.IsDirty}
+                          onClick={() => {
+                            vm.MainDrawerType = vm.MainDrawerType === "inline" ? "overlay" : "inline";
+                          }}
+                        />
+                      </Tooltip>
+                      {/* Button to close the drawer */}
+                      <Tooltip withArrow content="Close Content Tree" relationship="label">
+                        <ToolbarButton
+                          aria-label="Toggle View"
+                          appearance="subtle"
+                          icon={<TextAlignJustifyFilled />}
+                          onClick={() => {
+                            setIsDrawerOpen(false);
+                            vm.DrawerSize = "medium"; // Reset size when closing
+                          }}
+                        />
+                      </Tooltip>
+                    </>
+                  )}
                 </div>
               }
             >
@@ -342,13 +349,13 @@ export const ContentDrawer = observer(() => {
           </DrawerBody>
         </LoadingCover>
       </Drawer>
+      {/* Content Area (Editor/Viewer) */}
       {/* Show the content section if the drawer is not in full size */}
-      <div className={vm.DrawerSize === "medium" ? styles.content : styles.hide}>
-        {/* Render the hamburger icon if the drawer is closed */}
-        {!isDrawerOpen && <TreeMenuButton isDrawerOpen={isDrawerOpen} setIsDrawerOpen={setIsDrawerOpen} />}
+      <div className={showContentView ? styles.content : styles.hide}>
+        {/* On desktop view, render the hamburger icon if the drawer is closed */}
+        {!isMobile && !isDrawerOpen && <TreeMenuButton isDrawerOpen={isDrawerOpen} setIsDrawerOpen={setIsDrawerOpen} />}
         <Divider vertical style={{ height: "100%" }} />
-        {!vm.IsEditMode && <ContentViewer />}
-        {vm.IsEditMode && <ContentEditor />}
+        {!vm.IsEditMode ? <ContentViewer /> : <ContentEditor />}
       </div>
     </div>
   );

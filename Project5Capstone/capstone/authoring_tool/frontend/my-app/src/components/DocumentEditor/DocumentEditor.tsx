@@ -5,7 +5,8 @@ import { Loading } from "../Loading";
 import { ContentDrawer } from "./ContentDrawer";
 import { Container } from "react-bootstrap";
 import { Drawer, makeStyles, useRestoreFocusSource } from "@fluentui/react-components";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 const useStyles = makeStyles({
   container: {
@@ -16,6 +17,7 @@ const useStyles = makeStyles({
     borderTopWidth: "0",
     borderBottomWidth: "0",
   },
+  // The full-screen drawer that contains the entire editor experience.
   drawer: {
     flex: 1, // Take all available space
     display: "flex",
@@ -27,10 +29,10 @@ export const DocumentEditor = observer(() => {
   const vm = useVM();
   const styles = useStyles();
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  //TODO const navigate = useNavigate();
   // Get the documentId from URL params
   const params = useParams();
   const [errorIndices, setErrorIndices] = useState<number[]>([]);
+  const isMobile = useMediaQuery();
 
   // Cleanup errors on unmount
   useEffect(() => {
@@ -45,9 +47,7 @@ export const DocumentEditor = observer(() => {
     // Retrieve the document data from the VM using the documentId.
     const id = params.documentId;
     vm.LoadDocumentEditor(id).then((errorIds: number[]) => {
-      setErrorIndices((prev) => {
-        return [...prev, ...errorIds];
-      });
+      setErrorIndices((prev) => [...prev, ...errorIds]);
       setIsLoading(false);
     });
   }, []);
@@ -58,8 +58,8 @@ export const DocumentEditor = observer(() => {
   if (isLoading) return <Loading message={"Loading Authoring Tool..."} />;
 
   return (
-    <Container className={styles.container}>
-      {/* //TODO: Add navigation to previous page */}
+    <Container className={styles.container} style={isMobile ? { maxWidth: "100%", padding: 0 } : {}}>
+      {/* This top-level Drawer serves as the full-screen container. It is always open. */}
       <Drawer
         {...restoreFocusSourceAttributes}
         className={styles.drawer}
