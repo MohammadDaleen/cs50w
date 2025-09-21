@@ -21,10 +21,6 @@ const useStyles = makeStyles({
     display: "flex",
     flexDirection: "column",
   },
-  wrapper: {
-    flex: 1, // Take all available space
-    display: "flex",
-  },
 });
 
 export const DocumentEditor = observer(() => {
@@ -67,10 +63,11 @@ export const DocumentEditor = observer(() => {
       <Drawer
         {...restoreFocusSourceAttributes}
         className={styles.drawer}
-        type={vm.DrawerType}
+        type={vm.MainDrawerType}
         open
         position="bottom"
         size="full"
+        // Disable animations as they can be jarring on mobile
         backdropMotion={null}
         surfaceMotion={null}
       >

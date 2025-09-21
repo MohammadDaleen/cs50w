@@ -1,6 +1,5 @@
-import { Input } from "@fluentui/react-components";
+import { Input, Text } from "@fluentui/react-components";
 import { useState, useMemo } from "react";
-import { Text } from "@fluentui/react-text";
 import { observer } from "mobx-react";
 import { DocumentCard } from "./DocumentCard";
 import { Container } from "react-bootstrap";

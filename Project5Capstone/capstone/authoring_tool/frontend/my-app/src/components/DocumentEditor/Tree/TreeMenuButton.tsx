@@ -23,7 +23,9 @@ export const TreeMenuButton = observer(({ isDrawerOpen, setIsDrawerOpen }: props
 
   return (
     <div
-      className={vm.DrawerType === "inline" ? styles.marginRight : mergeClasses(styles.marginLeft, styles.marginRight)}
+      className={
+        vm.MainDrawerType === "inline" ? styles.marginRight : mergeClasses(styles.marginLeft, styles.marginRight)
+      }
     >
       <Tooltip content="Open Tree Content" relationship="label">
         <Hamburger

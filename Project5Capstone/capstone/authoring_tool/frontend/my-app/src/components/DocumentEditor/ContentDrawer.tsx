@@ -57,6 +57,10 @@ const useStyles = makeStyles({
   },
   drawer: {
     position: "relative", // this is needed so we can use the loading cover
+    // TODO: Remove if not needed for mobile responsiveness
+    // display: "flex",
+    // flex: 1,
+    // minWidth: 0,
   },
   header: {
     display: "flex",
@@ -163,9 +167,9 @@ export const ContentDrawer = observer(() => {
                         )}
                       >
                         <ToolbarButton
-                          aria-label="Expand"
+                          aria-label="Toggle Edit Mode"
                           appearance="subtle"
-                          icon={vm.IsEditMode === true ? <PenOffFilled /> : <PenFilled />}
+                          icon={vm.IsEditMode ? <PenOffFilled /> : <PenFilled />}
                           onClick={() => {
                             if (vm.IsDirty) setIsToggleEditModeDialogOpened(true);
                             else vm.ToggleEditMode();
@@ -227,7 +231,7 @@ export const ContentDrawer = observer(() => {
                         relationship="label"
                       >
                         <ToolbarButton
-                          aria-label="Expand"
+                          aria-label="Toggle Resequence Mode"
                           appearance="subtle"
                           icon={vm.IsResequencingMode === true ? <CheckmarkFilled /> : <ListBarTreeOffsetFilled />}
                           onClick={async () => {
@@ -279,7 +283,7 @@ export const ContentDrawer = observer(() => {
                     relationship="label"
                   >
                     <ToolbarButton
-                      aria-label="Expand"
+                      aria-label="Toggle Tree Size"
                       appearance="subtle"
                       icon={vm.DrawerSize === "medium" ? <PanelLeftExpandFilled /> : <PanelRightExpandFilled />}
                       disabled={
@@ -293,7 +297,7 @@ export const ContentDrawer = observer(() => {
                   {/* Button to toggle full screen mode */}
                   <Tooltip
                     withArrow
-                    content={(vm.DrawerType === "inline" ? "Full Screen" : "Minimize").concat(
+                    content={(vm.MainDrawerType === "inline" ? "Full Screen" : "Minimize").concat(
                       vm.IsDirty ? " (Unsaved Changes)" : ""
                     )}
                     relationship="label"
@@ -301,17 +305,19 @@ export const ContentDrawer = observer(() => {
                     <ToolbarButton
                       aria-label="Full Screen Toggle"
                       appearance="subtle"
-                      icon={vm.DrawerType === "inline" ? <FullScreenMaximizeFilled /> : <FullScreenMinimizeFilled />}
+                      icon={
+                        vm.MainDrawerType === "inline" ? <FullScreenMaximizeFilled /> : <FullScreenMinimizeFilled />
+                      }
                       disabled={vm.IsDirty}
                       onClick={() => {
-                        vm.DrawerType = vm.DrawerType === "inline" ? "overlay" : "inline";
+                        vm.MainDrawerType = vm.MainDrawerType === "inline" ? "overlay" : "inline";
                       }}
                     />
                   </Tooltip>
                   {/* Button to close the drawer */}
                   <Tooltip withArrow content="Close Content Tree" relationship="label">
                     <ToolbarButton
-                      aria-label="Close panel"
+                      aria-label="Toggle View"
                       appearance="subtle"
                       icon={<TextAlignJustifyFilled />}
                       onClick={() => {

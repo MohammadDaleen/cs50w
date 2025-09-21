@@ -289,12 +289,12 @@ export default class AuthoringToolVM {
   }
 
   // Main Drawer type management (inline, or overlay)
-  private drawerType: DrawerType = "inline";
-  public get DrawerType() {
-    return this.drawerType;
+  private mainDrawerType: DrawerType = "inline";
+  public get MainDrawerType() {
+    return this.mainDrawerType;
   }
-  public set DrawerType(value: DrawerType) {
-    this.drawerType = value;
+  public set MainDrawerType(value: DrawerType) {
+    this.mainDrawerType = value;
     this.AreStylesLoading = true;
   }
 
