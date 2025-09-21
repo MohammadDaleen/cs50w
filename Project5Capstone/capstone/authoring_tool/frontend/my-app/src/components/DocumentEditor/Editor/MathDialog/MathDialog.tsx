@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogSurface,
   DialogTitle,
+  makeStyles,
   MessageBar,
   MessageBarActions,
   MessageBarBody,
@@ -17,12 +18,16 @@ import { useVM } from "../../../../viewModel/context";
 import { DismissRegular } from "@fluentui/react-icons";
 import { MathLiveEditor } from "./MathLiveEditor";
 
+const useStyles = makeStyles({ surface: { width: "95vw", maxWidth: "800px" } });
+
 export const MathDialog = observer(() => {
   const vm = useVM();
+  const styles = useStyles();
 
   return (
     <Dialog open={vm.IsMathDialogOpen}>
-      <DialogSurface style={{ minWidth: "1000px", width: "1000px" }}>
+      {/* Apply the responsive styles to the DialogSurface */}
+      <DialogSurface className={styles.surface}>
         <DialogBody>
           <DialogTitle>
             {vm.MathDialogError ? (
@@ -34,9 +39,7 @@ export const MathDialog = observer(() => {
                   containerAction={
                     <Button
                       appearance="transparent"
-                      onClick={() => {
-                        vm.SetMathDialogError(undefined);
-                      }}
+                      onClick={() => vm.SetMathDialogError(undefined)}
                       icon={<DismissRegular />}
                     />
                   }

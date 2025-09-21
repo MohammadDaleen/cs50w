@@ -18,13 +18,8 @@ import { useVM } from "../../../../viewModel/context";
 import { LinkDismissRegular, LinkRegular } from "@fluentui/react-icons";
 
 const useStyles = makeStyles({
-  dialog: {
-    minWidth: "50rem",
-    width: "50rem",
-  },
-  spinner: {
-    padding: "1rem",
-  },
+  dialog: { width: "90vw", maxWidth: "800px" },
+  spinner: { padding: "1rem" },
   actions: {
     display: "flex",
     flexDirection: "row",

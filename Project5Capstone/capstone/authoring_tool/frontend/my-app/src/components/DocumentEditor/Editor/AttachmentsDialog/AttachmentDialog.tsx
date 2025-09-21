@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogSurface,
   DialogTitle,
+  makeStyles,
   MessageBar,
   MessageBarActions,
   MessageBarBody,
@@ -18,14 +19,18 @@ import { useVM } from "../../../../viewModel/context";
 import { ArrowUploadFilled, DismissRegular } from "@fluentui/react-icons";
 import { AttachmentList } from "./AttachmentsList";
 
+const useStyles = makeStyles({ surface: { width: "95vw", maxWidth: "1000px" } });
+
 export const AttachmentDialog = observer(() => {
   const vm = useVM();
+  const styles = useStyles();
 
   const noData = Object.values(vm.SelectedNode?.attachments ?? {}).filter((a) => a.fileName).length === 0;
 
   return (
     <Dialog open={vm.IsAttachmentsDialogOpen}>
-      <DialogSurface style={{ minWidth: "1000px", width: "1000px" }}>
+      {/* Apply the responsive styles to the DialogSurface */}
+      <DialogSurface className={styles.surface}>
         <DialogBody>
           <DialogTitle>
             {vm.AttachmentsDialogError ? (
@@ -50,7 +55,7 @@ export const AttachmentDialog = observer(() => {
               style={{
                 display: "flex",
                 flexDirection: "row",
-                justifyContent: "between",
+                justifyContent: "space-between",
                 alignItems: "center",
                 width: "100%",
               }}
@@ -68,6 +73,7 @@ export const AttachmentDialog = observer(() => {
             </div>
           </DialogTitle>
           <DialogContent>
+            {/* The AttachmentList component will handle its own responsiveness */}
             <AttachmentList />
             {vm.IsAttachmentsDialogLoading ? (
               <Spinner style={{ paddingBlock: "4rem", width: "100%", textAlign: "center" }} />
