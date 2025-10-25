@@ -163,6 +163,7 @@ export default class CdsService {
       const data = await response.json();
       if (!response.ok) throw new Error("Failed to get the documents (${response.statusText})");
       const documents: Doc[] = data.documents;
+      documents.forEach((doc) => (doc.timestamp = new Date(doc.timestamp)));
       return { data: documents };
     } catch (error: any) {
       return { error };

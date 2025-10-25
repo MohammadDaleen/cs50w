@@ -45,6 +45,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 # Serializer for the document information
 class DocSerializer(serializers.ModelSerializer):
+    # Add a field to hold the content node count
+    content_node_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Doc
         # Fields to be returned by the serializer
@@ -55,8 +58,17 @@ class DocSerializer(serializers.ModelSerializer):
             "author",
             "timestamp",
             "root_content_node_id",
+            "content_node_count",  # Add the new field to the list
         ]
         read_only_fields = ["owner", "timestamp", "root_content_node_id"]
+
+    def get_content_node_count(self, obj):
+        """
+        Returns the total number of content nodes for the document.
+        'obj' is the Doc instance.
+        'content_nodes' is the related_name from Content.document in models.py
+        """
+        return obj.content_nodes.count()
 
     def create(self, validated_data):
         # Extract the user from the context

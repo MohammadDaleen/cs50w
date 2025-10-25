@@ -5,6 +5,7 @@ export type Doc = {
   name: string;
   description: string;
   author: string;
-  timestamp: string;
+  timestamp: Date;
   root_content_node_id: string;
+  content_node_count: number;
 };

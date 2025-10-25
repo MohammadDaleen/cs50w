@@ -16,8 +16,18 @@ import {
   Button,
   CardFooter,
   makeStyles,
+  Tooltip,
+  Tag,
+  CounterBadge,
 } from "@fluentui/react-components";
-import { Delete16Regular, MoreHorizontal16Regular, EditFilled } from "@fluentui/react-icons";
+import {
+  Delete16Regular,
+  MoreHorizontal16Regular,
+  EditFilled,
+  RenameARegular,
+  SlideTextEditRegular,
+  ShiftsAddRegular,
+} from "@fluentui/react-icons";
 import { Text } from "@fluentui/react-text";
 import { observer } from "mobx-react";
 import { useState, useEffect } from "react";
@@ -67,8 +77,10 @@ export const DocumentCard = observer(({ doc }: { doc: Doc }) => {
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
-          <Button appearance="subtle" icon={<EditFilled />} onClick={() => navigate(`document/${doc.id}`)} />
+        <div style={{ display: "flex", flexDirection: "row", gap: 8, alignItems: "flex-start" }}>
+          <Tooltip content="Edit Document" relationship="label">
+            <Button appearance="subtle" icon={<EditFilled />} onClick={() => navigate(`document/${doc.id}`)} />
+          </Tooltip>
 
           <Menu>
             <MenuTrigger>
@@ -76,10 +88,10 @@ export const DocumentCard = observer(({ doc }: { doc: Doc }) => {
             </MenuTrigger>
             <MenuPopover>
               <MenuList>
-                <MenuItem onClick={() => setRenaming(true)} icon={<EditFilled />}>
+                <MenuItem onClick={() => setRenaming(true)} icon={<RenameARegular />}>
                   Rename
                 </MenuItem>
-                <MenuItem onClick={() => setDescribing(true)} icon={<EditFilled />}>
+                <MenuItem onClick={() => setDescribing(true)} icon={<SlideTextEditRegular />}>
                   Update description
                 </MenuItem>
                 <MenuItem onClick={() => setConfirmDelete(true)} icon={<Delete16Regular />}>
@@ -92,9 +104,16 @@ export const DocumentCard = observer(({ doc }: { doc: Doc }) => {
       </div>
 
       <CardFooter>
-        <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-          <Text style={{ opacity: 0.7 }}>Nodes: {doc.root_content_node_id}</Text>
-          <Text style={{ opacity: 0.7 }}>{doc.timestamp}</Text>
+        <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+          <Text>
+            <span style={{ opacity: 0.7 }}>{"Nodes: "}</span>
+            <CounterBadge count={doc.content_node_count} color={"informative"}></CounterBadge>
+          </Text>
+          <Text>
+            <Tag icon={<ShiftsAddRegular style={{ opacity: 0.7 }} />} appearance={"filled"}>
+              <span style={{ opacity: 0.7 }}>{`${doc.timestamp.toLocaleString()}`}</span>
+            </Tag>
+          </Text>
         </div>
       </CardFooter>
 
