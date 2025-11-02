@@ -104,10 +104,7 @@ export const Layout = observer(() => {
         Welcome, <strong>{vm.User?.username}</strong>
       </Nav.Link>
       <Nav.Link as={Link} to="/">
-        All Posts
-      </Nav.Link>
-      <Nav.Link as={Link} to="/following">
-        Following
+        My Documents
       </Nav.Link>
       <Nav.Link onClick={handleLogout}>Log Out</Nav.Link>
     </>
@@ -170,8 +167,8 @@ export const Layout = observer(() => {
 
             {/* --- Centered Logo --- */}
             <Navbar.Brand as={Link} to="/" className={`${styles.brand} py-0`}>
-              <Image alt="React Logo" src="/assets/react.svg" height={40} width={40} className="me-3" />
-              <b>{"Network"}</b>
+              <Image alt="React Logo" src="/assets/fuse-docs-logo.png" height={40} width={40} className="me-3" />
+              <b>{"FuseDocs"}</b>
             </Navbar.Brand>
 
             {/* --- Right Navigation Group --- */}

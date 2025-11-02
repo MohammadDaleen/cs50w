@@ -534,5 +534,4 @@ def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
 
 # TODO: Fix: document list sometimes is not refreshing after creating a new document
 # TODO: Fix changing selected content node in the content tree not working
-# TODO: polish navigation bar
 # TODO: implement guests landing page
