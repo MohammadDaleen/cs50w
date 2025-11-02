@@ -10,6 +10,8 @@ import {
   DialogTrigger,
   Card,
   makeStyles,
+  tokens,
+  Textarea,
 } from "@fluentui/react-components";
 import { AddFilled } from "@fluentui/react-icons";
 import { observer } from "mobx-react";
@@ -31,6 +33,20 @@ const useStyles = makeStyles({
     height: "100%",
     minHeight: "130px", // Maintain a minimum height for consistency.
   },
+  // Style for the DialogContent to layout the fields
+  dialogContent: {
+    display: "flex",
+    flexDirection: "column",
+    rowGap: tokens.spacingVerticalL,
+    marginTop: tokens.spacingVerticalS,
+    marginBottom: tokens.spacingVerticalL,
+  },
+  // Style for an individual field (Label + Input)
+  field: {
+    display: "flex",
+    flexDirection: "column",
+    rowGap: tokens.spacingVerticalXXS,
+  },
 });
 
 /** DocumentCreator component */
@@ -51,22 +67,30 @@ export const DocumentCreator = observer(() => {
   async function handleCreate() {
     setLoading(true);
     const errorId = await vm.CreateDocument(name.trim(), description.trim());
-    if (errorId) setErrorIndices((prev) => [...prev, errorId]);
-    // Clear if no errors
-    if (!errorId) {
+    if (errorId) {
+      setErrorIndices((prev) => [...prev, errorId]);
+    } else {
+      // Clear if no errors
+      setName("");
+      setDescription("");
+      setOpen(false); // close dialog on success
+    }
+    setLoading(false);
+  }
+
+  // Handle dialog close and reset state
+  const handleOpenChange = (_ev: unknown, data?: { open?: boolean }) => {
+    const isOpen = Boolean(data?.open);
+    setOpen(isOpen);
+    if (!isOpen) {
+      // Reset fields when closing
       setName("");
       setDescription("");
     }
-    setLoading(false);
-    setOpen(false); // close dialog
-  }
+  };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(_ev: unknown, data?: { open?: boolean }) => setOpen(Boolean(data?.open))}
-      {...(loading ? { modalType: "alert" } : {})}
-    >
+    <Dialog open={open} onOpenChange={handleOpenChange} {...(loading ? { modalType: "alert" } : {})}>
       <DialogTrigger>
         <Card className={styles.card} appearance="filled-alternative">
           <Button size="large" appearance="transparent" icon={<AddFilled />} onClick={() => setOpen(true)}>
@@ -77,25 +101,34 @@ export const DocumentCreator = observer(() => {
       <DialogSurface>
         <LoadingCover loading={loading}>
           <DialogTitle>Create document</DialogTitle>
-          <DialogContent>
-            <Label htmlFor="name-input">Name</Label>
-            <Input
-              id="name-input"
-              value={name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-            />
-            <Label htmlFor="description-input">Description</Label>
-            <Input
-              id="description-input"
-              value={description}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)}
-            />
+          <DialogContent className={styles.dialogContent}>
+            <div className={styles.field}>
+              <Label htmlFor="name-input" required>
+                Name
+              </Label>
+              <Input
+                id="name-input"
+                value={name}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+                placeholder="Enter a document name"
+              />
+            </div>
+            <div className={styles.field}>
+              <Label htmlFor="description-input">Description</Label>
+              <Textarea
+                id="description-input"
+                value={description}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+                resize="vertical" // Allow vertical resize
+                placeholder="(Optional) Enter a brief description"
+              />
+            </div>
           </DialogContent>
           <DialogActions>
-            <Button appearance="secondary" onClick={() => setOpen(false)}>
+            <Button appearance="secondary" onClick={() => setOpen(false)} type="button">
               Cancel
             </Button>
-            <Button appearance="primary" onClick={handleCreate} disabled={!name.trim()}>
+            <Button appearance="primary" disabled={!name.trim() || loading} type="submit" onClick={handleCreate}>
               Create
             </Button>
           </DialogActions>

@@ -16,9 +16,11 @@ import {
   Button,
   CardFooter,
   makeStyles,
+  mergeClasses,
   Tooltip,
   Tag,
   CounterBadge,
+  shorthands,
 } from "@fluentui/react-components";
 import {
   Delete16Regular,
@@ -42,6 +44,38 @@ const useStyles = makeStyles({
     // Ensure the card takes the full height of its grid cell.
     height: "100%",
   },
+  // Style for form content inside dialogs
+  dialogForm: {
+    display: "flex",
+    flexDirection: "column",
+    ...shorthands.gap("8px"),
+    marginBottom: "20px",
+  },
+  // Specific style for the delete confirmation form
+  deleteDialogForm: {
+    display: "flex",
+    flexDirection: "column",
+    ...shorthands.gap("8px"),
+    marginBottom: "20px",
+    marginTop: "12px",
+  },
+  // Style for the delete button (danger)
+  deleteButton: {
+    backgroundColor: "#c62828",
+    color: "white",
+    ...shorthands.borderColor("#c62828"),
+    // Add hover and active styles
+    ":hover": {
+      backgroundColor: "#b71c1c",
+      ...shorthands.borderColor("#b71c1c"),
+      color: "white",
+    },
+    ":active": {
+      backgroundColor: "#9a1515",
+      ...shorthands.borderColor("#9a1515"),
+      color: "white",
+    },
+  },
 });
 
 /** DocumentCard component */
@@ -55,11 +89,19 @@ export const DocumentCard = observer(({ doc }: { doc: Doc }) => {
   const [working, setWorking] = useState(false);
   const [name, setName] = useState(doc.name);
   const [description, setDescription] = useState(doc.description);
+  // State for the delete confirmation input
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
   useEffect(() => {
     setName(doc.name);
     setDescription(doc.description);
   }, [doc.name, doc.description]);
+
+  // Helper to reset delete confirmation when dialog closes
+  const handleCloseDeleteDialog = () => {
+    setConfirmDelete(false);
+    setDeleteConfirmName(""); // Reset confirmation text
+  };
 
   return (
     <Card
@@ -128,18 +170,21 @@ export const DocumentCard = observer(({ doc }: { doc: Doc }) => {
           <DialogTitle>Rename document</DialogTitle>
           {/* Rename dialog content */}
           <DialogContent>
-            <Label htmlFor="rename-input">Name</Label>
-            <Input
-              id="rename-input"
-              value={name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-            />
+            <div className={styles.dialogForm}>
+              <Label htmlFor="rename-input">Name</Label>
+              <Input
+                id="rename-input"
+                value={name}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+              />
+            </div>
           </DialogContent>
           <DialogActions>
             <Button appearance="secondary" onClick={() => setRenaming(false)}>
               Cancel
             </Button>
             <Button
+              appearance="primary"
               onClick={async () => {
                 setWorking(true);
                 const updatedDoc: Partial<Doc> = { name: name };
@@ -147,7 +192,7 @@ export const DocumentCard = observer(({ doc }: { doc: Doc }) => {
                 setRenaming(false);
                 setWorking(false);
               }}
-              disabled={working}
+              disabled={working || !name}
             >
               Save
             </Button>
@@ -166,18 +211,22 @@ export const DocumentCard = observer(({ doc }: { doc: Doc }) => {
           <DialogTitle>Update description</DialogTitle>
           {/* Describe dialog content */}
           <DialogContent>
-            <Label htmlFor="description-textarea">Description</Label>
-            <Textarea
-              id="description-textarea"
-              value={description}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-            />
+            <div className={styles.dialogForm}>
+              <Label htmlFor="description-textarea">Description</Label>
+              <Textarea
+                id="description-textarea"
+                value={description}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+                resize="vertical" // Allow vertical resize
+              />
+            </div>
           </DialogContent>
           <DialogActions>
             <Button appearance="secondary" onClick={() => setDescribing(false)}>
               Cancel
             </Button>
             <Button
+              appearance="primary"
               onClick={async () => {
                 setWorking(true);
                 const updatedDoc: Partial<Doc> = { description: description };
@@ -197,37 +246,43 @@ export const DocumentCard = observer(({ doc }: { doc: Doc }) => {
       <Dialog
         open={confirmDelete}
         onOpenChange={(_ev: unknown, data?: { open?: boolean }) => {
+          if (!data?.open) handleCloseDeleteDialog(); // Reset state on close
           setConfirmDelete(Boolean(data?.open));
         }}
       >
         <DialogSurface>
           <DialogTitle>Delete document</DialogTitle>
           <DialogContent>
-            <Text>Deleting this document is permanent. Type the document name to confirm deletion.</Text>
-            <div style={{ marginTop: 12 }}>
-              {/* implement stricter confirmation if desired; for now this is a placeholder input */}
+            <Text>
+              Deleting this document is permanent. Type the document name <Text weight="semibold">{doc.name}</Text> to
+              confirm deletion.
+            </Text>
+            <div className={styles.deleteDialogForm}>
+              <Label htmlFor="delete-confirm-input">Document name</Label>
               <Input
+                id="delete-confirm-input"
                 placeholder={doc.name}
-                onChange={(_e: React.ChangeEvent<HTMLInputElement>) => {
-                  /* noop — strict name-checking left to integrator if desired */
+                value={deleteConfirmName} // Bind to state
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setDeleteConfirmName(e.target.value); // Update state on change
                 }}
               />
             </div>
           </DialogContent>
           <DialogActions>
-            <Button appearance="secondary" onClick={() => setConfirmDelete(false)}>
+            <Button appearance="secondary" onClick={handleCloseDeleteDialog}>
               Cancel
             </Button>
             <Button
-              appearance="outline"
+              appearance="primary"
               onClick={async () => {
                 setWorking(true);
                 await vm.DeleteDocument(doc.id);
-                setDescribing(false);
+                handleCloseDeleteDialog();
                 setWorking(false);
               }}
-              disabled={working}
-              style={{ borderColor: "#c62828", color: "#c62828" }}
+              disabled={working || deleteConfirmName !== doc.name}
+              className={mergeClasses(deleteConfirmName === doc.name && styles.deleteButton)}
             >
               Delete
             </Button>
