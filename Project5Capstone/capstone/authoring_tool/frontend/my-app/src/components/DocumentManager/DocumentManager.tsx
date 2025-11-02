@@ -2,8 +2,8 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useVM } from "../../viewModel/context";
 import { Loading } from "../Loading";
-import { NoData } from "../NoData";
 import { Documents } from ".";
+import { LandingPage } from "..";
 
 export const DocumentManager = observer(() => {
   const vm = useVM();
@@ -16,6 +16,11 @@ export const DocumentManager = observer(() => {
   }, [errorIndices]);
 
   useEffect(() => {
+    // Ensure user is logged in
+    if (!vm.GetToken() || !vm.User?.isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
     vm.LoadMainPage().then((errorIds: number[]) => {
       setErrorIndices((prev) => {
         return [...prev, ...errorIds];
@@ -29,12 +34,7 @@ export const DocumentManager = observer(() => {
   return (
     <>
       {/* Only authenticated users are allowed */}
-      {vm.GetToken() ? (
-        vm.User?.isAuthenticated && <Documents />
-      ) : (
-        //TODO: Replace with README
-        <NoData message={"README"} />
-      )}
+      {vm.GetToken() ? vm.User?.isAuthenticated && <Documents /> : <LandingPage />}
     </>
   );
 });

@@ -7,8 +7,8 @@ import {
   MessageBarBody,
   MessageBarGroup,
   MessageBarTitle,
-  teamsDarkTheme,
-  teamsLightTheme,
+  webDarkTheme,
+  webLightTheme,
 } from "@fluentui/react-components";
 import { DismissRegular } from "@fluentui/react-icons";
 import { observer } from "mobx-react-lite";
@@ -41,15 +41,9 @@ const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           // Protected routes
-          // { path: "/following", element: <FollowingPage /> },
           { path: "/document/:documentId", element: <DocumentEditor /> },
         ],
       },
-      // { path: "/:username", element: <ProfilePage /> },
-      // {
-      //   path: "/:username/:listType", // listType: followers or followees
-      //   element: <FollowList />,
-      // },
     ],
   },
 ]);
@@ -90,7 +84,7 @@ export const App = observer(({ serviceProvider }: props) => {
 
   return (
     <FluentProvider
-      theme={vm.IsDarkMode ? teamsDarkTheme : teamsLightTheme}
+      theme={vm.IsDarkMode ? webDarkTheme : webLightTheme}
       className={styles.root}
       data-bs-theme={vm.IsDarkMode ? "dark" : "light"}
     >

@@ -550,7 +550,7 @@ export default class CdsService {
       processNode(node);
       // Step 2: Execute the batch request and process the response.
       try {
-        const res: any[] = await batchRequest.execute(token);
+        await batchRequest.execute(token);
         return { data: undefined }; // No errors, resequencing is successful
       } catch (error: any) {
         throw new Error(`Batch Request Error: ${error.message}`);
@@ -607,16 +607,6 @@ export default class CdsService {
       console.error("Batch Request Error:", error);
       return { error: error };
     }
-  }
-
-  // Helper function to encode xml
-  private xmlEncode(input: string): string {
-    return input
-      .replace(/&/g, "&amp;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&apos;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
   }
 
   public toGuidField(value: string): string {

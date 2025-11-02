@@ -167,7 +167,7 @@ export const Layout = observer(() => {
 
             {/* --- Centered Logo --- */}
             <Navbar.Brand as={Link} to="/" className={`${styles.brand} py-0`}>
-              <Image alt="React Logo" src="/assets/fuse-docs-logo.png" height={40} width={40} className="me-3" />
+              <Image alt="React Logo" src="/assets/fuse-docs-logo.png" height={40} className="me-3" />
               <b>{"FuseDocs"}</b>
             </Navbar.Brand>
 
