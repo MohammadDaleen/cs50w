@@ -1,24 +1,23 @@
+import React, { useState } from "react";
 import {
   Button,
   Dialog,
   DialogActions,
   DialogBody,
   DialogSurface,
+  CounterBadge,
   DialogTitle,
   makeStyles,
   tokens,
   Tooltip,
   Tree,
   TreeItem,
-  type TreeItemOpenChangeData,
-  type TreeItemOpenChangeEvent,
   treeItemLevelToken,
   useSubtreeContext_unstable,
   Spinner,
+  type TreeItemOpenChangeData,
 } from "@fluentui/react-components";
 import { observer } from "mobx-react";
-import { CounterBadge } from "@fluentui/react-components";
-import { useState } from "react";
 import { useVM } from "../../../viewModel/context";
 import type { Content } from "../../../types";
 import { ContentTreeItemMenu, ReorderContentActions } from "./ContentTreeItemActions";
@@ -65,25 +64,26 @@ export const ContentTreeItem = observer(({ record, level }: { record: Content; l
     </>
   );
 
-  const handleOpenChange = (_: TreeItemOpenChangeEvent, data: TreeItemOpenChangeData) => {
+  const handleNodeClick = (_event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    // Ensure the clicked node is different from the selected one
+    if (record.id !== vm.SelectedNode?.id) {
+      // Ensure the content for the being edited node is dirty
+      if (vm.IsDirty) setIsChangeNodeDialogOpened(true); // show the discard confirmation dialog
+      else vm.SelectedNode = { ...record, attachments: {} }; // the content is clean, update the selection
+    }
+  };
+
+  const handleOpenChange = (
+    _event: React.MouseEvent<HTMLElement, MouseEvent> | React.KeyboardEvent<HTMLElement>,
+    data: TreeItemOpenChangeData
+  ) => {
     const sameNode = record.id === vm.SelectedNode?.id;
     // 1. If clicking the selected node,
-    if (sameNode) {
-      // just toggle open state (expand/collapse), no dialog
-      updateOpenBranch(data.open);
-      return;
-    } else {
+    if (sameNode) updateOpenBranch(data.open); // toggle open state (expand/collapse)
+    else {
       // 2. the clicked node is different
-      // and the content is dirty
-      if (vm.IsDirty) {
-        setIsChangeNodeDialogOpened(true); // show the discard confirmation dialog
-        return; // do not change the selection or open state yet
-      } else {
-        // 3. If the content is clean and a different node is clicked,
-        // toggle open state and update the selection
-        updateOpenBranch(data.open);
-        vm.SelectedNode = { ...record, attachments: {} };
-      }
+      // Ensure the content for the being edited node is not dirty
+      if (!vm.IsDirty) updateOpenBranch(data.open); // toggle open state
     }
   };
 
@@ -109,6 +109,8 @@ export const ContentTreeItem = observer(({ record, level }: { record: Content; l
           shouldShowBranch() ? "branch" : "leaf"
         }
         open={isOpen} // Dynamically set initial open state
+        // Using onClick instead of onOpenChange as it no longer fires on leafs
+        onClick={handleNodeClick}
         onOpenChange={handleOpenChange}
       >
         <ContentTreeItemLayout content={record} aside={aside} />
