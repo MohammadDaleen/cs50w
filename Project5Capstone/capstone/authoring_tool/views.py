@@ -531,5 +531,3 @@ def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
 # TODO: build a custom dark mode skin for Tinymce editor
 # TODO: grid/list docs view toggle
 # TODO: order docs by options
-
-# TODO: Fix: document list sometimes is not refreshing after creating a new document

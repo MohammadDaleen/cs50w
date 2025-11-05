@@ -188,8 +188,10 @@ export default class CdsService {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(`Failed to create document (${response.statusText})`);
-      // Return the document from the response (expected in data.document)
-      return { data: data.document };
+      const document: Doc = data.document;
+      document.timestamp = new Date(document.timestamp);
+      // Return the document from the response
+      return { data: document };
     } catch (error: any) {
       return { error };
     }

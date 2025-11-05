@@ -766,7 +766,7 @@ export default class AuthoringToolVM {
       if (!token) throw new Error("No token found, user is not authenticated");
       const res = await this.cdsService.CreateDocument(token, name, description);
       if (res.error) throw new Error(res.error.message);
-      this.Documents.push(res.data);
+      this.documents.push(res.data);
     } catch (error: any) {
       return this.AddError(`Error creating document: ${error.message}`);
     }
@@ -807,7 +807,7 @@ export default class AuthoringToolVM {
       // Update locally
       const index = this.Documents.findIndex((doc) => doc.id === id);
       if (index === -1) throw new Error("Couldn't find the document to delete locally");
-      this.Documents.splice(index, 1);
+      this.documents.splice(index, 1);
       // Update on the server
       const res = await this.cdsService.DeleteDocument(token, id);
       if (res.error) throw new Error(res.error.message);

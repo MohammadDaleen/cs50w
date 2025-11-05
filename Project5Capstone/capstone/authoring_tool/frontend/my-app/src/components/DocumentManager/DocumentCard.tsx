@@ -153,7 +153,14 @@ export const DocumentCard = observer(({ doc }: { doc: Doc }) => {
           </Text>
           <Text>
             <Tag icon={<ShiftsAddRegular style={{ opacity: 0.7 }} />} appearance={"filled"}>
-              <span style={{ opacity: 0.7 }}>{`${doc.timestamp.toLocaleString()}`}</span>
+              <span style={{ opacity: 0.7 }}>{`${doc.timestamp.toLocaleString(undefined, {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
+              })}`}</span>
             </Tag>
           </Text>
         </div>

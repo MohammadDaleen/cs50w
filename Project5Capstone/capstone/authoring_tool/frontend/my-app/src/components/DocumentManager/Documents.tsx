@@ -1,5 +1,5 @@
 import { Input, Text } from "@fluentui/react-components";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { observer } from "mobx-react";
 import { DocumentCard } from "./DocumentCard";
 import { Container } from "react-bootstrap";
@@ -14,11 +14,7 @@ export const Documents = observer(() => {
   const vm = useVM();
   const [query, setQuery] = useState<string>("");
   const isMobile = useMediaQuery();
-
-  const filteredDocs = useMemo<Doc[]>(() => {
-    return vm.GetFilteredDocuments(query);
-  }, [query]);
-
+  const filteredDocs: Doc[] = vm.GetFilteredDocuments(query);
   return (
     <Container style={isMobile ? { maxWidth: "100%" } : {}}>
       <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12, paddingTop: 12 }}>
