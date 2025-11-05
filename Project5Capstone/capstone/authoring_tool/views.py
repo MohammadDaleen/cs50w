@@ -527,7 +527,6 @@ def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
     return Response({"id": deleted_attachment_id}, status=status.HTTP_200_OK)
 
 
-# TODO: remove unused parts of code
 # TODO: build a custom dark mode skin for Tinymce editor
 # TODO: grid/list docs view toggle
 # TODO: order docs by options

@@ -110,13 +110,7 @@ export const ContentTreeItemMenu = observer(
         </Menu>
 
         {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={isDeleteDialogOpen}
-          onOpenChange={
-            // @ts-ignore
-            (event, data) => setIsDeleteDialogOpen(data.open)
-          }
-        >
+        <Dialog open={isDeleteDialogOpen} onOpenChange={(_event, data) => setIsDeleteDialogOpen(data.open)}>
           <DialogSurface>
             <DialogBody>
               <DialogTitle>{`Do You Really Want to Delete This Chapter?`}</DialogTitle>

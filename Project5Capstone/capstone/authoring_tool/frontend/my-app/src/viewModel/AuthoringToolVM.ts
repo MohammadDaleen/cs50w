@@ -224,7 +224,7 @@ export default class AuthoringToolVM {
     while (selectedNodeChapter && selectedNodeChapter.level !== 1) selectedNodeChapter = selectedNodeChapter.parent;
     if (!selectedNodeChapter) return; // Do not fetch content if the chapter is already selected
     this.SelectedChapter = { ...selectedNodeChapter, attachments: {} };
-    this.DrawerSize === "full" && (this.DrawerSize = "medium"); // Set size to medium if drawer is fully expanded (to show fetched content)
+    if (this.DrawerSize === "full") this.DrawerSize = "medium"; // Set size to medium if drawer is fully expanded (to show fetched content)
   }
 
   private selectedChapter: SelectedContent | undefined = undefined;
@@ -352,7 +352,7 @@ export default class AuthoringToolVM {
     this.CloseNewContentForm();
     this.CloseEditContentForm();
     // Set size to large if drawer is fully expanded (to show fetched content)
-    this.DrawerSize === "full" && (this.DrawerSize = "medium");
+    if (this.DrawerSize === "full") this.DrawerSize = "medium";
     if (value) this.fetchCurrentNodeContent();
     else {
       this.FetchChapterContents(true);
@@ -487,7 +487,7 @@ export default class AuthoringToolVM {
     this.didSequenceChange = value;
   }
 
-  // The client URL derived from the context
+  // Client URL
   private clientUrl?: string = undefined;
   public get ClientUrl() {
     return this.clientUrl;
@@ -496,34 +496,13 @@ export default class AuthoringToolVM {
     this.clientUrl = value;
   }
 
-  // Course category ID derived from the context
+  // Document ID
   private _documentId?: string = undefined;
   private get documentId() {
     return this._documentId;
   }
   private set documentId(value: string | undefined) {
     this._documentId = value;
-  }
-
-  // Course category code derived from the context
-  private _subjectCode?: string;
-  public get SubjectCode(): string | undefined {
-    return this._subjectCode;
-  }
-  public set SubjectCode(value: string | undefined) {
-    this._subjectCode = value?.trim() || undefined;
-  }
-  public get SubjectCodeFirstThree(): string | undefined {
-    return this._subjectCode?.substring(0, 3);
-  }
-
-  // Course category code derived from the context
-  private _subjectUseRefId: boolean = false;
-  public get SubjectUseRefId(): boolean {
-    return this._subjectUseRefId;
-  }
-  public set SubjectUseRefId(value: boolean) {
-    this._subjectUseRefId = value;
   }
 
   private canUserEdit: boolean = true;
@@ -569,12 +548,6 @@ export default class AuthoringToolVM {
     if (editNode === undefined) {
       this.CurrentFormSubTreeLevel = undefined; // Clear CurrentFormSubTreeLevel
     }
-  }
-
-  // Regular expression to match the "XXX XX XX 00" format
-  private readonly _refIdPattern = /^\d{3} \d{2} \d{2} \d{2} 00$/;
-  public get RefIdPattern() {
-    return this._refIdPattern;
   }
 
   // Unique ID for the style element to fix TinyMCE aux panel z-index
@@ -657,15 +630,12 @@ export default class AuthoringToolVM {
       this.Documents = res.data;
     } catch (e: any) {
       errorIds.push(this.AddError(`Error fetching documents: ${e.message}`));
-    } finally {
-      return errorIds;
     }
+    return errorIds;
   }
+
   public async LoadDocumentEditor(docId: string): Promise<number[]> {
     const errorIds: number[] = [];
-    //TODO remove these (planned to not use)
-    // this.SubjectCode = subjectCode;
-    // this.SubjectUseRefId = subjectUseRefId;
     this.documentId = `${docId}`;
     try {
       if (!this.documentId) throw new Error("documentId is undefined");
@@ -680,7 +650,7 @@ export default class AuthoringToolVM {
       this.Records = [treeRes.content];
       // Ensure the first tree level 1 node is selected if no node is selected
       if (!this.SelectedNode) {
-        let firstTreeLevel1Node =
+        const firstTreeLevel1Node =
           this.Records[0].level === 0 // Check if the root node is a tree level 0 node
             ? this.Records[0].children && this.Records[0].children[0]
             : this.Records[0];
@@ -696,9 +666,8 @@ export default class AuthoringToolVM {
       }
     } catch (e: any) {
       errorIds.push(this.AddError(e.message));
-    } finally {
-      return errorIds;
     }
+    return errorIds;
   }
 
   private async checkAuthStatus(token: string) {
@@ -997,11 +966,7 @@ export default class AuthoringToolVM {
       nodes.forEach((node) => {
         // Assign a new order to the node.
         node.order = orderCounter++;
-        // Assing the new path to the node with tree level other than 0
-        if (node.level > 0) this.UpdateNodePath(node, node.parent?.path || "");
-        if (node.children && node.children.length > 0) {
-          assignOrder(node.children);
-        }
+        if (node.children && node.children.length > 0) assignOrder(node.children);
       });
     };
     assignOrder(this.Records);
@@ -1048,24 +1013,6 @@ export default class AuthoringToolVM {
     return index < siblings!.length - 1 ? siblings![index + 1] : null;
   }
 
-  public UpdateNodePath(node: Content, newParentPath: string, includeChildren: boolean = true) {
-    if (!node) return;
-    // Clean up the parent's path to remove the trailing HTML reference
-    const cleanedParentPath = newParentPath?.toLowerCase().endsWith("html") // Assuming the last segment ending in .html from the parent's path
-      ? newParentPath.split("\\").slice(0, -1).join("\\") // Remove the last segment that ends with .html
-      : newParentPath ?? null; // Keep it as is if it doesn't end with .html
-    // Update the node's path
-    const nodeReference = `L${node.level}O${node.order}`;
-    // Construct the new path based on the cleaned parent path
-    node.path = cleanedParentPath
-      ? `${cleanedParentPath}\\${nodeReference}\\${nodeReference}.html`
-      : node.parent
-      ? `L${node.parent.level}O${node.parent.order}\\${nodeReference}\\${nodeReference}.html`
-      : `${nodeReference}\\${nodeReference}.html`;
-    // Recursively update the paths of the children
-    if (includeChildren && node.children) node.children.forEach((child) => this.UpdateNodePath(child, node.path || ""));
-  }
-
   /**
    * Moves a node to the previous parent's last child if it's the first node.
    * @param nodeId The ID of the node to move.
@@ -1079,8 +1026,6 @@ export default class AuthoringToolVM {
     previousParent.children.push(node); // Add to the end of the previous parent's children
     node.parentId = previousParent.id;
     node.parent = previousParent;
-    // Update the node and its children
-    this.UpdateNodePath(node, previousParent.path || "");
     this.DidSequenceChange = true;
     this.forceUpdate();
   }
@@ -1098,8 +1043,6 @@ export default class AuthoringToolVM {
     nextParent.children.unshift(node); // Add to the beginning of the next parent's children
     node.parentId = nextParent.id;
     node.parent = nextParent;
-    // Update the node and its children
-    this.UpdateNodePath(node, nextParent.path || "");
     this.DidSequenceChange = true;
     this.forceUpdate();
   }
@@ -1123,14 +1066,14 @@ export default class AuthoringToolVM {
       if (!token) throw new Error("No token found, user is not authenticated");
       // Ensure the order of the Content tree nodes is based on DFS (Depth-First Sequence)
       this.ensureDFSOrder();
-      // Ensure the Subject's Guid is valid
+      // Ensure the Document's Guid is valid
       if (!this.documentId) {
-        this.AddError(`No Course Category Guid`);
+        this.AddError(`No Document Guid`);
         this.isSyncingContentSequence = false;
         return;
       }
       // Call the saveContentSequence method from CdsService,
-      // passing in the root content nodes (this.Records) and the Subject's Guid.
+      // passing in the root content nodes (this.Records).
       const res = await this.cdsService.SaveContentSequence(token, this.Records);
       // Ensure no errors
       if (res.error) throw new Error(`Error saving resequenced content: ${res.error.message}`);
@@ -1202,21 +1145,8 @@ export default class AuthoringToolVM {
       // Find the target node by id
       const target = this.findNodeById(updated.id);
       if (!target) throw Error(`Node with ID ${updated.id} not found.`);
-      // if the reference ID is used (required), update the content file
-      if (this.SubjectUseRefId) {
-        if (!target.referenceID)
-          throw new Error("Reference ID is required but not found in the targeted node to update.");
-        // Update the reference id in the content file
-        const isFileUpdated = await this.updateContentNodeFile(updated, target.referenceID);
-        if (!isFileUpdated) {
-          // Revert the changes if the file update faild
-          const revertRes = await this.cdsService.UpdateContentNode(token, target);
-          if (revertRes.error) throw revertRes.error;
-        }
-      }
       // Apply local changes
       target.name = updated.name;
-      target.referenceID = updated.referenceID;
       // Refetch chapter in preview mode, if opened
       if (this.selectedNodeChapterFileUrl) await this.FetchChapterContents(true);
       this.forceUpdate();
@@ -1280,7 +1210,7 @@ export default class AuthoringToolVM {
     const nodeIdMatch = errorMessage.match(nodeIdRegex);
     const nodeId = nodeIdMatch ? nodeIdMatch[1] : null; // Get the node ID from the error message
     // Collect all restricting entities, remove 'axa_' and format them
-    let restrictingEntities = [];
+    const restrictingEntities = [];
     while ((match = regex.exec(errorMessage)) !== null) {
       const restrictingEntityName = match[1]; // e.g., axa_ExamTemplateRule
       // Remove the 'axa_' prefix and format the entity name
@@ -1736,7 +1666,7 @@ export default class AuthoringToolVM {
       // Construct content with wrapper
       let content: string = [
         `<article>`,
-        `    <div class="syllabus">${this.SelectedNode.referenceID?.slice(0, -3) ?? ""}</div>`,
+        `    <div class="syllabus"></div>`,
         `    <div id="${this.SelectedNode.id}" class="extsyllabus"></div>`,
         `    <div id="editable_${this.SelectedNode.id}">`,
         `        ${editableDivContent}`,
@@ -1747,7 +1677,6 @@ export default class AuthoringToolVM {
         .join("");
       content = this.EnsureScript(content, this.SelectedNode);
       const fileName: string = `content.html`;
-      if (this.SelectedNode.parent?.path) this.UpdateNodePath(this.SelectedNode, this.SelectedNode.parent?.path, false);
       // Save content to the Dataverse
       const res = await this.cdsService.setContentFile(token, this.SelectedNode, content, fileName);
       if (res.error) this.AddError(res.error.message);
@@ -1844,7 +1773,7 @@ export default class AuthoringToolVM {
       if (!token) throw new Error("No token found, user is not authenticated");
       let content: string = [
         `<article>`,
-        `    <div class="syllabus">${node.referenceID?.slice(0, -3) ?? ""}</div>`,
+        `    <div class="syllabus"></div>`,
         `    <div id="${node.id}" class="extsyllabus"></div>`,
         `    <div id="editable_${node.id}">`,
         `        <p>[Empty Chapter]</p>`,
@@ -1863,142 +1792,5 @@ export default class AuthoringToolVM {
       this.AddError(`Error creating content file: ${error.message}`);
       return false; // File creation failed
     }
-  }
-
-  private async updateContentNodeFile(updated: Content, oldRefId: string): Promise<boolean> {
-    // Update the reference IDs in the node's file
-    try {
-      const token = this.GetToken();
-      // Check for authentication token
-      if (!token) throw new Error("No token found, user is not authenticated");
-      await this.fetchCurrentNodeContent(true); // the entire file
-      if (!this.SelectedNode?.htmlContent) throw new Error("Couldn't get the HTML content of the selected node.");
-      // Get the HTML of the selected node
-      let content = this.SelectedNode.htmlContent;
-      const $ = load(content);
-      // Find the div with class "syllabus" and specific content
-      const syllabusDiv = $(`div.syllabus:contains("${oldRefId.slice(0, -3)}")`);
-      // Update the content of the syllabus div
-      if (syllabusDiv.length) syllabusDiv.text(updated.referenceID?.slice(0, -3) ?? "");
-      // Get the updated HTML
-      content = $.html();
-      // Ensure Script
-      content = this.EnsureScript(content, updated);
-      // Update the HTML in the selected node
-      this.SelectedNode.htmlContent = content;
-      // Set the updated file name
-      const fileName: string = `content.html`;
-      // Save the updated content to the Dataverse
-      const res = await this.cdsService.setContentFile(token, updated, this.SelectedNode.htmlContent, fileName);
-      if (res.error) throw new Error(res.error.message);
-      return true; // File updated successfully
-    } catch (error: any) {
-      this.AddError(`Error Updating Content File: ${error.message}`);
-      return false; // File update failed
-    }
-  }
-
-  // TODO: either remove or update to support infinite tree levels
-  /**
-   * Creates a reference‑ID in the form  XXX CC LL TT 00
-   *   @param firstThree first 3 digits of the subject code (e.g. "031")
-   *   @param formType type of node we're about to create
-   *   @param beforeNode either the would‑be parent (type = formType‑1)
-   *   or the sibling that will sit directly **before** the new node
-   *   @throw error when the parent node is not found.
-   */
-  public GenerateReferenceId(): string | null {
-    if (!this.SubjectCodeFirstThree) {
-      this.AddError(`The "Subject Code" is undefined`);
-      return null;
-    }
-    if (!this.FormTreeLevel) {
-      this.AddError(`The "Form Type" is undefined`);
-      return null;
-    }
-    if (!this.ContentNodeBefore) {
-      this.AddError(`The "Content Node Before" is undefined`);
-      return null;
-    }
-    /* ---------------------------------------------------------- */
-    /* 0. Helpers                                                 */
-    /* ---------------------------------------------------------- */
-    const PAD = (n: number) => n.toString().padStart(2, "0");
-    /** ordinal position (1‑based) of `node` among its siblings[] */
-    const getOrdinalPosition = (nodeId: string): number => this.FindNodeAndSiblings(nodeId).index + 1; // always >= 1
-    /* ------------------------------------------------------------------ */
-    /* 1. Decide the real parent, sibling list, and 0‑based insert index  */
-    /* ------------------------------------------------------------------ */
-    const isParent = this.ContentNodeBefore.level === this.FormTreeLevel - 1;
-    let parent: Content | null = null; // logical parent of the new node
-    /* beforeNode is the *parent* (e.g. adding Lesson under Chapter) */
-    if (isParent) parent = this.ContentNodeBefore;
-    else {
-      /* beforeNode is an existing *sibling* in the same list */
-      parent = this.FindNodeAndSiblings(this.ContentNodeBefore.id).parent;
-      if (!parent) {
-        this.AddError("Parent not found");
-        return null; // Return null on error
-      }
-    }
-    const siblings: Content[] = parent.children ?? []; // parent's current children
-    const insertIndex = isParent // 0‑based index where new node will go
-      ? siblings.length // append to end
-      : siblings.indexOf(this.ContentNodeBefore) + 1; // slot after the sibling
-    /* ------------------------------------------------------------------ */
-    /* 2. Build the CC / LL / TT segments                                 */
-    /* ------------------------------------------------------------------ */
-    let cc = "00";
-    let ll = "00";
-    let tt = "00";
-    switch (this.FormTreeLevel) {
-      /* ---------- creating a CHAPTER ---------- */
-      case 1: {
-        cc = PAD(insertIndex + 1); // position inside subject
-        break;
-      }
-      /* ---------- creating a LESSON ----------- */
-      case 2: {
-        cc = PAD(getOrdinalPosition(parent.id)); // parent IS the chapter
-        ll = PAD(insertIndex + 1); // position inside chapter
-        break;
-      }
-      /* ---------- creating a TOPIC ------------ */
-      case 3: {
-        const lesson = parent; // parent is the Lesson
-        /* lesson ordinal within its chapter */
-        ll = PAD(getOrdinalPosition(lesson.id));
-        /* chapter ordinal within the subject */
-        const chapter = lesson.parent;
-        if (!chapter) throw new Error("Lesson does not have a chapter parent.");
-        cc = PAD(getOrdinalPosition(chapter.id));
-        /* topic ordinal within its lesson */
-        tt = PAD(insertIndex + 1); // position inside lesson
-        break;
-      }
-    }
-    /* ---------------------------------------------------------- */
-    /* 3. Return the final ID                                     */
-    /* ---------------------------------------------------------- */
-    return `${this.SubjectCodeFirstThree} ${cc} ${ll} ${tt} 00`;
-  }
-
-  /**
-   * Checks if the given referenceId is unique in the current content tree.
-   * @param referenceId The reference ID to check for uniqueness.
-   * @returns true if the reference ID is unique, false otherwise.
-   */
-  public IsReferenceIdUnique(referenceId: string): boolean {
-    // Create a stack and initialize it with all root nodes
-    const stack = [...this.Records];
-    while (stack.length > 0) {
-      // Pop the last node from the stack
-      const node = stack.pop()!;
-      // Check if current node's referenceID matches the given ID
-      if (node.referenceID === referenceId) return false; // Duplicate found → not unique
-      // Add all children of this node to the stack
-      if (node.children && node.children.length > 0) stack.push(...node.children);
-    }
-    return true; // No duplicates found → unique
   }
 }

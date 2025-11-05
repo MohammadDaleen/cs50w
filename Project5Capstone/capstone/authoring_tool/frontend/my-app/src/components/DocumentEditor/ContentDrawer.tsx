@@ -14,7 +14,6 @@ import {
   makeStyles,
   shorthands,
   Spinner,
-  Subtitle2,
   Title3,
   tokens,
   ToolbarButton,
@@ -72,9 +71,6 @@ const useStyles = makeStyles({
   },
   drawerHeaderTitleHeading: {
     width: "100%",
-  },
-  referenceID: {
-    color: tokens.colorNeutralForeground3,
   },
   // Main content area (editor/viewer).
   content: {
@@ -336,9 +332,8 @@ export const ContentDrawer = observer(() => {
                 </div>
               }
             >
-              {/* Display the Subject details */}
+              {/* Display the Document details */}
               {/* if the reference ID is used, display it */}
-              {vm.SubjectUseRefId && <Subtitle2 className={styles.referenceID}>{vm.Records[0].referenceID}</Subtitle2>}
               <Title3>
                 <ExpandableText text={vm.Records[0].name}></ExpandableText>
               </Title3>
