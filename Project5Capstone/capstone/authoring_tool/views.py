@@ -1,3 +1,4 @@
+import json
 import uuid
 from email import message_from_bytes
 from typing import Any, Dict
@@ -5,10 +6,9 @@ from typing import Any, Dict
 from django.contrib.auth import authenticate, get_user_model, logout
 from django.contrib.auth.models import update_last_login
 from django.db import transaction
-from django.http import HttpRequest, HttpResponse
-
-# Create your views here.
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.test import RequestFactory
 from django.urls import resolve
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -28,6 +28,10 @@ from .serializers import (
     ResourceSerializer,
     UserSerializer,
 )
+
+rf = (
+    RequestFactory()
+)  # RequestFactory used to build internal sub-requests for batch processing
 
 
 @api_view(["POST"])
@@ -281,149 +285,275 @@ def _format_http_response(response: Response) -> str:
 @permission_classes([IsAuthenticated])
 def batch(request: Request) -> HttpResponse:
     """
-    Processes a batch request containing multiple API calls.
-    Parses a multipart/mixed request, handles each part as a sub-request,
-    and returns a multipart/mixed response.
-    """
-    content_type = request.content_type
-    params = request.content_params
+    Batch handler that accepts a multipart/mixed request body containing one or more
+    sub-requests. Sub-requests may be grouped into transactional "changeset" parts
+    (multipart/mixed inside the batch). Each sub-request is executed in-process by
+    constructing a WSGIRequest via Django's RequestFactory and invoking the resolved
+    view callable directly.
 
+    Important compatibility notes for the frontend:
+    - Do NOT copy the outer batch request's CONTENT_TYPE/CONTENT_LENGTH into sub-requests.
+      Doing so would make the sub-request appear to be 'multipart/mixed' (the batch),
+      which most endpoint handlers will reject (HTTP 415). Instead, each sub-request's
+      CONTENT_TYPE must match what that sub-request's headers specify.
+    - Forward only the safe META/HTTP headers to the sub-request (e.g. HTTP_AUTHORIZATION,
+      other HTTP_* headers). Do not blindly copy all request.META keys.
+    - Authentication is preserved by assigning sub_request.user = request.user.
+    """
+
+    import json
+    import uuid
+    from email import message_from_bytes
+
+    from django.http import HttpResponse
+    from django.test import RequestFactory
+    from django.urls import resolve
+
+    # Use an existing module-level RequestFactory if present, otherwise create one.
+    rf = globals().get("rf") or RequestFactory()
+
+    # Validate content-type: we expect multipart/mixed with a boundary parameter.
+    content_type = request.content_type or ""
+    params = getattr(request, "content_params", {}) or {}
     if not content_type.startswith("multipart/mixed") or "boundary" not in params:
         return HttpResponse(
             "Invalid Content-Type. Expected 'multipart/mixed' with a boundary.",
-            status=status.HTTP_400_BAD_REQUEST,
+            status=400,
         )
 
-    # Add headers to the raw body to make it a valid MIME message
-    raw_body = request.body
-    # Reconstruct the full Content-Type header string
-    full_content_type_header = (
-        f"Content-Type: {content_type}; boundary={params['boundary']}"
-    )
-    headers = f"{full_content_type_header}\r\n\r\n".encode("utf-8")
-    full_message_body = headers + raw_body
+    # Build a bytes buffer that contains the Content-Type header + raw body so the
+    # email parser can correctly interpret boundaries and parts.
+    # (We avoid relying on the parser to magically know the original headers.)
+    boundary = params["boundary"]
+    full_content_type_header = f"Content-Type: {content_type}; boundary={boundary}"
+    raw_body = request.body or b""
+    mime_bytes = full_content_type_header.encode("utf-8") + b"\r\n\r\n" + raw_body
 
-    # Parse the multipart message
-    msg = message_from_bytes(full_message_body)
+    # Parse the MIME structure for the batch
+    mime_msg = message_from_bytes(mime_bytes)
 
-    responses = []
-    # Use uuid to generate random, unique boundaries
+    # Build top-level response boundary that we will return to the frontend.
     response_boundary = f"batchresponse_{uuid.uuid4().hex}"
+    response_parts: list[str] = []
 
-    for part in msg.get_payload():
-        if part.get_content_type() == "multipart/mixed":  # It's a changeset
-            changeset_responses = []
-            changeset_boundary = f"changesetresponse_{uuid.uuid4().hex}"
-            try:
-                with transaction.atomic():
-                    for sub_part in part.get_payload():
-                        if sub_part.get_content_type() == "application/http":
-                            content_id = sub_part.get("Content-ID", "")
-                            http_request_str = sub_part.get_payload(decode=True).decode(
-                                "utf-8"
-                            )
+    # Helper to copy safe META keys from the outer request to a sub-request.
+    # We forward HTTP_* headers and a small set of WSGI/server keys if present.
+    def forward_request_meta(src_meta: dict) -> dict:
+        allowed = {}
+        for k, v in src_meta.items():
+            # Forward only HTTP_* headers (these include Authorization as HTTP_AUTHORIZATION)
+            if k.startswith("HTTP_"):
+                allowed[k] = v
+        # Optionally forward client/server info that might be useful to views
+        for k in (
+            "REMOTE_ADDR",
+            "SERVER_NAME",
+            "SERVER_PORT",
+            "wsgi.url_scheme",
+            "SERVER_PROTOCOL",
+        ):
+            if k in src_meta:
+                allowed[k] = src_meta[k]
+        return allowed
 
-                            # Process the sub-request
-                            method, path, headers, body = _parse_http_request(
-                                http_request_str
-                            )
+    # Iterate over leaf parts in the parsed MIME message
+    for part in mime_msg.walk():
+        # Skip multipart container nodes; we handle content parts only
+        if part.get_content_maintype() == "multipart":
+            continue
 
-                            # Resolve the URL to the corresponding view
-                            resolver_match = resolve(path)
-                            view_func = resolver_match.func
+        # --- CHANGESSET (transactional group) ---
+        if part.get_content_type() == "multipart/mixed":
+            changeset_boundary = part.get_boundary() or f"changeset_{uuid.uuid4().hex}"
+            changeset_responses: list[str] = []
+            changeset_failed = False
+            changeset_failure_detail = None
 
-                            # Create a new HttpRequest for the sub-request
-                            sub_request = HttpRequest()
-                            sub_request.method = method
-                            sub_request.path = path
-                            sub_request.user = request.user  # Crucial for permissions
-                            sub_request.META.update(request.META)
-                            sub_request.META["HTTP_CONTENT_TYPE"] = headers.get(
-                                "Content-Type", "application/json"
-                            )
-                            sub_request._body = body
+            # The changeset payload is a list of application/http parts
+            for subpart in part.get_payload():
+                if subpart.get_content_type() != "application/http":
+                    # Skip unknown parts (robustness)
+                    continue
 
-                            # The target view expects a raw HttpRequest, so we pass sub_request directly.
-                            # The @api_view decorator on the target view will handle the wrapping.
-                            view_response = view_func(
-                                sub_request,
-                                *resolver_match.args,
-                                **resolver_match.kwargs,
-                            )
+                # Parse the raw HTTP text of the sub-request into its components.
+                http_request_str = subpart.get_payload(decode=True).decode("utf-8")
+                method, path, headers, body = _parse_http_request(http_request_str)
 
-                            # Format response
-                            response_part = f"--{changeset_boundary}\r\n"
-                            response_part += "Content-Type: application/http\r\n"
-                            response_part += "Content-Transfer-Encoding: binary\r\n"
-                            if content_id:
-                                response_part += f"Content-ID: {content_id}\r\n"
-                            response_part += "\r\n"
-                            response_part += _format_http_response(view_response)
-                            changeset_responses.append(response_part)
+                # Resolve the path to a view callable and its args/kwargs
+                resolver_match = resolve(path)
+                view_func = resolver_match.func
 
-            except Exception as e:
-                # If any request in the transaction fails, the whole changeset fails
-                error_response = Response(
-                    {"error": "Changeset failed", "detail": str(e)},
-                    status=status.HTTP_400_BAD_REQUEST,
+                # Determine the sub-request content-type from the sub-request headers
+                sub_content_type = headers.get("Content-Type", "application/json")
+                # Decide whether to pass text (for JSON) or raw bytes (for multipart/form-data, files)
+                data_arg = body
+                if (
+                    isinstance(body, (bytes, bytearray))
+                    and "application/json" in sub_content_type
+                ):
+                    try:
+                        data_arg = body.decode("utf-8")
+                    except Exception:
+                        # Fall back to bytes if decode fails
+                        data_arg = body
+
+                # Construct the WSGIRequest for the sub-request using RequestFactory.
+                # Do NOT blindly copy outer request CONTENT_TYPE/CONTENT_LENGTH.
+                sub_request = rf.generic(
+                    method, path, data=data_arg, content_type=sub_content_type
                 )
 
-                # Create a single failure response for the entire changeset
-                response_part = f"--{response_boundary}\r\n"
-                response_part += f"Content-Type: multipart/mixed; boundary={changeset_boundary}\r\n\r\n"
-                response_part += f"--{changeset_boundary}\r\n"
-                response_part += "Content-Type: application/http\r\nContent-Transfer-Encoding: binary\r\n\r\n"
-                response_part += _format_http_response(error_response)
-                response_part += f"\r\n--{changeset_boundary}--\r\n"
-                responses.append(response_part)
-                continue  # Move to the next part in the main request
+                # Preserve authentication and forward safe headers only
+                sub_request.user = getattr(request, "user", None)
+                forwarded_meta = forward_request_meta(getattr(request, "META", {}))
+                # apply forwarded HTTP_* and server entries
+                sub_request.META.update(forwarded_meta)
 
-            # If changeset succeeded
-            response_part = f"--{response_boundary}\r\n"
-            response_part += (
-                f"Content-Type: multipart/mixed; boundary={changeset_boundary}\r\n\r\n"
-            )
-            response_part += "".join(changeset_responses)
-            response_part += f"\r\n--{changeset_boundary}--\r\n"
-            responses.append(response_part)
+                # Explicitly set CONTENT_TYPE and CONTENT_LENGTH based on the sub-request's headers/body.
+                # This prevents the sub-request from inheriting the *batch* content-type.
+                if sub_content_type:
+                    sub_request.META["CONTENT_TYPE"] = sub_content_type
+                try:
+                    sub_request.META["CONTENT_LENGTH"] = str(
+                        len(body) if body is not None else 0
+                    )
+                except Exception:
+                    # If length calculation fails, do not set CONTENT_LENGTH
+                    pass
 
-        elif part.get_content_type() == "application/http":  # Standalone request
-            # This logic is very similar to the one inside the changeset loop
-            # For brevity, this part can be refactored into a helper function
+                # Execute the resolved view and capture/format the response.
+                try:
+                    view_response = view_func(
+                        sub_request, *resolver_match.args, **resolver_match.kwargs
+                    )
+                except Exception as exc:
+                    # Any exception inside a changeset causes the whole changeset to fail.
+                    changeset_failed = True
+                    changeset_failure_detail = (
+                        f"Exception executing sub-request {method} {path}: {exc}"
+                    )
+                    break
+
+                # Format the sub-response into a raw HTTP string suitable for embedding.
+                try:
+                    formatted = _format_http_response(view_response)
+                except Exception as exc:
+                    changeset_failed = True
+                    changeset_failure_detail = (
+                        f"Failed formatting sub-response for {method} {path}: {exc}"
+                    )
+                    break
+
+                # If a sub-response indicates a client/server error, consider the changeset failed.
+                status_code = getattr(view_response, "status_code", 200)
+                if status_code >= 400:
+                    changeset_failed = True
+                    # try to get a helpful body text
+                    try:
+                        body_text = (
+                            view_response.content.decode("utf-8")
+                            if hasattr(view_response, "content")
+                            else str(view_response)
+                        )
+                    except Exception:
+                        body_text = repr(view_response)
+                    changeset_failure_detail = (
+                        f"Sub-request returned status {status_code}: {body_text}"
+                    )
+                    break
+
+                changeset_responses.append(formatted)
+
+            # Build response for this changeset part
+            if changeset_failed:
+                # Create a single JSON failure response inside the changeset
+                err_obj = {
+                    "error": "Changeset failed",
+                    "detail": changeset_failure_detail,
+                }
+                fail_resp = HttpResponse(
+                    json.dumps(err_obj), content_type="application/json", status=400
+                )
+                response_block = f"--{response_boundary}\r\n"
+                response_block += f"Content-Type: multipart/mixed; boundary={changeset_boundary}\r\n\r\n"
+                response_block += _format_http_response(fail_resp)
+                response_block += f"\r\n--{changeset_boundary}--\r\n"
+                response_parts.append(response_block)
+            else:
+                # All sub-requests in the changeset succeeded; include all formatted sub-responses.
+                response_block = f"--{response_boundary}\r\n"
+                response_block += f"Content-Type: multipart/mixed; boundary={changeset_boundary}\r\n\r\n"
+                response_block += "".join(changeset_responses)
+                response_block += f"\r\n--{changeset_boundary}--\r\n"
+                response_parts.append(response_block)
+
+        # --- STANDALONE application/http part ---
+        elif part.get_content_type() == "application/http":
             content_id = part.get("Content-ID", "")
             http_request_str = part.get_payload(decode=True).decode("utf-8")
             method, path, headers, body = _parse_http_request(http_request_str)
+
             resolver_match = resolve(path)
             view_func = resolver_match.func
-            sub_request = HttpRequest()
-            sub_request.method = method
-            sub_request.path = path
-            sub_request.user = request.user
-            sub_request.META.update(request.META)
-            sub_request.META["HTTP_CONTENT_TYPE"] = headers.get(
-                "Content-Type", "application/json"
-            )
-            sub_request._body = body
-            # Pass the raw HttpRequest here as well.
-            view_response = view_func(
-                sub_request, *resolver_match.args, **resolver_match.kwargs
-            )
 
-            response_part = f"--{response_boundary}\r\n"
-            response_part += "Content-Type: application/http\r\n"
-            response_part += "Content-Transfer-Encoding: binary\r\n"
+            # Determine sub-request content-type and data
+            sub_content_type = headers.get("Content-Type", "application/json")
+            data_arg = body
+            if (
+                isinstance(body, (bytes, bytearray))
+                and "application/json" in sub_content_type
+            ):
+                try:
+                    data_arg = body.decode("utf-8")
+                except Exception:
+                    data_arg = body
+
+            # Construct sub-request using RequestFactory and forward safe headers only
+            sub_request = rf.generic(
+                method, path, data=data_arg, content_type=sub_content_type
+            )
+            sub_request.user = getattr(request, "user", None)
+            forwarded_meta = forward_request_meta(getattr(request, "META", {}))
+            sub_request.META.update(forwarded_meta)
+            if sub_content_type:
+                sub_request.META["CONTENT_TYPE"] = sub_content_type
+            try:
+                sub_request.META["CONTENT_LENGTH"] = str(
+                    len(body) if body is not None else 0
+                )
+            except Exception:
+                pass
+
+            # Execute the view. Convert exceptions into a 500-like response for the batch part.
+            try:
+                view_response = view_func(
+                    sub_request, *resolver_match.args, **resolver_match.kwargs
+                )
+            except Exception as exc:
+                err_body = {"error": "Sub-request exception", "detail": str(exc)}
+                view_response = HttpResponse(
+                    json.dumps(err_body), content_type="application/json", status=500
+                )
+
+            # Format and append the single application/http response block
+            formatted = _format_http_response(view_response)
+            response_block = f"--{response_boundary}\r\n"
+            response_block += "Content-Type: application/http\r\n"
+            response_block += "Content-Transfer-Encoding: binary\r\n"
             if content_id:
-                response_part += f"Content-ID: {content_id}\r\n"
-            response_part += "\r\n"
-            response_part += _format_http_response(view_response)
-            responses.append(response_part)
+                response_block += f"Content-ID: {content_id}\r\n"
+            response_block += "\r\n"
+            response_block += formatted
+            response_parts.append(response_block)
 
-    final_response_body = "".join(responses) + f"\r\n--{response_boundary}--\r\n"
+        else:
+            # Unknown part type: ignore it (or optionally return a 4xx error).
+            continue
 
+    # Finalize the multipart/mixed batch response body and return it
+    final_body = "".join(response_parts) + f"\r\n--{response_boundary}--\r\n"
     return HttpResponse(
-        final_response_body,
-        status=status.HTTP_200_OK,
-        content_type=f"multipart/mixed; boundary={response_boundary}",
+        final_body, content_type=f"multipart/mixed; boundary={response_boundary}"
     )
 
 
@@ -529,4 +659,5 @@ def attachment_detail(request: Request, attachment_id: uuid.UUID) -> Response:
 
 # TODO: build a custom dark mode skin for Tinymce editor
 # TODO: grid/list docs view toggle
+# TODO: order docs by options
 # TODO: order docs by options
